@@ -1,0 +1,146 @@
+/* Define color variables */
+:root {
+    --background-color: #ffcc66; /* Light beige background */
+    --text-color: black;
+    --input-background: #FFDD95;
+    --button-bg: #4CAF50;
+    --button-hover-bg: #45a049;
+    --accent-color: #ffcc66;
+    --border-color: #ddd;
+    --loader-border: #f3f3f3;
+    --loader-bg: #3498db;
+    --slider-bg: #ccc;
+    --slider-active-bg: #4CAF50;
+}
+
+/* Fonts */
+@font-face {
+    font-family: 'Avenir Light';
+    src: url('Avenir Light.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* Global styles */
+body {
+    font-family: 'Avenir Light', sans-serif;
+    margin: 20px;
+    background-color: var(--background-color);
+}
+
+h1 {
+    color: var(--text-color);
+    margin: 0;
+    text-align: center;
+    padding: 10px;
+    background-color: var(--accent-color);
+    font-size: 1.2em;
+    font-weight: normal;
+}
+
+/* Styles for the clickable link */
+a.destinations-link {
+    display: block;
+    text-align: center;
+    margin: auto;
+    padding: 10px;
+    max-width: 300px;
+    background-color: var(--accent-color);
+    color: black;
+    text-decoration: none;
+    font-family: 'Avenir Light', sans-serif;
+    font-size: 12px;
+    border-radius: 5px;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+a.destinations-link:hover,
+a.destinations-link:active {
+    background-color: var(--input-background);
+    transform: translateY(-2px);
+}
+
+/* Form styles */
+form {
+    position: relative;
+    max-width: 300px;
+    margin: 20px auto;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background: var(--input-background);
+}
+
+label {
+    display: block;
+    padding: 10px;
+    color: var(--text-color);
+}
+
+/* Input fields and select styles */
+input, select {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid var(--border-color);
+    background: var(--background-color);
+    font-family: 'Avenir Light', sans-serif;
+    -webkit-appearance: none;
+    text-align: center;
+}
+
+/* Submit button styles */
+button[type="submit"] {
+    background-color: var(--button-bg);
+    color: white;
+    padding: 10px;
+    border: none;
+    margin-top: 12px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    border-radius: 5px;
+    text-align: center;
+    font-family: 'Avenir Light', sans-serif;
+}
+
+button[type="submit"]:hover,
+button[type="submit"]:active {
+    background-color: var(--button-hover-bg);
+    transform: translateY(-2px);
+}
+
+/* Disabled button styles */
+button:disabled {
+    background-color: #ccc;
+    color: #666;
+    cursor: not-allowed;
+}
+
+/* Loader animation styles */
+.loader {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: calc(50% - 15px);
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    border: 4px solid var(--loader-border);
+    border-radius: 50%;
+    border-top: 4px solid var(--loader-bg);
+    width: 30px;
+    height: 30px;
+    -webkit-animation: spin 2s linear infinite;
+    animation: spin 2s linear infinite;
+}
+
+@-webkit-keyframes spin {
+   0% { -webkit-transform: rotate(0deg); }
+   100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+   0% { transform: rotate(0deg); }
+   100% { transform: rotate(360deg); }
+}
