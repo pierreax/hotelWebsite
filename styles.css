@@ -11,6 +11,7 @@
     --loader-bg: #3498db;
     --slider-bg: #ccc;
     --slider-active-bg: #4CAF50;
+    --tableheader-color: #4CAF50;
 }
 
 /* Fonts */
@@ -156,10 +157,15 @@ button:disabled {
     display: none; /* Hide the box initially */
 }
 
+/* Enhanced table styles */
 table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate; /* Use separate border model */
+    border-spacing: 0; /* Remove spacing between cells */
+    border-radius: 10px; /* Rounded corners */
+    overflow: hidden; /* Ensure the border-radius is applied correctly */
     background: var(--background-color);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Shadow for enhanced appearance */
 }
 
 th, td {
@@ -169,7 +175,7 @@ th, td {
 }
 
 th {
-    background-color: var(--accent-color);
+    background-color: var(--tableheader-color);
     color: var(--text-color);
 }
 

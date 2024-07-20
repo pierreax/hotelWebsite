@@ -10,30 +10,39 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
     const getAccessTokenUrl = 'https://hotelfunctionapp.azurewebsites.net/api/GetAmadeusAccessToken?code=8-Ok9mpy3X22aWVQSXBs_djXz57bJvh23XJAPuY-yH9jAzFu8nDFaA%3D%3D';
     const getHotelsByCoordinatesUrl = 'https://hotelfunctionapp.azurewebsites.net/api/GetHotelsByCoordinates?code=_9_S3ATWEtYncsW6pzX2gKatTmRWbkHKc9O2GsD-74BqAzFupvm9kA%3D%3D';
     const getHotelOffersUrl = 'https://hotelfunctionapp.azurewebsites.net/api/GetHotelOffers?code=N5p8k9qzS_NgW_h2mHWm_xKOpPHY2Cjb_nh_TCturrA5AzFuCXBy-g%3D%3D';
+    const getCoordinatesByLocationUrl = 'https://hotelfunctionapp.azurewebsites.net/api/GetCoordinatesByLocation?code=tyHMhU1QpcgHHWUrwfor8PtyYEzW-keeu2daJnRQqdQxAzFuPgYxzA%3D%3D';
 
     let accessToken;
     let internalHotelIds = []; // Store hotel IDs for later use
 
     function getLocationCoordinates(location) {
-        const apiKey = 'AIzaSyBPYZPrBMnCLVkxuQGnur5r5htgm7bGKVM'; // Replace with your actual API key
-        const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${apiKey}`;
+        const url = `${getCoordinatesByLocationUrl}&location=${encodeURIComponent(location)}`;
 
-        console.log('Geocoding URL:', geocodingUrl); // Debugging line
+        console.log('Coordinates URL:', url); // Debugging line
 
-        return fetch(geocodingUrl)
+        return fetch(url)
             .then(response => response.json())
             .then(data => {
-                console.log('Geocoding response:', data); // Debugging line
-                if (data.results && data.results.length > 0) {
-                    const location = data.results[0].geometry.location;
+                console.log('Coordinates response:', data); // Debugging line
+                if (data.latitude && data.longitude) {
                     return {
-                        lat: location.lat,
-                        lng: location.lng
+                        lat: data.latitude,
+                        lng: data.longitude
                     };
                 } else {
                     throw new Error('Location coordinates not found');
                 }
             });
+    }
+
+    function formatRoomType(type) {
+        // Convert room type to a more readable format
+        if (!type) return 'N/A';
+
+        return type
+            .replace(/_/g, ' ') // Replace underscores with spaces
+            .toLowerCase() // Convert to lowercase
+            .replace(/\b\w/g, char => char.toUpperCase()); // Capitalize first letter of each word
     }
 
     function fetchHotelOffers(validHotelIds) {
@@ -114,7 +123,7 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
 
                     // Add room type cell
                     const roomTypeCell = document.createElement('td');
-                    const roomType = offer.offers[0].room ? offer.offers[0].room.typeEstimated.category : 'N/A'; // Adjust according to actual data
+                    const roomType = offer.offers[0].room ? formatRoomType(offer.offers[0].room.typeEstimated.category) : 'N/A'; // Use formatted room type
                     roomTypeCell.textContent = roomType;
                     row.appendChild(roomTypeCell);
 
