@@ -10,8 +10,8 @@
     <div class="container">
         <h1>Hotel Search</h1>
         <form id="searchForm">
-            <label for="city">City:</label>
-            <input type="text" id="city" name="city" value="OSL" required>
+            <label for="location">Location:</label>
+            <input type="text" id="location" name="location" value="Oslo" required>
             
             <label for="checkInDate">Check-in Date:</label>
             <input type="date" id="checkInDate" name="checkInDate" value="2024-07-20" required>
@@ -21,11 +21,35 @@
             
             <label for="adults">Adults:</label>
             <input type="number" id="adults" name="adults" value="1" min="1" required>
+
+            <label for="limitResults">Limit Results:</label>
+            <select id="limitResults" name="limitResults">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="15">15</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="200">200</option>
+            </select>
             
             <button type="submit">Search</button>
         </form>
         
-        <div id="results"></div>
+        <div id="resultsBox" style="display: none;">
+            <table id="results">
+                <thead>
+                    <tr>
+                        <th>Hotel Name</th>
+                        <th>Room Type</th>
+                        <th>Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Results will be populated here -->
+                </tbody>
+            </table>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>
