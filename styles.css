@@ -39,28 +39,6 @@ h1 {
     font-weight: normal;
 }
 
-/* Styles for the clickable link */
-a.destinations-link {
-    display: block;
-    text-align: center;
-    margin: auto;
-    padding: 10px;
-    max-width: 300px;
-    background-color: var(--accent-color);
-    color: black;
-    text-decoration: none;
-    font-family: 'Avenir Light', sans-serif;
-    font-size: 12px;
-    border-radius: 5px;
-    transition: background-color 0.3s, transform 0.2s;
-}
-
-a.destinations-link:hover,
-a.destinations-link:active {
-    background-color: var(--input-background);
-    transform: translateY(-2px);
-}
-
 /* Form styles */
 form {
     position: relative;
@@ -70,26 +48,60 @@ form {
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     background: var(--input-background);
+    display: flex;
+    flex-direction: column; /* Ensure form elements stack vertically */
 }
 
-label {
-    display: block;
-    padding: 10px;
-    color: var(--text-color);
+/* Wrapper styles */
+.input-wrapper {
+    position: relative;
+    margin-bottom: 20px; /* Space between fields */
 }
 
-/* Input fields and select styles */
+/* Input and select fields */
 input, select {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     box-sizing: border-box;
     border-radius: 5px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     border: 1px solid var(--border-color);
     background: var(--background-color);
     font-family: 'Avenir Light', sans-serif;
-    -webkit-appearance: none;
-    text-align: center;
+    font-size: 14px; /* Adjust font size */
+    color: var(--text-color);
+    /* Position the input field lower to make space for the floating label */
+    padding-top: 20px;
+}
+
+/* Floating label styles */
+.input-wrapper label {
+    position: absolute;
+    top: 12px; /* Position inside the input field */
+    left: 12px;
+    font-size: 14px;
+    color: var(--text-color);
+    pointer-events: none;
+    transition: all 0.2s ease-out;
+    /* Make sure label is inside the field initially */
+    background: var(--input-background); 
+    padding: 0 4px;
+}
+
+/* Floating label transitions */
+input:not(:placeholder-shown) + label,
+input:focus + label {
+    top: -12px; /* Move above the input field */
+    left: 8px;
+    font-size: 12px;
+    color: var(--text-color);
+}
+
+/* Input fields and select styles in the same line */
+.input-group {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px; /* Space between fields */
 }
 
 /* Submit button styles */
@@ -104,6 +116,8 @@ button[type="submit"] {
     border-radius: 5px;
     text-align: center;
     font-family: 'Avenir Light', sans-serif;
+    width: 100%; /* Make the button span the full width of its container */
+    box-sizing: border-box; /* Ensure padding and border are included in the width */
 }
 
 button[type="submit"]:hover,

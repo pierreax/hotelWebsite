@@ -5,7 +5,18 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
     const checkInDate = document.getElementById('checkInDate').value;
     const checkOutDate = document.getElementById('checkOutDate').value;
     const adults = document.getElementById('adults').value;
+    const numberOfRooms = document.getElementById('numberOfRooms').value; // New field for number of rooms
+    const email = document.getElementById('email').value; // New field for email address
     const limitResults = parseInt(document.getElementById('limitResults').value, 10);
+
+    console.log('Form Data:', {
+        location,
+        checkInDate,
+        checkOutDate,
+        adults,
+        numberOfRooms,
+        email
+    });
 
     const getAccessTokenUrl = 'https://hotelfunctionapp.azurewebsites.net/api/GetAmadeusAccessToken?code=8-Ok9mpy3X22aWVQSXBs_djXz57bJvh23XJAPuY-yH9jAzFu8nDFaA%3D%3D';
     const getHotelsByCoordinatesUrl = 'https://hotelfunctionapp.azurewebsites.net/api/GetHotelsByCoordinates?code=_9_S3ATWEtYncsW6pzX2gKatTmRWbkHKc9O2GsD-74BqAzFupvm9kA%3D%3D';
@@ -14,25 +25,38 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
 
     let accessToken;
     let internalHotelIds = []; // Store hotel IDs for later use
+    let locationCoordinates; // Store coordinates of the searched location
 
     function getLocationCoordinates(location) {
-        const url = `${getCoordinatesByLocationUrl}&location=${encodeURIComponent(location)}`;
+        const apiUrl = `${getCoordinatesByLocationUrl}&location=${encodeURIComponent(location)}`;
 
-        console.log('Coordinates URL:', url); // Debugging line
+        console.log('Coordinates URL:', apiUrl);
 
-        return fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                console.log('Coordinates response:', data); // Debugging line
-                if (data.latitude && data.longitude) {
-                    return {
-                        lat: data.latitude,
-                        lng: data.longitude
-                    };
-                } else {
-                    throw new Error('Location coordinates not found');
+        return fetch(apiUrl)
+            .then(response => response.text()) // Use text() to handle non-JSON responses
+            .then(text => {
+                try {
+                    return JSON.parse(text); // Try to parse the response as JSON
+                } catch (err) {
+                    throw new Error(`Response is not valid JSON: ${text}`);
                 }
+            })
+            .then(data => {
+                console.log('Coordinates Data:', data);
+                locationCoordinates = data; // Save the location coordinates
+                return data;
+            })
+            .catch(error => {
+                console.error('Error:', error.message);
+                throw error;
             });
+    }
+
+    function formatHotelName(name) {
+        if (!name) return 'N/A';
+        return name
+            .toLowerCase() // Convert the entire name to lowercase
+            .replace(/\b\w/g, char => char.toUpperCase()); // Capitalize the first letter of each word
     }
 
     function formatRoomType(type) {
@@ -45,9 +69,21 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
             .replace(/\b\w/g, char => char.toUpperCase()); // Capitalize first letter of each word
     }
 
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; // Radius of the Earth in kilometers
+        const dLat = (lat2 - lat1) * (Math.PI / 180);
+        const dLon = (lon2 - lon1) * (Math.PI / 180);
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                  Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * 
+                  Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const distance = R * c; // Distance in kilometers
+        return distance.toFixed(2); // Return the distance rounded to 2 decimal places
+    }
+
     function fetchHotelOffers(validHotelIds) {
         const limitedHotelIds = validHotelIds.slice(0, limitResults);
-        const url = `${getHotelOffersUrl}&hotelIds=${limitedHotelIds.join(',')}&adults=${adults}&checkInDate=${checkInDate}&checkOutDate=${checkOutDate}&roomQuantity=1&paymentPolicy=NONE&bestRateOnly=true`;
+        const url = `${getHotelOffersUrl}&hotelIds=${limitedHotelIds.join(',')}&adults=${adults}&checkInDate=${checkInDate}&checkOutDate=${checkOutDate}&roomQuantity=${numberOfRooms}&paymentPolicy=NONE&bestRateOnly=true`;
 
         console.log('Fetching hotel offers with URL:', url);
 
@@ -58,7 +94,6 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
         })
         .then(response => response.text())
         .then(text => {
-            console.log('Hotel offers response text:', text); // Log the raw response text
             try {
                 const response = JSON.parse(text);
                 console.log('Hotel offers response:', response);
@@ -85,8 +120,13 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
             return getLocationCoordinates(location);
         })
         .then(coords => {
-            const { lat, lng } = coords;
-            const getHotelsByCoordinatesUrlWithParams = `${getHotelsByCoordinatesUrl}&latitude=${lat}&longitude=${lng}&radius=5&radiusUnit=KM&hotelSource=ALL`;
+            // Ensure `coords` has latitude and longitude
+            if (!coords || !coords.latitude || !coords.longitude) {
+                throw new Error('Invalid coordinates received');
+            }
+
+            const { latitude, longitude } = coords;
+            const getHotelsByCoordinatesUrlWithParams = `${getHotelsByCoordinatesUrl}&latitude=${latitude}&longitude=${longitude}&radius=5&radiusUnit=KM&hotelSource=ALL`;
 
             return fetch(getHotelsByCoordinatesUrlWithParams, {
                 headers: {
@@ -105,7 +145,7 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
                 return fetchHotelOffers(hotelIds);
             } else {
                 document.getElementById('resultsBox').style.display = 'block';
-                resultsTableBody.innerHTML = '<tr><td colspan="3">No hotels found</td></tr>'; // Updated colspan to 3
+                resultsTableBody.innerHTML = '<tr><td colspan="4">No hotels found</td></tr>'; // Updated colspan to 4
             }
         })
         .then(data => {
@@ -118,7 +158,7 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
 
                     // Add hotel name cell
                     const nameCell = document.createElement('td');
-                    nameCell.textContent = offer.hotel.name || 'N/A'; // Default to 'N/A' if name is missing
+                    nameCell.textContent = formatHotelName(offer.hotel.name) || 'N/A'; // Format hotel name
                     row.appendChild(nameCell);
 
                     // Add room type cell
@@ -133,10 +173,18 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
                     priceCell.textContent = price;
                     row.appendChild(priceCell);
 
+                    // Add distance cell
+                    const distanceCell = document.createElement('td');
+                    const hotelLat = offer.hotel.latitude;
+                    const hotelLon = offer.hotel.longitude;
+                    const distance = calculateDistance(locationCoordinates.latitude, locationCoordinates.longitude, hotelLat, hotelLon);
+                    distanceCell.textContent = `${distance} km`;
+                    row.appendChild(distanceCell);
+
                     resultsTableBody.appendChild(row);
                 });
             } else {
-                resultsTableBody.innerHTML = '<tr><td colspan="3">No results found</td></tr>'; // Updated colspan to 3
+                resultsTableBody.innerHTML = '<tr><td colspan="4">No results found</td></tr>'; // Updated colspan to 4
             }
 
             document.getElementById('resultsBox').style.display = 'block';
@@ -144,6 +192,6 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
         .catch(error => {
             console.error('Error:', error.message);
             document.getElementById('resultsBox').style.display = 'block';
-            document.querySelector('#results tbody').innerHTML = `<tr><td colspan="3">An error occurred: ${error.message}. Please try again.</td></tr>`; // Updated colspan to 3
+            document.querySelector('#results tbody').innerHTML = `<tr><td colspan="4">An error occurred: ${error.message}. Please try again.</td></tr>`; // Updated colspan to 4
         });
 });
