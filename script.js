@@ -12,6 +12,14 @@ $(document).ready(function() {
         }
     });
 
+    // Currencies and City based on IP-location
+    $.get('https://api.ipgeolocation.io/ipgeo?apiKey=420e90eecc6c4bb285f238f38aea898f', function(response) {
+        currency = response.currency.code;
+        console.log('Setting currency to:',currency);
+        // Update the currency based on the IP-response
+        $('#currency').val(currency).trigger('change');
+    });
+
     $('#searchForm').on('submit', async function(event) {
         event.preventDefault();
 
@@ -146,6 +154,8 @@ $(document).ready(function() {
                 return parseFloat(offer.pricePerNight) <= priceLimit;
             });
         }
+
+        
 
         async function submitToSheety(formData, formattedData) {
             const data = {
@@ -303,10 +313,10 @@ $(document).ready(function() {
                     alert('Thank you for your submission, we will keep you updated on the lowest prices for your selection!');
                     resetForm(); // Reset form and hide results after submission
         
-                    // Wait for 3 seconds before reloading the page
+                    // Wait for 1 seconds before reloading the page
                     setTimeout(function() {
                         window.location.reload(); // Reload the page
-                    }, 2000); //
+                    }, 1000); //
                 }
             } catch (error) {
                 console.error('Error sending data to Sheety:', error.message);
