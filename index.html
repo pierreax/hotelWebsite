@@ -31,7 +31,6 @@
                     <label for="adults">Adults:</label>
                 </div>
 
-
                 <div class="input-wrapper">
                     <input type="number" id="numberOfRooms" name="numberOfRooms" min="1" value="1" required>
                     <label for="numberOfRooms">Rooms:</label>
@@ -49,7 +48,6 @@
                     <label for="currency">Currency:</label>
                 </div>
             </div>
-            
 
             <div class="input-wrapper">
                 <input type="email" id="email" name="email" value="pierre@robotize.no" required>
@@ -62,7 +60,7 @@
             </div>
 
             <button type="submit">Search</button>
-            <button type="button" id="submitToSheet">Submit</button> <!-- New Submit Button -->
+            <button type="button" id="submitToSheet">Submit</button>
         </form>
 
         <div id="resultsBox" style="display: none;">
@@ -72,9 +70,10 @@
                         <th>Select</th>
                         <th>Hotel</th>
                         <th>Room Type</th>
-                        <th>Price (per room)</th>
+                        <th>Price (per room and night)</th>
+                        <th>Price (total)</th>
                         <th>Distance to searched location</th>
-                        <th style="display: none;">Hotel ID</th> <!-- Hidden column -->                
+                        <th style="display: none;">Hotel ID</th> <!-- Hidden column -->
                     </tr>
                 </thead>
                 <tbody>

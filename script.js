@@ -1,20 +1,31 @@
-document.getElementById('searchForm').addEventListener('submit', function(event) {
+document.getElementById('searchForm').addEventListener('submit', async function(event) {
     event.preventDefault();
 
     const location = document.getElementById('location').value;
-    const checkInDate = document.getElementById('checkInDate').value;
-    const checkOutDate = document.getElementById('checkOutDate').value;
+    const checkInDateStr = document.getElementById('checkInDate').value;
+    const checkOutDateStr = document.getElementById('checkOutDate').value;
     const adults = document.getElementById('adults').value;
     const numberOfRooms = document.getElementById('numberOfRooms').value;
     const email = document.getElementById('email').value;
     const limitResults = parseInt(document.getElementById('limitResults').value, 10);
-    const formCurrency = document.getElementById('currency').value; // Get form currency
-    const priceLimit = parseFloat(document.getElementById('priceLimit').value); // Get priceLimit and convert to float
+    const formCurrency = document.getElementById('currency').value;
+    const priceLimit = parseFloat(document.getElementById('priceLimit').value);
+
+    // Convert strings to Date objects
+    const checkInDate = new Date(checkInDateStr);
+    const checkOutDate = new Date(checkOutDateStr);
+
+    // Calculate number of nights
+    const numberOfNights = Math.round((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+    if (numberOfNights <= 0) {
+        alert('Check-out date must be after check-in date.');
+        return;
+    }
 
     console.log('Form Data:', {
         location,
-        checkInDate,
-        checkOutDate,
+        checkInDate: checkInDateStr,
+        checkOutDate: checkOutDateStr,
         adults,
         numberOfRooms,
         email,
@@ -26,119 +37,111 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
     const getHotelsByCoordinatesUrl = 'https://hotelfunctionapp.azurewebsites.net/api/GetHotelsByCoordinates?code=_9_S3ATWEtYncsW6pzX2gKatTmRWbkHKc9O2GsD-74BqAzFupvm9kA%3D%3D';
     const getHotelOffersUrl = 'https://hotelfunctionapp.azurewebsites.net/api/GetHotelOffers?code=N5p8k9qzS_NgW_h2mHWm_xKOpPHY2Cjb_nh_TCturrA5AzFuCXBy-g%3D%3D';
     const getCoordinatesByLocationUrl = 'https://hotelfunctionapp.azurewebsites.net/api/GetCoordinatesByLocation?code=tyHMhU1QpcgHHWUrwfor8PtyYEzW-keeu2daJnRQqdQxAzFuPgYxzA%3D%3D';
-    const sheetyUrl = 'https://hotelfunctionapp.azurewebsites.net/api/SendDataToSheety?code=WB185Wd0xWtqP1DMGlKF1WnHLt8TXwpm8QXDzTlulg6FAzFuFvQ-2A%3D%3D'; // Sheety URL
-    const conversionApiUrl = 'https://v6.exchangerate-api.com/v6/0fdee0a5645b6916b5a20bb3/latest/'; // Your API URL
+    const sheetyUrl = 'https://hotelfunctionapp.azurewebsites.net/api/SendDataToSheety?code=WB185Wd0xWtqP1DMGlKF1WnHLt8TXwpm8QXDzTlulg6FAzFuFvQ-2A%3D%3D';
+    const conversionApiUrl = 'https://v6.exchangerate-api.com/v6/0fdee0a5645b6916b5a20bb3/latest/';
 
     let accessToken;
-    let internalHotelIds = []; // Store hotel IDs for later use
-    let locationCoordinates; // Store coordinates of the searched location
-    let selectedHotels = []; // Store selected hotel data
+    let internalHotelIds = [];
+    let locationCoordinates;
+    let selectedHotels = [];
 
-    function convertCurrency(amount, fromCurrency, toCurrency) {
+    async function convertCurrency(amount, fromCurrency, toCurrency) {
         const url = `${conversionApiUrl}${fromCurrency}`;
-
-        return fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                const rate = data.conversion_rates[toCurrency];
-                if (!rate) {
-                    throw new Error(`No conversion rate available for ${toCurrency}`);
-                }
-                return amount * rate;
-            });
+        const response = await fetch(url);
+        const data = await response.json();
+        const rate = data.conversion_rates[toCurrency];
+        if (!rate) {
+            throw new Error(`No conversion rate available for ${toCurrency}`);
+        }
+        return amount * rate;
     }
 
-    function getLocationCoordinates(location) {
+    async function getLocationCoordinates(location) {
         const apiUrl = `${getCoordinatesByLocationUrl}&location=${encodeURIComponent(location)}`;
-
         console.log('Coordinates URL:', apiUrl);
-
-        return fetch(apiUrl)
-            .then(response => response.text()) // Use text() to handle non-JSON responses
-            .then(text => {
-                try {
-                    return JSON.parse(text); // Try to parse the response as JSON
-                } catch (err) {
-                    throw new Error(`Response is not valid JSON: ${text}`);
-                }
-            })
-            .then(data => {
-                console.log('Coordinates Data:', data);
-                locationCoordinates = data; // Save the location coordinates
-                return data;
-            })
-            .catch(error => {
-                console.error('Error:', error.message);
-                throw error;
-            });
+        const response = await fetch(apiUrl);
+        const text = await response.text();
+        try {
+            const data = JSON.parse(text);
+            console.log('Coordinates Data:', data);
+            locationCoordinates = data;
+            return data;
+        } catch (err) {
+            throw new Error(`Response is not valid JSON: ${text}`);
+        }
     }
 
-    function fetchHotelOffers(validHotelIds, priceLimit) {
+    async function fetchHotelOffers(validHotelIds) {
         const limitedHotelIds = validHotelIds.slice(0, limitResults);
-        const params = `hotelIds=${limitedHotelIds.join(',')}&adults=${adults}&checkInDate=${checkInDate}&checkOutDate=${checkOutDate}&roomQuantity=${numberOfRooms}&paymentPolicy=NONE&bestRateOnly=true&currency=${formCurrency}&priceRange=-${priceLimit}&includeClosed=false`; 
+        const params = `hotelIds=${limitedHotelIds.join(',')}&adults=${adults}&checkInDate=${checkInDateStr}&checkOutDate=${checkOutDateStr}&roomQuantity=${numberOfRooms}&paymentPolicy=NONE&bestRateOnly=true&includeClosed=false`;
         const url = `${getHotelOffersUrl}&params=${encodeURIComponent(params)}`;
-    
         console.log('Fetching hotel offers with params:', params);
-    
-        return fetch(url, {
+        const response = await fetch(url, {
             headers: {
                 'Authorization': `Bearer ${accessToken}`
             }
-        })
-        .then(response => response.text())
-        .then(text => {
-            try {
-                const response = JSON.parse(text);
-                console.log('Hotel offers response:', response);
-    
-                if (response.errors) {
-                    const errorDetails = response.errors.map(err => `Code: ${err.code}, Detail: ${err.detail}`).join('; ');
-                    throw new Error(`Failed to fetch hotel offers: ${errorDetails}`);
-                }
-                return response;
-            } catch (err) {
-                throw new Error(`Failed to parse hotel offers response: ${text}`);
-            }
         });
+        const text = await response.text();
+        try {
+            const responseData = JSON.parse(text);
+            console.log('Hotel offers response:', responseData);
+            if (responseData.errors) {
+                const errorDetails = responseData.errors.map(err => `Code: ${err.code}, Detail: ${err.detail}`).join('; ');
+                throw new Error(`Failed to fetch hotel offers: ${errorDetails}`);
+            }
+            return responseData;
+        } catch (err) {
+            throw new Error(`Failed to parse hotel offers response: ${text}`);
+        }
     }
 
-    function convertPricesToFormCurrency(hotelOffers, originalCurrency) {
-        return Promise.all(hotelOffers.map(offer => {
-            const price = offer.offers[0].price.total;
+    async function convertPricesToFormCurrency(hotelOffers, originalCurrency) {
+        return Promise.all(hotelOffers.map(async offer => {
+            const price = parseFloat(offer.offers[0].price.total);
             if (originalCurrency !== formCurrency) {
-                return convertCurrency(price, originalCurrency, formCurrency)
-                    .then(convertedPrice => {
-                        offer.offers[0].price.total = convertedPrice.toFixed(2); // Update with converted price
-                        offer.offers[0].price.currency = formCurrency; // Update currency
-                        return offer;
-                    });
-            } else {
-                return offer; // No conversion needed if currency matches
+                const convertedPrice = await convertCurrency(price, originalCurrency, formCurrency);
+                offer.offers[0].price.total = convertedPrice.toFixed(2);
+                offer.offers[0].price.currency = formCurrency;
             }
+            return offer;
         }));
     }
 
-    function submitToSheety(formData, formattedData) {
+    function filterOffersByPrice(hotelOffers, priceLimit, numberOfNights) {
+        console.log('Filtering offers by price. Price Limit:', priceLimit, 'Number of Nights:', numberOfNights);
+        
+        return hotelOffers.map(offer => {
+            const totalPrice = parseFloat(offer.offers[0].price.total);
+            const pricePerNight = totalPrice / numberOfNights;
+    
+            console.log('Offer ID:', offer.hotel.hotelId, 'Total Price:', totalPrice, 'Price Per Night:', pricePerNight);
+    
+            return {
+                ...offer,
+                pricePerNight: pricePerNight.toFixed(2)
+            };
+        }).filter(offer => {
+            return parseFloat(offer.pricePerNight) <= priceLimit;
+        });
+    }
+    
+    
+
+    async function submitToSheety(formData, formattedData) {
         const data = {
             ...formData,
             ...formattedData
         };
-
-        return fetch(sheetyUrl, {
+        const response = await fetch(sheetyUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(data)
-        })
-        .then(response => response.json())
-        .then(result => {
-            console.log('Sheety response:', result);
-            return result;
-        })
-        .catch(error => {
-            console.error('Error sending data to Sheety:', error.message);
         });
+        const result = await response.json();
+        console.log('Sheety response:', result);
+        return result;
     }
 
     function handleCheckboxChange() {
@@ -149,7 +152,6 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
             alert('You can only select up to 3 hotels.');
             this.checked = false; // Uncheck the box if the limit is exceeded
         } else {
-            // Update selectedHotels with selected data
             selectedHotels = checkedCheckboxes.map(checkbox => {
                 const row = checkbox.closest('tr');
                 return {
@@ -172,16 +174,13 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
 
     function formatRoomType(roomType) {
         return roomType
-            .toUpperCase()            // Convert the whole string to uppercase
-            .replace(/_/g, ' ')       // Replace underscores with spaces
-            .toLowerCase()            // Convert the whole string to lowercase
-            .split(' ')               // Split the string into words
-            .map(word =>              // Capitalize the first letter of each word
-                word.charAt(0).toUpperCase() + word.slice(1)
-            )
-            .join(' ');               // Join the words back together with a space
+            .toUpperCase()
+            .replace(/_/g, ' ')
+            .toLowerCase()
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
     }
-    
 
     function calculateDistance(lat1, lon1, lat2, lon2) {
         const R = 6371; // Radius of the Earth in km
@@ -195,11 +194,11 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
         return distance.toFixed(2); // Distance in km
     }
 
-    document.getElementById('submitToSheet').addEventListener('click', function() {
+    document.getElementById('submitToSheet').addEventListener('click', async function() {
         const formData = {
             location,
-            checkInDate,
-            checkOutDate,
+            checkInDate: checkInDateStr,
+            checkOutDate: checkOutDateStr,
             adults,
             numberOfRooms,
             email,
@@ -211,123 +210,113 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
             selectedHotels
         };
 
-        submitToSheety(formData, formattedData)
-            .then(result => {
-                if (result) {
-                    alert('Data successfully sent to Sheety.');
-                }
-            });
+        try {
+            const result = await submitToSheety(formData, formattedData);
+            if (result) {
+                alert('Data successfully sent to Sheety.');
+            }
+        } catch (error) {
+            console.error('Error sending data to Sheety:', error.message);
+        }
     });
 
     document.querySelectorAll('#results input[type="checkbox"]').forEach(checkbox => {
         checkbox.addEventListener('change', handleCheckboxChange);
     });
 
-    fetch(getAccessTokenUrl)
-        .then(response => response.json())
-        .then(tokenData => {
-            accessToken = tokenData.access_token;
-            return getLocationCoordinates(location);
-        })
-        .then(coords => {
-            if (!coords || !coords.latitude || !coords.longitude) {
-                throw new Error('Invalid coordinates received');
+    try {
+        const tokenResponse = await fetch(getAccessTokenUrl);
+        const tokenData = await tokenResponse.json();
+        accessToken = tokenData.access_token;
+
+        const coords = await getLocationCoordinates(location);
+        if (!coords || !coords.latitude || !coords.longitude) {
+            throw new Error('Invalid coordinates received');
+        }
+        const { latitude, longitude } = coords;
+        const getHotelsByCoordinatesUrlWithParams = `${getHotelsByCoordinatesUrl}&latitude=${latitude}&longitude=${longitude}&radius=5&radiusUnit=KM&hotelSource=ALL`;
+
+        const hotelsResponse = await fetch(getHotelsByCoordinatesUrlWithParams, {
+            headers: {
+                'Authorization': `Bearer ${accessToken}`
             }
+        });
+        const hotelsData = await hotelsResponse.json();
 
-            const { latitude, longitude } = coords;
-            const getHotelsByCoordinatesUrlWithParams = `${getHotelsByCoordinatesUrl}&latitude=${latitude}&longitude=${longitude}&radius=5&radiusUnit=KM&hotelSource=ALL`;
+        const resultsTableBody = document.querySelector('#results tbody');
+        resultsTableBody.innerHTML = '';
 
-            return fetch(getHotelsByCoordinatesUrlWithParams, {
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`
-                }
-            });
-        })
-        .then(response => response.json())
-        .then(hotelsData => {
-            const resultsTableBody = document.querySelector('#results tbody');
-            resultsTableBody.innerHTML = '';
+        if (hotelsData && hotelsData.data && hotelsData.data.length > 0) {
+            internalHotelIds = hotelsData.data.map(hotel => hotel.hotelId);
+            const hotelIds = internalHotelIds.slice(0, limitResults);
 
-            if (hotelsData && hotelsData.data && hotelsData.data.length > 0) {
-                internalHotelIds = hotelsData.data.map(hotel => hotel.hotelId); // Store hotel IDs for later use
-                let hotelIds = internalHotelIds.slice(0, limitResults); // Limit hotel IDs for fetching offers
-                
-                // Fetch hotel offers
-                return fetchHotelOffers(hotelIds, priceLimit);
-            } else {
-                document.getElementById('resultsBox').style.display = 'block';
-                resultsTableBody.innerHTML = '<tr><td colspan="5">No hotels found</td></tr>'; // Updated colspan to 5
-            }
-        })
-        .then(data => {
-            // Extract the original currency from the response
-            const originalCurrency = data.data[0]?.offers[0]?.price?.currency || formCurrency;
+            const offersData = await fetchHotelOffers(hotelIds);
+            const originalCurrency = offersData.data[0]?.offers[0]?.price?.currency || formCurrency;
+            const convertedOffers = await convertPricesToFormCurrency(offersData.data, originalCurrency);
+            const filteredOffers = filterOffersByPrice(convertedOffers, priceLimit, numberOfNights);
 
-            // Convert prices to form currency
-            return convertPricesToFormCurrency(data.data, originalCurrency);
-        })
-        .then(data => {
-            const resultsTableBody = document.querySelector('#results tbody');
-            resultsTableBody.innerHTML = '';
-
-            if (data && data.length > 0) {
-                data.forEach(offer => {
+            if (filteredOffers.length > 0) {
+                filteredOffers.forEach(offer => {
                     const row = document.createElement('tr');
-
-                    // Add hidden hotelId cell
+            
                     const hiddenIdCell = document.createElement('td');
                     hiddenIdCell.className = 'hiddenHotelId';
                     hiddenIdCell.textContent = offer.hotel.hotelId;
-                    hiddenIdCell.style.display = 'none'; // Hide the cell
+                    hiddenIdCell.style.display = 'none';
                     row.appendChild(hiddenIdCell);
-
-                    // Add checkbox cell
+            
                     const checkboxCell = document.createElement('td');
                     const checkbox = document.createElement('input');
                     checkbox.type = 'checkbox';
                     checkbox.className = 'select-checkbox';
                     checkboxCell.appendChild(checkbox);
                     row.appendChild(checkboxCell);
-
-                    // Add hotel name cell
+            
                     const nameCell = document.createElement('td');
-                    nameCell.textContent = formatHotelName(offer.hotel.name) || 'N/A'; // Format hotel name
+                    nameCell.textContent = formatHotelName(offer.hotel.name) || 'N/A';
                     nameCell.className = 'hotel';
                     row.appendChild(nameCell);
-
-                    // Add room type cell
+            
                     const roomTypeCell = document.createElement('td');
-                    const roomType = offer.offers[0].room ? formatRoomType(offer.offers[0].room.typeEstimated.category) : 'N/A'; // Use formatted room type
+                    const roomType = offer.offers[0].room ? formatRoomType(offer.offers[0].room.typeEstimated.category) : 'N/A';
                     roomTypeCell.textContent = roomType;
                     roomTypeCell.className = 'roomType';
                     row.appendChild(roomTypeCell);
+            
+                    const pricePerNightCell = document.createElement('td');
+                    const pricePerNight = offer.pricePerNight ? `${offer.offers[0].price.currency} ${offer.pricePerNight}` : 'N/A';
+                    pricePerNightCell.textContent = pricePerNight;
+                    pricePerNightCell.className = 'pricePerNight';
+                    row.appendChild(pricePerNightCell);
 
-                    // Add price cell
                     const priceCell = document.createElement('td');
-                    const price = offer.offers[0].price ? `${offer.offers[0].price.currency} ${offer.offers[0].price.total}` : 'N/A'; // Adjust according to actual data
+                    const price = offer.offers[0].price ? `${offer.offers[0].price.currency} ${offer.offers[0].price.total}` : 'N/A';
                     priceCell.textContent = price;
                     priceCell.className = 'price';
                     row.appendChild(priceCell);
-
-                    // Add distance cell
+            
                     const distanceCell = document.createElement('td');
                     const hotelLat = offer.hotel.latitude;
                     const hotelLon = offer.hotel.longitude;
                     const distance = calculateDistance(locationCoordinates.latitude, locationCoordinates.longitude, hotelLat, hotelLon);
                     distanceCell.textContent = `${distance} km`;
                     row.appendChild(distanceCell);
-
+            
                     resultsTableBody.appendChild(row);
                 });
             } else {
-                resultsTableBody.innerHTML = '<tr><td colspan="5">No results found</td></tr>'; // Updated colspan to 5
+                resultsTableBody.innerHTML = '<tr><td colspan="6">No results found</td></tr>';
             }
+            
 
             document.getElementById('resultsBox').style.display = 'block';
-        })
-        .catch(error => {
-            console.error('Error:', error.message);
+        } else {
             document.getElementById('resultsBox').style.display = 'block';
-            document.querySelector('#results tbody').innerHTML = `<tr><td colspan="5">An error occurred: ${error.message}. Please try again.</td></tr>`; // Updated colspan to 5
-        });
+            resultsTableBody.innerHTML = '<tr><td colspan="5">No hotels found</td></tr>';
+        }
+    } catch (error) {
+        console.error('Error:', error.message);
+        document.getElementById('resultsBox').style.display = 'block';
+        document.querySelector('#results tbody').innerHTML = `<tr><td colspan="5">An error occurred: ${error.message}. Please try again.</td></tr>`;
+    }
 });
