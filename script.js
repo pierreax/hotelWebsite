@@ -8,8 +8,8 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
     const numberOfRooms = document.getElementById('numberOfRooms').value;
     const email = document.getElementById('email').value;
     const limitResults = parseInt(document.getElementById('limitResults').value, 10);
-    const currency = document.getElementById('currency').value; // Get currency
-    const priceLimit = document.getElementById('priceLimit').value; // Get priceLimit
+    const formCurrency = document.getElementById('currency').value; // Get form currency
+    const priceLimit = parseFloat(document.getElementById('priceLimit').value); // Get priceLimit and convert to float
 
     console.log('Form Data:', {
         location,
@@ -18,7 +18,7 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
         adults,
         numberOfRooms,
         email,
-        currency,
+        formCurrency,
         priceLimit
     });
 
@@ -27,11 +27,26 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
     const getHotelOffersUrl = 'https://hotelfunctionapp.azurewebsites.net/api/GetHotelOffers?code=N5p8k9qzS_NgW_h2mHWm_xKOpPHY2Cjb_nh_TCturrA5AzFuCXBy-g%3D%3D';
     const getCoordinatesByLocationUrl = 'https://hotelfunctionapp.azurewebsites.net/api/GetCoordinatesByLocation?code=tyHMhU1QpcgHHWUrwfor8PtyYEzW-keeu2daJnRQqdQxAzFuPgYxzA%3D%3D';
     const sheetyUrl = 'https://hotelfunctionapp.azurewebsites.net/api/SendDataToSheety?code=WB185Wd0xWtqP1DMGlKF1WnHLt8TXwpm8QXDzTlulg6FAzFuFvQ-2A%3D%3D'; // Sheety URL
+    const conversionApiUrl = 'https://v6.exchangerate-api.com/v6/0fdee0a5645b6916b5a20bb3/latest/'; // Your API URL
 
     let accessToken;
     let internalHotelIds = []; // Store hotel IDs for later use
     let locationCoordinates; // Store coordinates of the searched location
     let selectedHotels = []; // Store selected hotel data
+
+    function convertCurrency(amount, fromCurrency, toCurrency) {
+        const url = `${conversionApiUrl}${fromCurrency}`;
+
+        return fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                const rate = data.conversion_rates[toCurrency];
+                if (!rate) {
+                    throw new Error(`No conversion rate available for ${toCurrency}`);
+                }
+                return amount * rate;
+            });
+    }
 
     function getLocationCoordinates(location) {
         const apiUrl = `${getCoordinatesByLocationUrl}&location=${encodeURIComponent(location)}`;
@@ -58,41 +73,12 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
             });
     }
 
-    function formatHotelName(name) {
-        if (!name) return 'N/A';
-        return name
-            .toLowerCase() // Convert the entire name to lowercase
-            .replace(/\b\w/g, char => char.toUpperCase()); // Capitalize the first letter of each word
-    }
-
-    function formatRoomType(type) {
-        // Convert room type to a more readable format
-        if (!type) return 'N/A';
-
-        return type
-            .replace(/_/g, ' ') // Replace underscores with spaces
-            .toLowerCase() // Convert to lowercase
-            .replace(/\b\w/g, char => char.toUpperCase()); // Capitalize first letter of each word
-    }
-
-    function calculateDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371; // Radius of the Earth in kilometers
-        const dLat = (lat2 - lat1) * (Math.PI / 180);
-        const dLon = (lon2 - lon1) * (Math.PI / 180);
-        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                  Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * 
-                  Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        const distance = R * c; // Distance in kilometers
-        return distance.toFixed(2); // Return the distance rounded to 2 decimal places
-    }
-
-    function fetchHotelOffers(validHotelIds) {
+    function fetchHotelOffers(validHotelIds, priceLimit) {
         const limitedHotelIds = validHotelIds.slice(0, limitResults);
-        const params = `hotelIds=${limitedHotelIds.join(',')}&adults=${adults}&checkInDate=${checkInDate}&checkOutDate=${checkOutDate}&roomQuantity=${numberOfRooms}&paymentPolicy=NONE&bestRateOnly=true&currency=${currency}&priceRange=${priceLimit}&includeClosed=false`;
-        const url = `https://hotelfunctionapp.azurewebsites.net/api/GetHotelOffers?code=N5p8k9qzS_NgW_h2mHWm_xKOpPHY2Cjb_nh_TCturrA5AzFuCXBy-g%3D%3D&params=${encodeURIComponent(params)}`;
+        const params = `hotelIds=${limitedHotelIds.join(',')}&adults=${adults}&checkInDate=${checkInDate}&checkOutDate=${checkOutDate}&roomQuantity=${numberOfRooms}&paymentPolicy=NONE&bestRateOnly=true&currency=${formCurrency}&priceRange=-${priceLimit}&includeClosed=false`; 
+        const url = `${getHotelOffersUrl}&params=${encodeURIComponent(params)}`;
     
-        console.log('Fetching hotel offers with URL:', url);
+        console.log('Fetching hotel offers with params:', params);
     
         return fetch(url, {
             headers: {
@@ -115,9 +101,22 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
             }
         });
     }
-    
-    
-    
+
+    function convertPricesToFormCurrency(hotelOffers, originalCurrency) {
+        return Promise.all(hotelOffers.map(offer => {
+            const price = offer.offers[0].price.total;
+            if (originalCurrency !== formCurrency) {
+                return convertCurrency(price, originalCurrency, formCurrency)
+                    .then(convertedPrice => {
+                        offer.offers[0].price.total = convertedPrice.toFixed(2); // Update with converted price
+                        offer.offers[0].price.currency = formCurrency; // Update currency
+                        return offer;
+                    });
+            } else {
+                return offer; // No conversion needed if currency matches
+            }
+        }));
+    }
 
     function submitToSheety(formData, formattedData) {
         const data = {
@@ -163,6 +162,39 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
         }
     }
 
+    function formatHotelName(name) {
+        return name
+            .toLowerCase()
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    }
+
+    function formatRoomType(roomType) {
+        return roomType
+            .toUpperCase()            // Convert the whole string to uppercase
+            .replace(/_/g, ' ')       // Replace underscores with spaces
+            .toLowerCase()            // Convert the whole string to lowercase
+            .split(' ')               // Split the string into words
+            .map(word =>              // Capitalize the first letter of each word
+                word.charAt(0).toUpperCase() + word.slice(1)
+            )
+            .join(' ');               // Join the words back together with a space
+    }
+    
+
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; // Radius of the Earth in km
+        const dLat = (lat2 - lat1) * (Math.PI / 180);
+        const dLon = (lon2 - lon1) * (Math.PI / 180);
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                  Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+                  Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const distance = R * c;
+        return distance.toFixed(2); // Distance in km
+    }
+
     document.getElementById('submitToSheet').addEventListener('click', function() {
         const formData = {
             location,
@@ -171,52 +203,33 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
             adults,
             numberOfRooms,
             email,
-            currency, // Include currency
-            priceLimit // Include priceLimit
+            currency: formCurrency,
+            priceLimit
         };
 
-        if (selectedHotels.length === 0) {
-            alert('No hotels selected.');
-            return;
-        }
-
-        // Prepare the data for Sheety submission
         const formattedData = {
-            hotel: selectedHotels.map(hotel => hotel.hotel).join(','),
-            hotelId: selectedHotels.map(hotel => hotel.hotelId).join(','),
-            roomType: selectedHotels.map(hotel => hotel.roomType).join(','),
-            price: selectedHotels.map(hotel => hotel.price).join(',')
+            selectedHotels
         };
 
         submitToSheety(formData, formattedData)
             .then(result => {
                 if (result) {
-                    alert('Data submitted successfully!');
-                } else {
-                    alert('Failed to submit data.');
+                    alert('Data successfully sent to Sheety.');
                 }
             });
     });
 
-    // Adding event listener to handle checkbox changes
-    document.querySelector('#results').addEventListener('change', function(event) {
-        if (event.target.type === 'checkbox') {
-            handleCheckboxChange.call(event.target);
-        }
+    document.querySelectorAll('#results input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', handleCheckboxChange);
     });
 
     fetch(getAccessTokenUrl)
         .then(response => response.json())
         .then(tokenData => {
-            if (!tokenData.access_token) {
-                throw new Error('Access token not found in response');
-            }
             accessToken = tokenData.access_token;
-
             return getLocationCoordinates(location);
         })
         .then(coords => {
-            // Ensure `coords` has latitude and longitude
             if (!coords || !coords.latitude || !coords.longitude) {
                 throw new Error('Invalid coordinates received');
             }
@@ -238,18 +251,27 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
             if (hotelsData && hotelsData.data && hotelsData.data.length > 0) {
                 internalHotelIds = hotelsData.data.map(hotel => hotel.hotelId); // Store hotel IDs for later use
                 let hotelIds = internalHotelIds.slice(0, limitResults); // Limit hotel IDs for fetching offers
-                return fetchHotelOffers(hotelIds);
+                
+                // Fetch hotel offers
+                return fetchHotelOffers(hotelIds, priceLimit);
             } else {
                 document.getElementById('resultsBox').style.display = 'block';
                 resultsTableBody.innerHTML = '<tr><td colspan="5">No hotels found</td></tr>'; // Updated colspan to 5
             }
         })
         .then(data => {
+            // Extract the original currency from the response
+            const originalCurrency = data.data[0]?.offers[0]?.price?.currency || formCurrency;
+
+            // Convert prices to form currency
+            return convertPricesToFormCurrency(data.data, originalCurrency);
+        })
+        .then(data => {
             const resultsTableBody = document.querySelector('#results tbody');
             resultsTableBody.innerHTML = '';
 
-            if (data.data && data.data.length > 0) {
-                data.data.forEach(offer => {
+            if (data && data.length > 0) {
+                data.forEach(offer => {
                     const row = document.createElement('tr');
 
                     // Add hidden hotelId cell
