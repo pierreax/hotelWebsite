@@ -5,9 +5,11 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
     const checkInDate = document.getElementById('checkInDate').value;
     const checkOutDate = document.getElementById('checkOutDate').value;
     const adults = document.getElementById('adults').value;
-    const numberOfRooms = document.getElementById('numberOfRooms').value; // New field for number of rooms
-    const email = document.getElementById('email').value; // New field for email address
+    const numberOfRooms = document.getElementById('numberOfRooms').value;
+    const email = document.getElementById('email').value;
     const limitResults = parseInt(document.getElementById('limitResults').value, 10);
+    const currency = document.getElementById('currency').value; // Get currency
+    const priceLimit = document.getElementById('priceLimit').value; // Get priceLimit
 
     console.log('Form Data:', {
         location,
@@ -15,17 +17,21 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
         checkOutDate,
         adults,
         numberOfRooms,
-        email
+        email,
+        currency,
+        priceLimit
     });
 
     const getAccessTokenUrl = 'https://hotelfunctionapp.azurewebsites.net/api/GetAmadeusAccessToken?code=8-Ok9mpy3X22aWVQSXBs_djXz57bJvh23XJAPuY-yH9jAzFu8nDFaA%3D%3D';
     const getHotelsByCoordinatesUrl = 'https://hotelfunctionapp.azurewebsites.net/api/GetHotelsByCoordinates?code=_9_S3ATWEtYncsW6pzX2gKatTmRWbkHKc9O2GsD-74BqAzFupvm9kA%3D%3D';
     const getHotelOffersUrl = 'https://hotelfunctionapp.azurewebsites.net/api/GetHotelOffers?code=N5p8k9qzS_NgW_h2mHWm_xKOpPHY2Cjb_nh_TCturrA5AzFuCXBy-g%3D%3D';
     const getCoordinatesByLocationUrl = 'https://hotelfunctionapp.azurewebsites.net/api/GetCoordinatesByLocation?code=tyHMhU1QpcgHHWUrwfor8PtyYEzW-keeu2daJnRQqdQxAzFuPgYxzA%3D%3D';
+    const sheetyUrl = 'https://hotelfunctionapp.azurewebsites.net/api/SendDataToSheety?code=WB185Wd0xWtqP1DMGlKF1WnHLt8TXwpm8QXDzTlulg6FAzFuFvQ-2A%3D%3D'; // Sheety URL
 
     let accessToken;
     let internalHotelIds = []; // Store hotel IDs for later use
     let locationCoordinates; // Store coordinates of the searched location
+    let selectedHotels = []; // Store selected hotel data
 
     function getLocationCoordinates(location) {
         const apiUrl = `${getCoordinatesByLocationUrl}&location=${encodeURIComponent(location)}`;
@@ -83,10 +89,11 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
 
     function fetchHotelOffers(validHotelIds) {
         const limitedHotelIds = validHotelIds.slice(0, limitResults);
-        const url = `${getHotelOffersUrl}&hotelIds=${limitedHotelIds.join(',')}&adults=${adults}&checkInDate=${checkInDate}&checkOutDate=${checkOutDate}&roomQuantity=${numberOfRooms}&paymentPolicy=NONE&bestRateOnly=true`;
-
+        const params = `hotelIds=${limitedHotelIds.join(',')}&adults=${adults}&checkInDate=${checkInDate}&checkOutDate=${checkOutDate}&roomQuantity=${numberOfRooms}&paymentPolicy=NONE&bestRateOnly=true&currency=${currency}&priceRange=${priceLimit}&includeClosed=false`;
+        const url = `https://hotelfunctionapp.azurewebsites.net/api/GetHotelOffers?code=N5p8k9qzS_NgW_h2mHWm_xKOpPHY2Cjb_nh_TCturrA5AzFuCXBy-g%3D%3D&params=${encodeURIComponent(params)}`;
+    
         console.log('Fetching hotel offers with URL:', url);
-
+    
         return fetch(url, {
             headers: {
                 'Authorization': `Bearer ${accessToken}`
@@ -97,7 +104,7 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
             try {
                 const response = JSON.parse(text);
                 console.log('Hotel offers response:', response);
-
+    
                 if (response.errors) {
                     const errorDetails = response.errors.map(err => `Code: ${err.code}, Detail: ${err.detail}`).join('; ');
                     throw new Error(`Failed to fetch hotel offers: ${errorDetails}`);
@@ -108,6 +115,95 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
             }
         });
     }
+    
+    
+    
+
+    function submitToSheety(formData, formattedData) {
+        const data = {
+            ...formData,
+            ...formattedData
+        };
+
+        return fetch(sheetyUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            console.log('Sheety response:', result);
+            return result;
+        })
+        .catch(error => {
+            console.error('Error sending data to Sheety:', error.message);
+        });
+    }
+
+    function handleCheckboxChange() {
+        const checkboxes = document.querySelectorAll('#results tbody input[type="checkbox"]');
+        const checkedCheckboxes = Array.from(checkboxes).filter(checkbox => checkbox.checked);
+
+        if (checkedCheckboxes.length > 3) {
+            alert('You can only select up to 3 hotels.');
+            this.checked = false; // Uncheck the box if the limit is exceeded
+        } else {
+            // Update selectedHotels with selected data
+            selectedHotels = checkedCheckboxes.map(checkbox => {
+                const row = checkbox.closest('tr');
+                return {
+                    hotel: row.querySelector('.hotel').textContent,
+                    hotelId: row.querySelector('.hiddenHotelId').textContent,
+                    roomType: row.querySelector('.roomType').textContent,
+                    price: row.querySelector('.price').textContent
+                };
+            });
+        }
+    }
+
+    document.getElementById('submitToSheet').addEventListener('click', function() {
+        const formData = {
+            location,
+            checkInDate,
+            checkOutDate,
+            adults,
+            numberOfRooms,
+            email,
+            currency, // Include currency
+            priceLimit // Include priceLimit
+        };
+
+        if (selectedHotels.length === 0) {
+            alert('No hotels selected.');
+            return;
+        }
+
+        // Prepare the data for Sheety submission
+        const formattedData = {
+            hotel: selectedHotels.map(hotel => hotel.hotel).join(','),
+            hotelId: selectedHotels.map(hotel => hotel.hotelId).join(','),
+            roomType: selectedHotels.map(hotel => hotel.roomType).join(','),
+            price: selectedHotels.map(hotel => hotel.price).join(',')
+        };
+
+        submitToSheety(formData, formattedData)
+            .then(result => {
+                if (result) {
+                    alert('Data submitted successfully!');
+                } else {
+                    alert('Failed to submit data.');
+                }
+            });
+    });
+
+    // Adding event listener to handle checkbox changes
+    document.querySelector('#results').addEventListener('change', function(event) {
+        if (event.target.type === 'checkbox') {
+            handleCheckboxChange.call(event.target);
+        }
+    });
 
     fetch(getAccessTokenUrl)
         .then(response => response.json())
@@ -145,7 +241,7 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
                 return fetchHotelOffers(hotelIds);
             } else {
                 document.getElementById('resultsBox').style.display = 'block';
-                resultsTableBody.innerHTML = '<tr><td colspan="4">No hotels found</td></tr>'; // Updated colspan to 4
+                resultsTableBody.innerHTML = '<tr><td colspan="5">No hotels found</td></tr>'; // Updated colspan to 5
             }
         })
         .then(data => {
@@ -156,21 +252,39 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
                 data.data.forEach(offer => {
                     const row = document.createElement('tr');
 
+                    // Add hidden hotelId cell
+                    const hiddenIdCell = document.createElement('td');
+                    hiddenIdCell.className = 'hiddenHotelId';
+                    hiddenIdCell.textContent = offer.hotel.hotelId;
+                    hiddenIdCell.style.display = 'none'; // Hide the cell
+                    row.appendChild(hiddenIdCell);
+
+                    // Add checkbox cell
+                    const checkboxCell = document.createElement('td');
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.className = 'select-checkbox';
+                    checkboxCell.appendChild(checkbox);
+                    row.appendChild(checkboxCell);
+
                     // Add hotel name cell
                     const nameCell = document.createElement('td');
                     nameCell.textContent = formatHotelName(offer.hotel.name) || 'N/A'; // Format hotel name
+                    nameCell.className = 'hotel';
                     row.appendChild(nameCell);
 
                     // Add room type cell
                     const roomTypeCell = document.createElement('td');
                     const roomType = offer.offers[0].room ? formatRoomType(offer.offers[0].room.typeEstimated.category) : 'N/A'; // Use formatted room type
                     roomTypeCell.textContent = roomType;
+                    roomTypeCell.className = 'roomType';
                     row.appendChild(roomTypeCell);
 
                     // Add price cell
                     const priceCell = document.createElement('td');
                     const price = offer.offers[0].price ? `${offer.offers[0].price.currency} ${offer.offers[0].price.total}` : 'N/A'; // Adjust according to actual data
                     priceCell.textContent = price;
+                    priceCell.className = 'price';
                     row.appendChild(priceCell);
 
                     // Add distance cell
@@ -184,7 +298,7 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
                     resultsTableBody.appendChild(row);
                 });
             } else {
-                resultsTableBody.innerHTML = '<tr><td colspan="4">No results found</td></tr>'; // Updated colspan to 4
+                resultsTableBody.innerHTML = '<tr><td colspan="5">No results found</td></tr>'; // Updated colspan to 5
             }
 
             document.getElementById('resultsBox').style.display = 'block';
@@ -192,6 +306,6 @@ document.getElementById('searchForm').addEventListener('submit', function(event)
         .catch(error => {
             console.error('Error:', error.message);
             document.getElementById('resultsBox').style.display = 'block';
-            document.querySelector('#results tbody').innerHTML = `<tr><td colspan="4">An error occurred: ${error.message}. Please try again.</td></tr>`; // Updated colspan to 4
+            document.querySelector('#results tbody').innerHTML = `<tr><td colspan="5">An error occurred: ${error.message}. Please try again.</td></tr>`; // Updated colspan to 5
         });
 });

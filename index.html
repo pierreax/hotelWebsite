@@ -11,52 +11,70 @@
         <h1>Hotel Search</h1>
         <form id="searchForm">
             <div class="input-wrapper">
-                <input type="text" id="location" name="location" value="New York" required>
-                <label for="location">Destination</label>
+                <input type="text" id="location" name="location" value="Oslo" required>
+                <label for="location">Destination:</label>
             </div>
-        
+
             <div class="input-wrapper">
                 <input type="date" id="checkInDate" name="checkInDate" value="2024-08-01" required>
-                <label for="checkInDate">Check-In Date</label>
+                <label for="checkInDate">Check-In Date:</label>
             </div>
-        
+
             <div class="input-wrapper">
                 <input type="date" id="checkOutDate" name="checkOutDate" value="2024-08-07" required>
-                <label for="checkOutDate">Check-Out Date</label>
+                <label for="checkOutDate">Check-Out Date:</label>
             </div>
-        
+
             <div class="input-group">
                 <div class="input-wrapper">
                     <input type="number" id="adults" name="adults" min="1" value="2" required>
-                    <label for="adults">Adults</label>
+                    <label for="adults">Adults:</label>
                 </div>
+
+
                 <div class="input-wrapper">
                     <input type="number" id="numberOfRooms" name="numberOfRooms" min="1" value="1" required>
-                    <label for="numberOfRooms">Rooms</label>
+                    <label for="numberOfRooms">Rooms:</label>
                 </div>
             </div>
-        
-            <div class="input-wrapper">
-                <input type="email" id="email" name="email" value="example@example.com" required>
-                <label for="email">Email Address</label>
+
+            <div class="input-group">
+                <div class="input-wrapper">
+                    <input type="number" id="priceLimit" name="priceLimit" min="0" value="3000" required>
+                    <label for="priceLimit">Price Limit:</label>
+                </div>
+                
+                <div class="input-wrapper">
+                    <input type="text" id="currency" name="currency" value="NOK" required>
+                    <label for="currency">Currency:</label>
+                </div>
             </div>
-        
+            
+
+            <div class="input-wrapper">
+                <input type="email" id="email" name="email" value="pierre@robotize.no" required>
+                <label for="email">Email Address:</label>
+            </div>
+
             <div class="input-wrapper">
                 <input type="number" id="limitResults" name="limitResults" min="1" value="10">
-                <label for="limitResults">Limit Results</label>
+                <label for="limitResults">Limit Results:</label>
             </div>
-        
+
             <button type="submit">Search</button>
+            <button type="button" id="submitToSheet">Submit</button> <!-- New Submit Button -->
         </form>
-        
+
         <div id="resultsBox" style="display: none;">
             <table id="results">
                 <thead>
                     <tr>
+                        <th>Select</th>
                         <th>Hotel</th>
                         <th>Room Type</th>
                         <th>Price (per room)</th>
-                        <th>Distance to searched location</th>                      
+                        <th>Distance to searched location</th>
+                        <th style="display: none;">Hotel ID</th> <!-- Hidden column -->                
                     </tr>
                 </thead>
                 <tbody>
