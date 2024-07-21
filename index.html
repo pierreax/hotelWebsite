@@ -3,27 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hotel Search</title>
+    <title>Robotize Hotels</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 </head>
 <body>
     <div class="container">
-        <h1>Hotel Search</h1>
+        <h1>Hotel Price Tracker</h1>
         <form id="searchForm">
+            <!-- Loader animation -->
+            <div class="loader"></div>
+
             <div class="input-wrapper">
-                <input type="text" id="location" name="location" value="Oslo" required>
-                <label for="location">Destination:</label>
+                <input type="text" id="location" name="location" placeholder="Where do you want to go?" required>
+                <!--<label for="location">Destination:</label> Hide until we see it is needed-->
             </div>
 
             <div class="input-wrapper">
-                <input type="date" id="checkInDate" name="checkInDate" value="2024-08-01" required>
-                <label for="checkInDate">Check-In Date:</label>
-            </div>
-
-            <div class="input-wrapper">
-                <input type="date" id="checkOutDate" name="checkOutDate" value="2024-08-07" required>
-                <label for="checkOutDate">Check-Out Date:</label>
-            </div>
+                <input type="text" id="dateRange" name="dateRange" class="datepicker" placeholder="Click here to select your dates" required>
+            </div>            
 
             <div class="input-group">
                 <div class="input-wrapper">
@@ -40,7 +39,7 @@
             <div class="input-group">
                 <div class="input-wrapper">
                     <input type="number" id="priceLimit" name="priceLimit" min="0" value="3000" required>
-                    <label for="priceLimit">Price Limit:</label>
+                    <label for="priceLimit">Max price per night:</label>
                 </div>
                 
                 <div class="input-wrapper">
@@ -50,17 +49,17 @@
             </div>
 
             <div class="input-wrapper">
-                <input type="email" id="email" name="email" value="pierre@robotize.no" required>
-                <label for="email">Email Address:</label>
+                <input type="email" id="email" name="email" placeholder="Your email adress" required>
+                <!-- <label for="email">Email Address:</label> Hidden for now-->
             </div>
 
-            <div class="input-wrapper">
-                <input type="number" id="limitResults" name="limitResults" min="1" value="10">
+            <div class="input-wrapper" style="display: none;">
+                <input type="number" id="limitResults" name="limitResults" min="1" value="15">
                 <label for="limitResults">Limit Results:</label>
             </div>
 
-            <button type="submit">Search</button>
-            <button type="button" id="submitToSheet">Submit</button>
+            <button id="searchButton" type="submit">Search</button>
+            <button id="submitToSheet" style="display: none" type="button">Submit</button>
         </form>
 
         <div id="resultsBox" style="display: none;">
@@ -73,7 +72,7 @@
                         <th>Price (per room and night)</th>
                         <th>Price (total)</th>
                         <th>Distance to searched location</th>
-                        <th style="display: none;">Hotel ID</th> <!-- Hidden column -->
+                        <th style="display: none;">Hotel ID</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -82,6 +81,12 @@
             </table>
         </div>
     </div>
+    
+    <!-- jQuery Library -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Flatpickr JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <!-- Your custom JavaScript -->
     <script src="script.js"></script>
 </body>
 </html>
