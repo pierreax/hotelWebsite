@@ -286,12 +286,12 @@ $(document).ready(function() {
         }
 
 
-        // Click event for submit button
         $('#submitToSheet').on('click', async function() {
             console.log('Submitting data to SHEETY');
+        
             // Show the loader before starting the submission
             $('.loader').show();
-            
+        
             const formData = {
                 location,
                 checkInDate,
@@ -302,29 +302,69 @@ $(document).ready(function() {
                 currency: formCurrency,
                 priceLimit
             };
-
+        
             const formattedData = {
                 selectedHotels
             };
-
-            try {
-                const result = await submitToSheety(formData, formattedData);
-                if (result) {
-                    alert('Thank you for your submission, we will keep you updated on the lowest prices for your selection!');
-                    resetForm(); // Reset form and hide results after submission
         
-                    // Wait for 1 seconds before reloading the page
-                    setTimeout(function() {
-                        window.location.reload(); // Reload the page
-                    }, 1000); //
+            try {
+                // Submit to Sheety
+                const sheetyResult = await submitToSheety(formData, formattedData);
+        
+                // Show success alert regardless of email status
+                alert('Thank you for your submission, we will keep you updated on the lowest prices for your selection!');
+        
+                // Reset form and hide results after submission
+                resetForm(); 
+        
+                // Attempt to send email via Azure Function after the user alert
+                try {
+                    const emailResponse = await fetch('https://hotelfunctionapp.azurewebsites.net/api/SendMail?code=M4SsG9-Y-KkKq0tVZR3gL8SzUjkkrvEiZ5--G03OrLjkAzFuQjUgGg%3D%3D', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            subject: "New submission for your Hotel Robot",
+                            body: `Great news, somebody just signed up for your Hotel Robot! Here are the details:<br><br>
+                                Location: ${location}<br>
+                                Check-In Date: ${checkInDate}<br>
+                                Check-Out Date: ${checkOutDate}<br>
+                                Adults: ${adults}<br>
+                                Number of Rooms: ${numberOfRooms}<br>
+                                Email: ${email}<br>
+                                Currency: ${formCurrency}<br>
+                                Price Limit: ${priceLimit}<br><br>
+                                Selected Hotels:<br>
+                                ${formattedData.selectedHotels.length > 0 
+                                    ? formattedData.selectedHotels.map(hotel => 
+                                        `- ${hotel.hotelName} - ${hotel.price}<br>`
+                                    ).join('') 
+                                    : 'No hotels selected'}<br><br>
+                                Thank you!`,
+                            recipient_email: email
+                        })
+                    });
+        
+                    if (!emailResponse.ok) {
+                        console.error('Failed to send email.');
+                    }
+                } catch (emailError) {
+                    console.error('Error during email sending:', emailError.message);
                 }
             } catch (error) {
-                console.error('Error sending data to Sheety:', error.message);
+                console.error('Error during form submission:', error.message);
             } finally {
                 // Hide the loading icon after the submission completes
                 $('.loader').hide();
+
+                // Wait for 1 second before reloading the page
+                setTimeout(function() {
+                    window.location.reload(); // Reload the page
+                }, 1000);
             }
         });
+        
 
         // Attach event listener to all existing checkboxes
         $('#results').on('change', 'input[type="checkbox"]', handleCheckboxChange);
