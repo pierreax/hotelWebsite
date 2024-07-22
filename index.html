@@ -51,7 +51,7 @@
             </div>
 
             <div class="input-wrapper">
-                <input type="email" id="email" name="email" placeholder="Your email adress" required>
+                <input type="email" id="email" name="email" placeholder="Your email address" required>
                 <!-- <label for="email">Email Address:</label> Hidden for now-->
             </div>
 
@@ -63,9 +63,12 @@
             <button id="searchButton" type="submit">Search</button>
             <button id="submitToSheet" style="display: none" type="button">Submit</button>
         </form>
+        <div id="noResultsMessage" style="display: none;">
+            <p>No results found. Please try adjusting your search criteria.</p>
+        </div>
 
         <div id="resultsBox" style="display: none;">
-            <table id="results">
+            <table id="results"">
                 <thead>
                     <tr>
                         <th>Select</th>

@@ -22,6 +22,8 @@ $(document).ready(function() {
 
     $('#searchForm').on('submit', async function(event) {
         event.preventDefault();
+        $('#noResultsMessage').hide();
+
 
         // Show the loading icon
         $('.loader').show();
@@ -421,8 +423,7 @@ $(document).ready(function() {
                 
                 $('#resultsBox').show();
             } else {
-                $('#resultsBox').show();
-                resultsTableBody.html('<tr><td colspan="5">No hotels found</td></tr>');
+                $('#noResultsMessage').show();
             }
         } catch (error) {
             console.error('Error:', error.message);

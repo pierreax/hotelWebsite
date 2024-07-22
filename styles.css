@@ -12,6 +12,8 @@
     --slider-bg: #ccc;
     --slider-active-bg: #4CAF50;
     --tableheader-color: #4CAF50;
+    --no-results-bg: #f8d7da;
+    --no-results-text: #721c24;
 }
 
 /* Fonts */
@@ -164,6 +166,18 @@ button:disabled {
 @keyframes spin {
    0% { transform: rotate(0deg); }
    100% { transform: rotate(360deg); }
+}
+
+/* No results message styles */
+#noResultsMessage {
+    text-align: center;
+    font-size: 10px;
+    color: var(--no-results-text);
+    background-color: var(--no-results-bg);
+    padding: 10px;
+    border-radius: 5px;
+    margin: 10px auto;
+    max-width: 600px;
 }
 
 /* Results box styles */
