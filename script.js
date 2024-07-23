@@ -23,6 +23,8 @@ $(document).ready(function() {
     $('#searchForm').on('submit', async function(event) {
         event.preventDefault();
         $('#noResultsMessage').hide();
+        $('#submitText').hide();
+
 
 
         // Show the loading icon
@@ -201,32 +203,24 @@ $(document).ready(function() {
         }
 
         function handleCheckboxChange() {
-            const checkedCheckboxes = $('#results tbody input[type="checkbox"]:checked');
+            console.log('Checkbox changed');
+            const checkedCheckboxes = $('#resultsBox .card input[type="checkbox"]:checked');
+            console.log('Checked checkboxes:', checkedCheckboxes.length);
+            $('#submitToSheet').toggle(checkedCheckboxes.length > 0);
         
-            console.log('Checked Checkboxes Count:', checkedCheckboxes.length);
+            selectedHotels = checkedCheckboxes.map(function() {
+                const card = $(this).closest('.card');
+                return {
+                    hotelId: card.find('.hiddenHotelId').text(),
+                    hotelName: card.find('.hotel-name').text(),
+                    roomType: card.find('.room-type').text(),
+                    pricePerNight: card.find('.price-per-night .amount').text(), // Adjusted to target .amount
+                    price: card.find('.total-price .amount').text() // Adjusted to target .amount
+                };
+            }).get();
+        }
         
-            if (checkedCheckboxes.length > 0) {
-                $('#submitToSheet').show();
-                selectedHotels = checkedCheckboxes.map(function() {
-                    const row = $(this).closest('tr');
-                    const hotelData = {
-                        hotelId: row.find('.hiddenHotelId').text(),
-                        hotelName: row.find('.hotel').text(),
-                        roomType: row.find('.roomType').text(),
-                        pricePerNight: row.find('.pricePerNight').text(),
-                        price: row.find('.price').text(),
-                    };
-                    
-                    // Log each hotel's data
-                    console.log('Selected Hotel Data:', hotelData);
-        
-                    return hotelData;
-                }).get();
-            } else {
-                $('#submitToSheet').hide();
-                selectedHotels = [];
-            }
-        }                
+             
 
         function formatHotelName(hotelName) {
             if (typeof hotelName !== 'string') return 'N/A';
@@ -360,78 +354,119 @@ $(document).ready(function() {
                 // Hide the loading icon after the submission completes
                 $('.loader').hide();
 
-                // Wait for 1 second before reloading the page
-                setTimeout(function() {
-                    window.location.reload(); // Reload the page
-                }, 1000);
+
+                window.location.reload(); // Reload the page
             }
         });
         
 
         // Attach event listener to all existing checkboxes
-        $('#results').on('change', 'input[type="checkbox"]', handleCheckboxChange);
+        $('#resultsBox').on('change', 'input[type="checkbox"]', handleCheckboxChange);
 
         try {
             const tokenResponse = await fetch(getAccessTokenUrl);
             const tokenData = await tokenResponse.json();
             accessToken = tokenData.access_token;
-
+        
             const coords = await getLocationCoordinates(location);
             if (!coords || !coords.latitude || !coords.longitude) {
                 throw new Error('Invalid coordinates received');
             }
             const { latitude, longitude } = coords;
             const getHotelsByCoordinatesUrlWithParams = `${getHotelsByCoordinatesUrl}&latitude=${latitude}&longitude=${longitude}&radius=5&radiusUnit=KM&hotelSource=ALL`;
-
+        
             const hotelsResponse = await fetch(getHotelsByCoordinatesUrlWithParams, {
                 headers: {
                     'Authorization': `Bearer ${accessToken}`
                 }
             });
             const hotelsData = await hotelsResponse.json();
-
-            const resultsTableBody = $('#results tbody');
-            resultsTableBody.empty();
-
+        
+            const resultsContainer = $('#resultsBox'); // Use the results box to hold the cards
+            resultsContainer.empty();
+        
             if (hotelsData && hotelsData.data && hotelsData.data.length > 0) {
                 internalHotelIds = hotelsData.data.map(hotel => hotel.hotelId);
                 const hotelIds = internalHotelIds.slice(0, limitResults);
-
+        
                 const offersData = await fetchHotelOffers(hotelIds);
                 const originalCurrency = offersData.data[0]?.offers[0]?.price?.currency || formCurrency;
                 const convertedOffers = await convertPricesToFormCurrency(offersData.data, originalCurrency);
                 const filteredOffers = filterOffersByPrice(convertedOffers, priceLimit, numberOfNights);
-
+        
                 if (filteredOffers.length > 0) {
                     filteredOffers.forEach(offer => {
-                        const row = $('<tr>');
+                        const card = $('<div>').addClass('card');
 
-                        row.append($('<td>').addClass('hiddenHotelId').text(offer.hotel.hotelId).hide());
-                        row.append($('<td>').append($('<input>').attr('type', 'checkbox').addClass('select-checkbox')));
-                        row.append($('<td>').text(formatHotelName(offer.hotel.name)).addClass('hotel'));
-                        row.append($('<td>').text(offer.offers[0].room ? formatRoomType(offer.offers[0].room.typeEstimated.category) : 'N/A').addClass('roomType'));
-                        row.append($('<td>').text(offer.pricePerNight ? `${offer.offers[0].price.currency} ${offer.pricePerNight}` : 'N/A').addClass('pricePerNight'));
-                        row.append($('<td>').text(offer.offers[0].price ? `${offer.offers[0].price.currency} ${offer.offers[0].price.total}` : 'N/A').addClass('price'));
-                        row.append($('<td>').text(`${calculateDistance(locationCoordinates.latitude, locationCoordinates.longitude, offer.hotel.latitude, offer.hotel.longitude)} km`).addClass('distance'));
+                        // Add hotelId in a hidden element
+                        const hiddenHotelId = $('<div>').addClass('hiddenHotelId').text(offer.hotel.hotelId).hide();
+                        card.append(hiddenHotelId);
+                        
+                        // Card Header with hotel name
+                        const cardHeader = $('<div>').addClass('card-header');
+                        cardHeader.append($('<div>').text(formatHotelName(offer.hotel.name)).addClass('hotel-name'));
+                        
+                        // Add room type below hotel name
+                        const roomType = $('<div>').text(offer.offers[0].room ? formatRoomType(offer.offers[0].room.typeEstimated.category) : 'N/A').addClass('room-type');
+                        cardHeader.append(roomType);
+                        
+                        // Add the distance in a separate container
+                        const distanceContainer = $('<div>').addClass('distance').text(`${calculateDistance(locationCoordinates.latitude, locationCoordinates.longitude, offer.hotel.latitude, offer.hotel.longitude)} km`);
+                        card.append(distanceContainer);
+                        
+                        // Create a single .card-content div for all other information
+                        const cardContent = $('<div>').addClass('card-content');
 
-                        resultsTableBody.append(row);
+                        
+                        // Add price per night
+                        const pricePerNightDiv = $('<div>').addClass('price-per-night');
+                        pricePerNightDiv.append($('<span>').addClass('label').text('Per Night: '));
+                        pricePerNightDiv.append($('<span>').addClass('amount').text(offer.pricePerNight ? `${offer.offers[0].price.currency} ${offer.pricePerNight}` : 'N/A'));
+                        cardContent.append(pricePerNightDiv);
 
-                    });
+                        // Add total price
+                        const totalPriceDiv = $('<div>').addClass('total-price');
+                        totalPriceDiv.append($('<span>').addClass('label').text('Total: '));
+                        totalPriceDiv.append($('<span>').addClass('amount').text(offer.offers[0].price ? `${offer.offers[0].price.currency} ${offer.offers[0].price.total}` : 'N/A'));
+                        cardContent.append(totalPriceDiv);
+
+                        // Create a container for the checkbox and its label
+                        const checkboxContainer = $('<div>').addClass('checkbox-container');
+
+                        // Add the descriptive text
+                        checkboxContainer.append($('<span>').addClass('checkbox-description').text('Add to robot-selection: '));
+
+                        // Add the checkbox
+                        checkboxContainer.append($('<input>').attr('type', 'checkbox').addClass('select-checkbox'));
+
+                        // Add the container to the card content
+                        cardContent.append(checkboxContainer);
+
+                        
+                        // Append the header and content to the card
+                        card.append(cardHeader);
+                        card.append(cardContent);
+                        
+                        // Append the card to the results container
+                        resultsContainer.append(card);
+                    });                
                 } else {
-                    resultsTableBody.html('<tr><td colspan="6">No results found</td></tr>');
+                    resultsContainer.html('<div class="no-results-message">No results found</div>');
                 }
                 
                 $('#resultsBox').show();
+                $('#submitText').show();
+
             } else {
                 $('#noResultsMessage').show();
             }
         } catch (error) {
             console.error('Error:', error.message);
             $('#resultsBox').show();
-            $('#results tbody').html(`<tr><td colspan="5">An error occurred: ${error.message}. Please try again.</td></tr>`);
+            resultsContainer.html('<div class="no-results-message">No results found</div>');
         } finally {
-            // Hide the loading icon
             $('.loader').hide();
         }
+        
     });
 });

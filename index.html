@@ -7,6 +7,45 @@
     <link rel="stylesheet" href="styles.css">
     <!-- Flatpickr CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <!-- Custom Styles for Cards -->
+    <style>
+        .results-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 300px;
+            box-sizing: border-box;
+        }
+        .card-header {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .card-body {
+            margin-top: 0.5rem;
+        }
+        .card-content {
+            margin-bottom: 0.5rem;
+        }
+        .card-content span {
+            font-weight: bold;
+        }
+        .card-checkbox {
+            margin-right: 0.5rem;
+        }
+        /* Mobile responsiveness */
+        @media (max-width: 600px) {
+            .card {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -19,7 +58,6 @@
 
             <div class="input-wrapper">
                 <input type="text" id="location" name="location" placeholder="Where do you want to go?" required>
-                <!--<label for="location">Destination:</label> Hide until we see it is needed-->
             </div>
 
             <div class="input-wrapper">
@@ -52,7 +90,6 @@
 
             <div class="input-wrapper">
                 <input type="email" id="email" name="email" placeholder="Your email address" required>
-                <!-- <label for="email">Email Address:</label> Hidden for now-->
             </div>
 
             <div class="input-wrapper" style="display: none;">
@@ -62,28 +99,19 @@
 
             <button id="searchButton" type="submit">Search</button>
             <button id="submitToSheet" style="display: none" type="button">Submit</button>
+            <div id="submitText" style="display: none;">
+                Check the hotels you want to track, and click submit.
+            </div>
+
+
         </form>
         <div id="noResultsMessage" style="display: none;">
             <p>No results found. Please try adjusting your search criteria.</p>
         </div>
 
+        <!-- Results Container -->
         <div id="resultsBox" style="display: none;">
-            <table id="results"">
-                <thead>
-                    <tr>
-                        <th>Select</th>
-                        <th>Hotel</th>
-                        <th>Room Type</th>
-                        <th>Price (per room and night)</th>
-                        <th>Price (total)</th>
-                        <th>Distance to searched location</th>
-                        <th style="display: none;">Hotel ID</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Results will be populated here -->
-                </tbody>
-            </table>
+            <div id="results" class="results-box"></div>
         </div>
     </div>
     
