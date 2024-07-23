@@ -324,11 +324,6 @@ button:disabled {
         margin-bottom: 15px; /* Reduced space between fields */
     }
 
-    .input-group {
-        flex-direction: column; /* Stack fields vertically on small screens */
-        gap: 0; /* Remove gap between fields in column layout */
-    }
-
     .input-group .input-wrapper {
         margin-bottom: 10px; /* Further reduced space between fields */
     }
@@ -349,12 +344,10 @@ button:disabled {
     .distance,
     .rating {
         font-size: 0.6em; /* Adjusted font size */
-        top: 5px; /* Adjusted positioning */
     }
 
     .checkbox-container {
         font-size: 0.8em; /* Adjusted font size */
-        top: 50px; /* Adjusted positioning */
     }
 
     .checkbox-description {
