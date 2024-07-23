@@ -310,8 +310,32 @@ button:disabled {
 
 /* Mobile-responsive card styles */
 @media (max-width: 600px) {
+    body {
+        margin: 10px; /* Reduced margin for mobile devices */
+    }
+
+    form {
+        max-width: 100%; /* Allow form to use full width */
+        margin: 10px; /* Reduced margin for mobile devices */
+        padding: 10px; /* Adjust padding for better spacing */
+    }
+
+    .input-wrapper {
+        margin-bottom: 15px; /* Reduced space between fields */
+    }
+
+    .input-group {
+        flex-direction: column; /* Stack fields vertically on small screens */
+        gap: 0; /* Remove gap between fields in column layout */
+    }
+
+    .input-group .input-wrapper {
+        margin-bottom: 10px; /* Further reduced space between fields */
+    }
+
     .card {
-        padding: 6px; /* Reduced padding on smaller screens */
+        padding: 10px; /* Adjust padding for better mobile experience */
+        max-width: 100%; /* Allow card to use full width */
     }
 
     .card-header {
@@ -322,7 +346,22 @@ button:disabled {
         font-size: 8px; /* Adjusted font size for readability */
     }
 
-    .card-content span {
-        margin-bottom: 3px; /* Added space between spans in column layout */
+    .distance,
+    .rating {
+        font-size: 0.6em; /* Adjusted font size */
+        top: 5px; /* Adjusted positioning */
+    }
+
+    .checkbox-container {
+        font-size: 0.8em; /* Adjusted font size */
+        top: 50px; /* Adjusted positioning */
+    }
+
+    .checkbox-description {
+        font-size: 8px; /* Adjust font size as needed */
+    }
+
+    #submitText {
+        font-size: 10px; /* Adjust font size as needed */
     }
 }
