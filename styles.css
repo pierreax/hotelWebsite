@@ -233,7 +233,18 @@ button:disabled {
     position: absolute;
     top: 10px; /* Position the distance container at the top */
     right: 10px; /* Align it to the right edge of the card */
-    background: rgba(255, 255, 255, 0.8); /* Optional: background for better visibility */
+    background: var(--accent-color); /* Optional: background for better visibility */
+    padding: 5px;
+    border-radius: 5px;
+        font-size: 0.6em; /* Smaller text for distance */
+    color: var(--text-color);
+}
+
+.rating {
+    position: absolute;
+    top: 40px; /* Position the distance container at the top */
+    right: 10px; /* Align it to the right edge of the card */
+    background: var(--button-bg); /* Optional: background for better visibility */
     padding: 5px;
     border-radius: 5px;
         font-size: 0.6em; /* Smaller text for distance */

@@ -70,6 +70,7 @@ $(document).ready(function() {
         const getHotelsByCoordinatesUrl = 'https://hotelfunctionapp.azurewebsites.net/api/GetHotelsByCoordinates?code=_9_S3ATWEtYncsW6pzX2gKatTmRWbkHKc9O2GsD-74BqAzFupvm9kA%3D%3D';
         const getHotelOffersUrl = 'https://hotelfunctionapp.azurewebsites.net/api/GetHotelOffers?code=N5p8k9qzS_NgW_h2mHWm_xKOpPHY2Cjb_nh_TCturrA5AzFuCXBy-g%3D%3D';
         const getCoordinatesByLocationUrl = 'https://hotelfunctionapp.azurewebsites.net/api/GetCoordinatesByLocation?code=tyHMhU1QpcgHHWUrwfor8PtyYEzW-keeu2daJnRQqdQxAzFuPgYxzA%3D%3D';
+        const getHotelRatingsUrl = 'https://hotelfunctionapp.azurewebsites.net/api/GetHotelRatings?code=1bjUpXl3Bd_6uRMmmd3uZQfs6vUMwfe-ssZ-YPgDuecVAzFuTysohw%3D%3D';
         const sheetyUrl = 'https://hotelfunctionapp.azurewebsites.net/api/SendDataToSheety?code=WB185Wd0xWtqP1DMGlKF1WnHLt8TXwpm8QXDzTlulg6FAzFuFvQ-2A%3D%3D';
         const conversionApiUrl = 'https://v6.exchangerate-api.com/v6/0fdee0a5645b6916b5a20bb3/latest/';
 
@@ -101,6 +102,92 @@ $(document).ready(function() {
                 throw new Error(`Response is not valid JSON: ${text}`);
             }
         }
+
+        async function fetchHotelRatings(validHotelIds) {
+            // Ensure that the validHotelIds array is not empty
+            if (!Array.isArray(validHotelIds) || validHotelIds.length === 0) {
+                throw new Error('No hotel IDs provided.');
+            }
+        
+            // Function to fetch ratings for a chunk of hotel IDs
+            async function fetchRatingsForChunk(chunk) {
+                // Construct the query parameters
+                const params = `hotelIds=${chunk.join(',')}`;
+                
+                // Construct the full URL with encoded query parameters
+                const url = `${getHotelRatingsUrl}&params=${encodeURIComponent(params)}`;
+                console.log('Fetching hotel ratings with params:', params);
+        
+                try {
+                    // Make the API request
+                    const response = await fetch(url, {
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`
+                        }
+                    });
+        
+                    // Check if the response status is OK
+                    if (!response.ok) {
+                        throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
+                    }
+        
+                    // Parse the response as text
+                    const text = await response.text();
+        
+                    // Try parsing the response data as JSON
+                    try {
+                        const responseData = JSON.parse(text);
+                        console.log('Hotel ratings response:', responseData);
+        
+                        // Check for API-specific error structure
+                        if (responseData.errors) {
+                            const errorDetails = responseData.errors.map(err => `Code: ${err.code}, Detail: ${err.detail}`).join('; ');
+                            throw new Error(`Failed to fetch hotel ratings: ${errorDetails}`);
+                        }
+        
+                        return responseData; // Return the parsed data
+        
+                    } catch (jsonError) {
+                        throw new Error(`Failed to parse JSON response: ${text}`);
+                    }
+        
+                } catch (error) {
+                    // Log and rethrow the error for further handling
+                    console.error('Error fetching hotel ratings:', error.message);
+                    throw error; // Re-throwing the error to be handled by the caller
+                }
+            }
+        
+            // Function to chunk an array into smaller arrays of a specified size
+            function chunkArray(array, size) {
+                const result = [];
+                for (let i = 0; i < array.length; i += size) {
+                    result.push(array.slice(i, i + size));
+                }
+                return result;
+            }
+        
+            // Create chunks of hotel IDs (max 3 per chunk)
+            const chunks = chunkArray(validHotelIds, 3);
+        
+            // Array to hold all responses
+            const allResponses = [];
+        
+            // Fetch ratings for each chunk and aggregate results
+            for (const chunk of chunks) {
+                const ratings = await fetchRatingsForChunk(chunk);
+                allResponses.push(ratings);
+            }
+        
+            // Aggregate all responses into a single object or array
+            const aggregatedResults = allResponses.flatMap(response => response.data || []);
+            console.log(aggregatedResults);
+            return { data: aggregatedResults };
+        }
+        
+        
+
+        
 
         async function fetchHotelOffers(validHotelIds) {
             const limitedHotelIds = validHotelIds.slice(0, limitResults);
@@ -416,21 +503,31 @@ $(document).ready(function() {
             const resultsContainer = $('#resultsBox'); // Use the results box to hold the cards
             resultsContainer.empty();
         
+        
             if (hotelsData && hotelsData.data && hotelsData.data.length > 0) {
                 internalHotelIds = hotelsData.data.map(hotel => hotel.hotelId);
                 const hotelIds = internalHotelIds.slice(0, limitResults);
-        
+            
                 const offersData = await fetchHotelOffers(hotelIds);
+                const ratingsData = await fetchHotelRatings(hotelIds);
+                console.log(ratingsData);
+            
+                // Map ratings data by hotelId for quick lookup
+                const ratingsMap = {};
+                ratingsData.data.forEach(rating => {
+                    ratingsMap[rating.hotelId] = rating.overallRating;
+                });
+            
                 const originalCurrency = offersData.data[0]?.offers[0]?.price?.currency || formCurrency;
                 const convertedOffers = await convertPricesToFormCurrency(offersData.data, originalCurrency);
-        
+            
                 if (convertedOffers.length > 0) {
                     convertedOffers.forEach(offer => {
                         const totalPrice = parseFloat(offer.offers[0].price.total); // Total price for the stay
                         const pricePerNight = numberOfNights > 0 ? (totalPrice / numberOfNights).toFixed(2) : 'N/A'; // Price per night
-
+            
                         const card = $('<div>').addClass('card');
-
+            
                         // Add hotelId in a hidden element
                         const hiddenHotelId = $('<div>').addClass('hiddenHotelId').text(offer.hotel.hotelId).hide();
                         card.append(hiddenHotelId);
@@ -446,37 +543,44 @@ $(document).ready(function() {
                         // Add the distance in a separate container
                         const distanceContainer = $('<div>').addClass('distance').text(`${calculateDistance(locationCoordinates.latitude, locationCoordinates.longitude, offer.hotel.latitude, offer.hotel.longitude)} km`);
                         card.append(distanceContainer);
+
+                        // Add Rating if available
+                        const rating = ratingsMap[offer.hotel.hotelId];
+                        if (rating) {
+                            const ratingDiv = $('<div>').addClass('rating');
+                            ratingDiv.append($('<span>').addClass('label').text('Rating: '));
+                            ratingDiv.append($('<span>').addClass('rating-value').text(rating)); // Append the rating
+                            card.append(ratingDiv);
+                        }
                         
                         // Create a single .card-content div for all other information
                         const cardContent = $('<div>').addClass('card-content');
-
-                        
+            
                         // Add price per night
                         const pricePerNightDiv = $('<div>').addClass('price-per-night');
                         pricePerNightDiv.append($('<span>').addClass('label').text('Per Night: '));
                         pricePerNightDiv.append($('<span>').addClass('amount').text(pricePerNight)); // Correctly append pricePerNight
                         cardContent.append(pricePerNightDiv);
-
+            
                         // Add total price
                         const totalPriceDiv = $('<div>').addClass('total-price');
                         totalPriceDiv.append($('<span>').addClass('label').text('Total: '));
                         totalPriceDiv.append($('<span>').addClass('amount').text(totalPrice.toFixed(2))); // Correctly append totalPrice
                         cardContent.append(totalPriceDiv);
-
-
+        
+            
                         // Create a container for the checkbox and its label
                         const checkboxContainer = $('<div>').addClass('checkbox-container');
-
+            
                         // Add the descriptive text
                         checkboxContainer.append($('<span>').addClass('checkbox-description').text('Add to robot-selection: '));
-
+            
                         // Add the checkbox
                         checkboxContainer.append($('<input>').attr('type', 'checkbox').addClass('select-checkbox'));
-
+            
                         // Add the container to the card content
                         cardContent.append(checkboxContainer);
-
-                        
+            
                         // Append the header and content to the card
                         card.append(cardHeader);
                         card.append(cardContent);
@@ -487,11 +591,11 @@ $(document).ready(function() {
                 } else {
                     resultsContainer.html('<div class="no-results-message">No results found</div>');
                 }
-                
+            
                 $('#resultsBox').show();
                 $('#submitText').show();
-
-            } else {
+            }            
+             else {
                 $('#noResultsMessage').show();
             }
         } catch (error) {
