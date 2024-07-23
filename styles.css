@@ -227,6 +227,7 @@ button:disabled {
 
 .room-type {
     color: #666; /* Optional: lighter color for smaller text */
+    margin-bottom: 5px;
 }
 
 .distance {
@@ -236,7 +237,7 @@ button:disabled {
     background: var(--accent-color); /* Optional: background for better visibility */
     padding: 5px;
     border-radius: 5px;
-        font-size: 0.6em; /* Smaller text for distance */
+        font-size: 0.5em; /* Smaller text for distance */
     color: var(--text-color);
 }
 
@@ -247,7 +248,7 @@ button:disabled {
     background: var(--button-bg); /* Optional: background for better visibility */
     padding: 5px;
     border-radius: 5px;
-        font-size: 0.6em; /* Smaller text for distance */
+        font-size: 0.5em; /* Smaller text for rating */
     color: var(--text-color);
 }
 
@@ -255,19 +256,32 @@ button:disabled {
     font-size: 10px; /* Adjusted font size */
 }
 
-.select-checkbox {
-    width: auto;
-}
 
 .checkbox-container {
+    position: absolute;
+    top: 65px; /* Position the checkbox container */
+    right: 10px; /* Align it to the right edge of the card */
+    padding: 5px;
+    border-radius: 5px;
+    font-size: 0.6em; /* Smaller text for distance */
+    color: var(--text-color);
     display: flex;
     align-items: center;
 }
 
+/* Adjusted to move the description up */
 .checkbox-description {
-    margin-right: 10px; /* Adjust spacing as needed */
     color: green;
+    margin-bottom: 0; /* Reset margin */
+    position: relative; /* Relative positioning to move up */
+    top: -2px; /* Adjust as needed to move the description up */
 }
+
+.select-checkbox {
+    width: auto;
+    margin-top: 0; /* Adjust spacing if necessary */
+}
+
 
 /* Help text styling */
 #submitText {

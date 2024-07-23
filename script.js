@@ -552,6 +552,18 @@ $(document).ready(function() {
                             ratingDiv.append($('<span>').addClass('rating-value').text(rating)); // Append the rating
                             card.append(ratingDiv);
                         }
+
+                        // Create a container for the checkbox and its label
+                        const checkboxContainer = $('<div>').addClass('checkbox-container');
+            
+                        // Add the descriptive text
+                        checkboxContainer.append($('<span>').addClass('checkbox-description').text('Add to robot-selection: '));
+            
+                        // Add the checkbox
+                        checkboxContainer.append($('<input>').attr('type', 'checkbox').addClass('select-checkbox'));
+            
+                        // Add the container to the card content
+                        card.append(checkboxContainer);
                         
                         // Create a single .card-content div for all other information
                         const cardContent = $('<div>').addClass('card-content');
@@ -568,18 +580,6 @@ $(document).ready(function() {
                         totalPriceDiv.append($('<span>').addClass('amount').text(totalPrice.toFixed(2))); // Correctly append totalPrice
                         cardContent.append(totalPriceDiv);
         
-            
-                        // Create a container for the checkbox and its label
-                        const checkboxContainer = $('<div>').addClass('checkbox-container');
-            
-                        // Add the descriptive text
-                        checkboxContainer.append($('<span>').addClass('checkbox-description').text('Add to robot-selection: '));
-            
-                        // Add the checkbox
-                        checkboxContainer.append($('<input>').attr('type', 'checkbox').addClass('select-checkbox'));
-            
-                        // Add the container to the card content
-                        cardContent.append(checkboxContainer);
             
                         // Append the header and content to the card
                         card.append(cardHeader);
