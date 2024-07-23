@@ -275,6 +275,8 @@ button:disabled {
     margin-bottom: 0; /* Reset margin */
     position: relative; /* Relative positioning to move up */
     top: -2px; /* Adjust as needed to move the description up */
+    font-weight: bold; /* Optional: Style for label */
+    font-size: 10px; /* Adjust font size as needed */
 }
 
 .select-checkbox {

@@ -286,6 +286,7 @@ $(document).ready(function() {
             }
         }
 
+        // Function to handle checkbox change
         function handleCheckboxChange() {
             console.log('Checkbox changed');
         
@@ -324,6 +325,7 @@ $(document).ready(function() {
                 };
             }).get();
         }
+
         
         
              
@@ -476,9 +478,20 @@ $(document).ready(function() {
             }
         });
         
+        function toggleCheckbox(event) {
+            event.stopPropagation(); // Prevents the click event from bubbling up
+            const checkbox = $(this).find('input[type="checkbox"]');
+            checkbox.prop('checked', !checkbox.prop('checked')).trigger('change'); // Toggle checkbox state and trigger change
+            handleCheckboxChange();
+        }
+        
+        
+
+        // Attach event listener to the checkbox-container
+        $('#resultsBox').on('click', '.checkbox-container', toggleCheckbox);
 
         // Attach event listener to all existing checkboxes
-        $('#resultsBox').on('change', 'input[type="checkbox"]', handleCheckboxChange);
+        $('#resultsBox').on('click', '.select-checkbox', toggleCheckbox);
 
         try {
             const tokenResponse = await fetch(getAccessTokenUrl);
