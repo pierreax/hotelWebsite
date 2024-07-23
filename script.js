@@ -38,7 +38,6 @@ $(document).ready(function() {
         const email = $('#email').val();
         const limitResults = parseInt($('#limitResults').val(), 10);
         const formCurrency = $('#currency').val();
-        const priceLimit = parseFloat($('#priceLimit').val());
 
         // Convert selected dates to required format
         const checkInDate = dateRange[0] ? dateRange[0].toISOString().split('T')[0] : '';
@@ -63,7 +62,6 @@ $(document).ready(function() {
             numberOfRooms,
             email,
             formCurrency,
-            priceLimit
         });
 
         // API URLs
@@ -92,12 +90,10 @@ $(document).ready(function() {
 
         async function getLocationCoordinates(location) {
             const apiUrl = `${getCoordinatesByLocationUrl}&location=${encodeURIComponent(location)}`;
-            console.log('Coordinates URL:', apiUrl);
             const response = await fetch(apiUrl);
             const text = await response.text();
             try {
                 const data = JSON.parse(text);
-                console.log('Coordinates Data:', data);
                 locationCoordinates = data;
                 return data;
             } catch (err) {
@@ -141,6 +137,7 @@ $(document).ready(function() {
             }));
         }
 
+        // We dont need this function for now, will be used in later stage
         function filterOffersByPrice(hotelOffers, priceLimit, numberOfNights) {
             console.log('Filtering offers by price. Price Limit:', priceLimit, 'Number of Nights:', numberOfNights);
 
@@ -170,7 +167,6 @@ $(document).ready(function() {
                 numberOfRooms: formData.numberOfRooms,
                 email: formData.email,
                 currency: formData.currency,
-                priceLimit: formData.priceLimit,
                 selectedHotels: formattedData.selectedHotels.length > 0 ? formattedData.selectedHotels : [{ message: "No hotels selected" }]
             };
 
@@ -204,21 +200,43 @@ $(document).ready(function() {
 
         function handleCheckboxChange() {
             console.log('Checkbox changed');
+        
+            // Get all checked checkboxes
             const checkedCheckboxes = $('#resultsBox .card input[type="checkbox"]:checked');
             console.log('Checked checkboxes:', checkedCheckboxes.length);
+        
+            // Toggle the submit button visibility based on whether any checkboxes are checked
             $('#submitToSheet').toggle(checkedCheckboxes.length > 0);
         
+            // Extract and log information from each selected card
             selectedHotels = checkedCheckboxes.map(function() {
                 const card = $(this).closest('.card');
+                const hotelId = card.find('.hiddenHotelId').text();
+                const hotelName = card.find('.hotel-name').text();
+                const roomType = card.find('.room-type').text();
+                const pricePerNight = card.find('.price-per-night .amount').text();
+                const totalPrice = card.find('.total-price .amount').text();
+        
+                // Log the extracted information
+                console.log('Selected Hotel Info:', {
+                    hotelId,
+                    hotelName,
+                    roomType,
+                    pricePerNight,
+                    totalPrice
+                });
+        
+                // Return the data to be stored in selectedHotels array
                 return {
-                    hotelId: card.find('.hiddenHotelId').text(),
-                    hotelName: card.find('.hotel-name').text(),
-                    roomType: card.find('.room-type').text(),
-                    pricePerNight: card.find('.price-per-night .amount').text(), // Adjusted to target .amount
-                    price: card.find('.total-price .amount').text() // Adjusted to target .amount
+                    hotelId,
+                    hotelName,
+                    roomType,
+                    pricePerNight,
+                    totalPrice
                 };
             }).get();
         }
+        
         
              
 
@@ -232,6 +250,7 @@ $(document).ready(function() {
                 .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                 .join(' ');
         }
+
 
         function formatRoomType(roomType) {
             if (typeof roomType !== 'string') return 'N/A';
@@ -277,12 +296,14 @@ $(document).ready(function() {
             isSubmitting = false; // Reset the submission flag
             datePicker.clear(); // Clear Flatpickr instance if applicable
 
-            // Clear the form currency
-            $('#currency').val(''); // Reset currency selection
+            // Hide the submittext
+            $('#submitText').hide();
+
+
         }
 
 
-        $('#submitToSheet').on('click', async function() {
+        $('#submitToSheet').off('click').on('click', async function() {
             console.log('Submitting data to SHEETY');
         
             // Show the loader before starting the submission
@@ -296,7 +317,6 @@ $(document).ready(function() {
                 numberOfRooms,
                 email,
                 currency: formCurrency,
-                priceLimit
             };
         
             const formattedData = {
@@ -312,6 +332,9 @@ $(document).ready(function() {
         
                 // Reset form and hide results after submission
                 resetForm(); 
+
+                // Use or update the form currency as needed here
+                $('#currency').val(formCurrency).trigger('change'); // Update the currency in the form
         
                 // Attempt to send email via Azure Function after the user alert
                 try {
@@ -330,7 +353,6 @@ $(document).ready(function() {
                                 Number of Rooms: ${numberOfRooms}<br>
                                 Email: ${email}<br>
                                 Currency: ${formCurrency}<br>
-                                Price Limit: ${priceLimit}<br><br>
                                 Selected Hotels:<br>
                                 ${formattedData.selectedHotels.length > 0 
                                     ? formattedData.selectedHotels.map(hotel => 
@@ -355,7 +377,7 @@ $(document).ready(function() {
                 $('.loader').hide();
 
 
-                window.location.reload(); // Reload the page
+                //window.location.reload(); // Reload the page skip for now
             }
         });
         
@@ -392,10 +414,12 @@ $(document).ready(function() {
                 const offersData = await fetchHotelOffers(hotelIds);
                 const originalCurrency = offersData.data[0]?.offers[0]?.price?.currency || formCurrency;
                 const convertedOffers = await convertPricesToFormCurrency(offersData.data, originalCurrency);
-                const filteredOffers = filterOffersByPrice(convertedOffers, priceLimit, numberOfNights);
         
-                if (filteredOffers.length > 0) {
-                    filteredOffers.forEach(offer => {
+                if (convertedOffers.length > 0) {
+                    convertedOffers.forEach(offer => {
+                        const totalPrice = parseFloat(offer.offers[0].price.total); // Total price for the stay
+                        const pricePerNight = numberOfNights > 0 ? (totalPrice / numberOfNights).toFixed(2) : 'N/A'; // Price per night
+
                         const card = $('<div>').addClass('card');
 
                         // Add hotelId in a hidden element
@@ -421,14 +445,15 @@ $(document).ready(function() {
                         // Add price per night
                         const pricePerNightDiv = $('<div>').addClass('price-per-night');
                         pricePerNightDiv.append($('<span>').addClass('label').text('Per Night: '));
-                        pricePerNightDiv.append($('<span>').addClass('amount').text(offer.pricePerNight ? `${offer.offers[0].price.currency} ${offer.pricePerNight}` : 'N/A'));
+                        pricePerNightDiv.append($('<span>').addClass('amount').text(pricePerNight)); // Correctly append pricePerNight
                         cardContent.append(pricePerNightDiv);
 
                         // Add total price
                         const totalPriceDiv = $('<div>').addClass('total-price');
                         totalPriceDiv.append($('<span>').addClass('label').text('Total: '));
-                        totalPriceDiv.append($('<span>').addClass('amount').text(offer.offers[0].price ? `${offer.offers[0].price.currency} ${offer.offers[0].price.total}` : 'N/A'));
+                        totalPriceDiv.append($('<span>').addClass('amount').text(totalPrice.toFixed(2))); // Correctly append totalPrice
                         cardContent.append(totalPriceDiv);
+
 
                         // Create a container for the checkbox and its label
                         const checkboxContainer = $('<div>').addClass('checkbox-container');
