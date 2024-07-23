@@ -1,4 +1,5 @@
 $(document).ready(function() {
+
     // Initialize Flatpickr for date range selection
     const datePicker = flatpickr('.datepicker', {
         mode: "range",
@@ -33,8 +34,8 @@ $(document).ready(function() {
         // Retrieve form data
         const location = $('#location').val();
         const dateRange = datePicker.selectedDates; // Access Flatpickr instance correctly
-        const adults = $('#adults').val();
-        const numberOfRooms = $('#numberOfRooms').val();
+        const adults = $('#adults').val(); // Will be "2" by default
+        const numberOfRooms = $('#numberOfRooms').val(); // Will be "1" by default
         const email = $('#email').val();
         const limitResults = parseInt($('#limitResults').val(), 10);
         const formCurrency = $('#currency').val();
@@ -278,29 +279,36 @@ $(document).ready(function() {
         // Function to reset the form and clear all variables
         function resetForm() {
             $('#searchForm')[0].reset(); // Reset the form fields
-
+        
+            // Reset dropdowns explicitly if needed
+            $('#adults').val('2');
+            $('#numberOfRooms').val('1');
+        
             // Hide the results box and clear the results
             $('#resultsBox').hide();
             $('#results tbody').empty();
-
+        
             // Hide the submit button as there are no results
             $('#submitToSheet').hide();
-
+        
             // Clear all relevant variables
             locationCoordinates = null; // Clear location coordinates
             internalHotelIds = []; // Clear hotel IDs
             selectedHotels = []; // Clear selected hotels
-
+        
             // Optionally reset any other variables that may be in use
             accessToken = null; // Clear access token
             isSubmitting = false; // Reset the submission flag
             datePicker.clear(); // Clear Flatpickr instance if applicable
 
+            // Explicitly set default values
+            $('#adults').val('2'); // Ensure default value is set
+            $('#numberOfRooms').val('1'); // Ensure default value is set
+        
             // Hide the submittext
             $('#submitText').hide();
-
-
         }
+        
 
 
         $('#submitToSheet').off('click').on('click', async function() {
