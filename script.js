@@ -403,7 +403,7 @@ $(document).ready(function() {
                 throw new Error('Invalid coordinates received');
             }
             const { latitude, longitude } = coords;
-            const getHotelsByCoordinatesUrlWithParams = `${getHotelsByCoordinatesUrl}&latitude=${latitude}&longitude=${longitude}&radius=5&radiusUnit=KM&hotelSource=ALL`;
+            const getHotelsByCoordinatesUrlWithParams = `${getHotelsByCoordinatesUrl}&latitude=${latitude}&longitude=${longitude}&radius=10&radiusUnit=KM&hotelSource=ALL`;
         
             const hotelsResponse = await fetch(getHotelsByCoordinatesUrlWithParams, {
                 headers: {
@@ -411,6 +411,7 @@ $(document).ready(function() {
                 }
             });
             const hotelsData = await hotelsResponse.json();
+            console.log('Hotels in the area:',hotelsData);
         
             const resultsContainer = $('#resultsBox'); // Use the results box to hold the cards
             resultsContainer.empty();

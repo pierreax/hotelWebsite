@@ -218,16 +218,14 @@ button:disabled {
 
 .card-header {
     font-weight: bold;
-    font-size: 10px; /* Increased font size for prominence */
+    font-size: 12px; /* Increased font size for prominence */
 }
 
 .hotel-name {
-    font-size: 1.2em; /* Larger text for hotel name */
     margin-right: 60px;
 }
 
 .room-type {
-    font-size: 0.9em; /* Smaller text for room type */
     color: #666; /* Optional: lighter color for smaller text */
 }
 
@@ -238,7 +236,7 @@ button:disabled {
     background: rgba(255, 255, 255, 0.8); /* Optional: background for better visibility */
     padding: 5px;
     border-radius: 5px;
-    font-size: 0.6em; /* Smaller text for distance */
+        font-size: 0.6em; /* Smaller text for distance */
     color: var(--text-color);
 }
 

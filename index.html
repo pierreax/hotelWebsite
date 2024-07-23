@@ -7,45 +7,6 @@
     <link rel="stylesheet" href="styles.css">
     <!-- Flatpickr CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <!-- Custom Styles for Cards -->
-    <style>
-        .results-box {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-        .card {
-            border: 1px solid #ddd;
-            border-radius: 0.5rem;
-            padding: 1rem;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 300px;
-            box-sizing: border-box;
-        }
-        .card-header {
-            font-size: 1.2rem;
-            font-weight: bold;
-        }
-        .card-body {
-            margin-top: 0.5rem;
-        }
-        .card-content {
-            margin-bottom: 0.5rem;
-        }
-        .card-content span {
-            font-weight: bold;
-        }
-        .card-checkbox {
-            margin-right: 0.5rem;
-        }
-        /* Mobile responsiveness */
-        @media (max-width: 600px) {
-            .card {
-                width: 100%;
-            }
-        }
-    </style>
 </head>
 <body>
     <div class="container">
@@ -104,7 +65,7 @@
             </div>
 
             <div class="input-wrapper" style="display: none;">
-                <input type="number" id="limitResults" name="limitResults" min="1" value="15">
+                <input type="number" id="limitResults" name="limitResults" min="1" value="30">
                 <label for="limitResults">Limit Results:</label>
             </div>
 
