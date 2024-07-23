@@ -218,7 +218,7 @@ button:disabled {
 
 .card-header {
     font-weight: bold;
-    font-size: 16px; /* Increased font size for prominence */
+    font-size: 10px; /* Increased font size for prominence */
 }
 
 .hotel-name {
@@ -229,7 +229,6 @@ button:disabled {
 .room-type {
     font-size: 0.9em; /* Smaller text for room type */
     color: #666; /* Optional: lighter color for smaller text */
-    margin-top: 5px; /* Spacing between room type and hotel name */
 }
 
 .distance {
@@ -239,12 +238,12 @@ button:disabled {
     background: rgba(255, 255, 255, 0.8); /* Optional: background for better visibility */
     padding: 5px;
     border-radius: 5px;
-    font-size: 0.9em; /* Smaller text for distance */
+    font-size: 0.6em; /* Smaller text for distance */
     color: var(--text-color);
 }
 
 .card-content {
-    font-size: 14px; /* Adjusted font size */
+    font-size: 10px; /* Adjusted font size */
 }
 
 .select-checkbox {
@@ -274,34 +273,31 @@ button:disabled {
 .card-content .price-per-night,
 .card-content .total-price {
     display: flex;
-    justify-content: space-between; /* Align label and amount */
 }
 
 .card-content .price-per-night .label,
 .card-content .total-price .label {
     font-weight: bold; /* Optional: Style for label */
+    margin-right: 4px;
 }
 
-.card-content .price-per-night .amount,
-.card-content .total-price .amount {
-    text-align: right; /* Ensure the amount is aligned to the right */
-}
+
 
 /* Mobile-responsive card styles */
 @media (max-width: 600px) {
     .card {
-        padding: 10px; /* Reduced padding on smaller screens */
+        padding: 6px; /* Reduced padding on smaller screens */
     }
 
     .card-header {
-        font-size: 14px; /* Reduced font size */
+        font-size: 10px; /* Reduced font size */
     }
 
     .card-content {
-        font-size: 12px; /* Adjusted font size for readability */
+        font-size: 8px; /* Adjusted font size for readability */
     }
 
     .card-content span {
-        margin-bottom: 5px; /* Added space between spans in column layout */
+        margin-bottom: 3px; /* Added space between spans in column layout */
     }
 }
