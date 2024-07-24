@@ -572,7 +572,7 @@ $(document).ready(function() {
                         const checkboxContainer = $('<div>').addClass('checkbox-container');
             
                         // Add the descriptive text
-                        checkboxContainer.append($('<span>').addClass('checkbox-description').text('Add to robot-selection: '));
+                        checkboxContainer.append($('<span>').addClass('checkbox-description').text('Add to Robot: '));
             
                         // Add the checkbox
                         checkboxContainer.append($('<input>').attr('type', 'checkbox').addClass('select-checkbox'));
