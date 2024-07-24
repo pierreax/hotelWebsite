@@ -85,6 +85,7 @@ $(document).ready(function() {
             const data = await response.json();
             const rate = data.conversion_rates[toCurrency];
             if (!rate) {
+                $('#noResultsMessage').show();
                 throw new Error(`No conversion rate available for ${toCurrency}`);
             }
             return amount * rate;
@@ -500,6 +501,7 @@ $(document).ready(function() {
         
             const coords = await getLocationCoordinates(location);
             if (!coords || !coords.latitude || !coords.longitude) {
+                $('#noResultsMessage').show();
                 throw new Error('Invalid coordinates received');
             }
             const { latitude, longitude } = coords;
@@ -581,18 +583,21 @@ $(document).ready(function() {
                         // Create a single .card-content div for all other information
                         const cardContent = $('<div>').addClass('card-content');
             
+                        // Get the currency from the form
+                        const currencySymbol = $('#currency').val(); // No need to convert to uppercase
+
                         // Add price per night
                         const pricePerNightDiv = $('<div>').addClass('price-per-night');
                         pricePerNightDiv.append($('<span>').addClass('label').text('Per Night: '));
-                        pricePerNightDiv.append($('<span>').addClass('amount').text(pricePerNight)); // Correctly append pricePerNight
+                        pricePerNightDiv.append($('<span>').addClass('amount').text(`${currencySymbol} ${pricePerNight}`)); // Append currency and pricePerNight
                         cardContent.append(pricePerNightDiv);
-            
+
                         // Add total price
                         const totalPriceDiv = $('<div>').addClass('total-price');
                         totalPriceDiv.append($('<span>').addClass('label').text('Total: '));
-                        totalPriceDiv.append($('<span>').addClass('amount').text(totalPrice.toFixed(2))); // Correctly append totalPrice
+                        totalPriceDiv.append($('<span>').addClass('amount').text(`${currencySymbol} ${totalPrice.toFixed(2)}`)); // Append currency and totalPrice
                         cardContent.append(totalPriceDiv);
-        
+
             
                         // Append the header and content to the card
                         card.append(cardHeader);
