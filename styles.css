@@ -122,8 +122,10 @@ input:focus + label {
     color: var(--text-color);
 }
 
-#adults #numberOfRooms {
-    -webkit-appearance: none;
+#adults, #numberOfRooms {
+    -webkit-appearance: none; /* Removes default styling in WebKit-based browsers */
+    -moz-appearance: none; /* Removes default styling in Firefox */
+    appearance: none; /* Standard property for all browsers */
 }
 
 #currency {
