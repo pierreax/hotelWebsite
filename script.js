@@ -454,7 +454,7 @@ $(document).ready(function() {
                                 Selected Hotels:<br>
                                 ${formattedData.selectedHotels.length > 0 
                                     ? formattedData.selectedHotels.map(hotel => 
-                                        `- ${hotel.hotelName} - ${hotel.price}<br>`
+                                        `- ${hotel.hotelName}<br>`
                                     ).join('') 
                                     : 'No hotels selected'}<br><br>
                                 Thank you!`,
