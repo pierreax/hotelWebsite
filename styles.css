@@ -122,6 +122,28 @@ input:focus + label {
     color: var(--text-color);
 }
 
+/* Styles for the clickable link */
+.flights-link {
+    display: block;
+    text-align: center;
+    margin: auto;
+    padding: 10px;
+    max-width: 300px;
+    background-color: var(--accent-color);
+    color: black;
+    text-decoration: none;
+    font-family: 'Avenir Light', sans-serif;
+    font-size: 12px;
+    border-radius: 5px;
+    transition: background-color 0.3s, transform 0.2s;
+}
+  
+.flights-link:hover,
+.flights-link:active {
+    background-color: var(--input-background);
+    transform: translateY(-2px);
+}
+
 #adults, #numberOfRooms {
     -webkit-appearance: none; /* Removes default styling in WebKit-based browsers */
     -moz-appearance: none; /* Removes default styling in Firefox */
