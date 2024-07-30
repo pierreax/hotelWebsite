@@ -513,52 +513,68 @@ $(document).ready(function() {
                 }
             });
             const hotelsData = await hotelsResponse.json();
-            console.log('Hotels in the area:',hotelsData);
+            console.log('Hotels in the area:', hotelsData);
         
             const resultsContainer = $('#resultsBox'); // Use the results box to hold the cards
             resultsContainer.empty();
         
-        
             if (hotelsData && hotelsData.data && hotelsData.data.length > 0) {
                 internalHotelIds = hotelsData.data.map(hotel => hotel.hotelId);
                 const hotelIds = internalHotelIds.slice(0, limitResults);
-            
+        
                 const offersData = await fetchHotelOffers(hotelIds);
                 const ratingsData = await fetchHotelRatings(hotelIds);
                 console.log(ratingsData);
-            
+        
                 // Map ratings data by hotelId for quick lookup
                 const ratingsMap = {};
                 ratingsData.data.forEach(rating => {
                     ratingsMap[rating.hotelId] = rating.overallRating;
                 });
-            
+        
                 const originalCurrency = offersData.data[0]?.offers[0]?.price?.currency || formCurrency;
                 const convertedOffers = await convertPricesToFormCurrency(offersData.data, originalCurrency);
-            
-                if (convertedOffers.length > 0) {
-                    convertedOffers.forEach(offer => {
+        
+                // Calculate and add distance to each offer
+                const offersWithDistance = convertedOffers.map(offer => {
+                    const distance = calculateDistance(
+                        locationCoordinates.latitude,
+                        locationCoordinates.longitude,
+                        offer.hotel.latitude,
+                        offer.hotel.longitude
+                    );
+                    return {
+                        ...offer,
+                        distance: parseFloat(distance)
+                    };
+                });
+        
+                // Sort offers by distance
+                offersWithDistance.sort((a, b) => a.distance - b.distance);
+        
+                if (offersWithDistance.length > 0) {
+                    offersWithDistance.forEach(offer => {
                         const totalPrice = parseFloat(offer.offers[0].price.total); // Total price for the stay
                         const pricePerNight = numberOfNights > 0 ? (totalPrice / numberOfNights).toFixed(2) : 'N/A'; // Price per night
-            
+        
                         const card = $('<div>').addClass('card');
-            
+        
                         // Add hotelId in a hidden element
                         const hiddenHotelId = $('<div>').addClass('hiddenHotelId').text(offer.hotel.hotelId).hide();
                         card.append(hiddenHotelId);
-                        
+        
                         // Card Header with hotel name
                         const cardHeader = $('<div>').addClass('card-header');
                         cardHeader.append($('<div>').text(formatHotelName(offer.hotel.name)).addClass('hotel-name'));
-                        
+        
                         // Add room type below hotel name
                         const roomType = $('<div>').text(offer.offers[0].room ? formatRoomType(offer.offers[0].room.typeEstimated.category) : 'N/A').addClass('room-type');
                         cardHeader.append(roomType);
-                        
+        
                         // Add the distance in a separate container
-                        const distanceContainer = $('<div>').addClass('distance').text(`${calculateDistance(locationCoordinates.latitude, locationCoordinates.longitude, offer.hotel.latitude, offer.hotel.longitude)} km`);
+                        const distanceContainer = $('<div>').addClass('distance').text(`${offer.distance.toFixed(2)} km`);
                         card.append(distanceContainer);
-
+        
                         // Add Rating if available
                         const rating = ratingsMap[offer.hotel.hotelId];
                         if (rating) {
@@ -567,53 +583,51 @@ $(document).ready(function() {
                             ratingDiv.append($('<span>').addClass('rating-value').text(rating)); // Append the rating
                             card.append(ratingDiv);
                         }
-
+        
                         // Create a container for the checkbox and its label
                         const checkboxContainer = $('<div>').addClass('checkbox-container');
-            
+        
                         // Add the descriptive text
                         checkboxContainer.append($('<span>').addClass('checkbox-description').text('Add to Robot: '));
-            
+        
                         // Add the checkbox
                         checkboxContainer.append($('<input>').attr('type', 'checkbox').addClass('select-checkbox'));
-            
+        
                         // Add the container to the card content
                         card.append(checkboxContainer);
-                        
+        
                         // Create a single .card-content div for all other information
                         const cardContent = $('<div>').addClass('card-content');
-            
+        
                         // Get the currency from the form
                         const currencySymbol = $('#currency').val(); // No need to convert to uppercase
-
+        
                         // Add price per night
                         const pricePerNightDiv = $('<div>').addClass('price-per-night');
                         pricePerNightDiv.append($('<span>').addClass('label').text('Per Night: '));
                         pricePerNightDiv.append($('<span>').addClass('amount').text(`${currencySymbol} ${pricePerNight}`)); // Append currency and pricePerNight
                         cardContent.append(pricePerNightDiv);
-
+        
                         // Add total price
                         const totalPriceDiv = $('<div>').addClass('total-price');
                         totalPriceDiv.append($('<span>').addClass('label').text('Total: '));
                         totalPriceDiv.append($('<span>').addClass('amount').text(`${currencySymbol} ${totalPrice.toFixed(2)}`)); // Append currency and totalPrice
                         cardContent.append(totalPriceDiv);
-
-            
+        
                         // Append the header and content to the card
                         card.append(cardHeader);
                         card.append(cardContent);
-                        
+        
                         // Append the card to the results container
                         resultsContainer.append(card);
-                    });                
+                    });
                 } else {
                     resultsContainer.html('<div class="no-results-message">No results found</div>');
                 }
-            
+        
                 $('#resultsBox').show();
                 $('#submitText').show();
-            }            
-             else {
+            } else {
                 $('#noResultsMessage').show();
             }
         } catch (error) {
