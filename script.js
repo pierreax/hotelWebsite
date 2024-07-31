@@ -21,6 +21,12 @@ $(document).ready(function() {
         $('#currency').val(currency).trigger('change');
     });
 
+    function formatDateToLocalISOString(date) {
+        if (!date) return '';
+        const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+        return localDate.toISOString().split('T')[0];
+    }
+
     $('#searchForm').on('submit', async function(event) {
         event.preventDefault();
         $('#noResultsMessage').hide();
@@ -40,9 +46,9 @@ $(document).ready(function() {
         const limitResults = parseInt($('#limitResults').val(), 10);
         const formCurrency = $('#currency').val();
 
-        // Convert selected dates to required format
-        const checkInDate = dateRange[0] ? dateRange[0].toISOString().split('T')[0] : '';
-        const checkOutDate = dateRange[1] ? dateRange[1].toISOString().split('T')[0] : '';
+        // Convert selected dates to local format
+        const checkInDate = formatDateToLocalISOString(dateRange[0]);
+        const checkOutDate = formatDateToLocalISOString(dateRange[1]);
         const numberOfNights = dateRange[1] && dateRange[0] ? Math.round((dateRange[1] - dateRange[0]) / (1000 * 60 * 60 * 24)) : 0;
 
         // Validate date range
