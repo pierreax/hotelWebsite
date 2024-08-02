@@ -225,8 +225,9 @@ $(document).ready(function() {
                 const price = parseFloat(offer.offers[0].price.total);
                 if (originalCurrency !== formCurrency) {
                     const convertedPrice = await convertCurrency(price, originalCurrency, formCurrency);
-                    offer.offers[0].price.total = convertedPrice.toFixed(2);
-                    offer.offers[0].price.currency = formCurrency;
+                    offer.offers[0].price.total = Math.round(convertedPrice); // Round to nearest whole number
+                } else {
+                    offer.offers[0].price.total = Math.round(price); // Round to nearest whole number if already in formCurrency
                 }
                 return offer;
             }));
@@ -560,8 +561,8 @@ $(document).ready(function() {
         
                 if (offersWithDistance.length > 0) {
                     offersWithDistance.forEach(offer => {
-                        const totalPrice = parseFloat(offer.offers[0].price.total); // Total price for the stay
-                        const pricePerNight = numberOfNights > 0 ? (totalPrice / numberOfNights).toFixed(2) : 'N/A'; // Price per night
+                        const totalPrice = Math.round(parseFloat(offer.offers[0].price.total)); // Total price for the stay
+                        const pricePerNight = numberOfNights > 0 ? Math.round((totalPrice / numberOfNights).toFixed(2)) : 'N/A'; // Price per night
         
                         const card = $('<div>').addClass('card');
         
@@ -617,7 +618,7 @@ $(document).ready(function() {
                         // Add total price
                         const totalPriceDiv = $('<div>').addClass('total-price');
                         totalPriceDiv.append($('<span>').addClass('label').text('Total: '));
-                        totalPriceDiv.append($('<span>').addClass('amount').text(`${currencySymbol} ${totalPrice.toFixed(2)}`)); // Append currency and totalPrice
+                        totalPriceDiv.append($('<span>').addClass('amount').text(`${currencySymbol} ${totalPrice}`)); // Append currency and totalPrice
                         cardContent.append(totalPriceDiv);
         
                         // Append the header and content to the card
