@@ -342,12 +342,14 @@ $(document).ready(function() {
             if (typeof hotelName !== 'string') return 'N/A';
             return hotelName
                 .toUpperCase()
-                .replace(/_/g, ' ')
+                .replace(/_/g, ' ') // Replace underscores with spaces
+                .replace(/,/g, '') // Remove commas
                 .toLowerCase()
                 .split(' ')
                 .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                 .join(' ');
         }
+        
 
 
         function formatRoomType(roomType) {
@@ -355,6 +357,7 @@ $(document).ready(function() {
             return roomType
                 .toUpperCase()
                 .replace(/_/g, ' ')
+                .replace(/,/g, '') // Remove commas
                 .toLowerCase()
                 .split(' ')
                 .map(word => word.charAt(0).toUpperCase() + word.slice(1))
