@@ -144,7 +144,7 @@ input:focus + label {
     transform: translateY(-2px);
 }
 
-#adults, #numberOfRooms {
+#adults, #numberOfRooms, #currency {
     -webkit-appearance: none; /* Removes default styling in WebKit-based browsers */
     -moz-appearance: none; /* Removes default styling in Firefox */
     appearance: none; /* Standard property for all browsers */

@@ -563,73 +563,77 @@ $(document).ready(function() {
                 offersWithDistance.sort((a, b) => a.distance - b.distance);
         
                 if (offersWithDistance.length > 0) {
-                    offersWithDistance.forEach(offer => {
-                        const totalPrice = Math.round(parseFloat(offer.offers[0].price.total)); // Total price for the stay
-                        const pricePerNight = numberOfNights > 0 ? Math.round((totalPrice / numberOfNights).toFixed(2)) : 'N/A'; // Price per night
-        
-                        const card = $('<div>').addClass('card');
-        
-                        // Add hotelId in a hidden element
-                        const hiddenHotelId = $('<div>').addClass('hiddenHotelId').text(offer.hotel.hotelId).hide();
-                        card.append(hiddenHotelId);
-        
-                        // Card Header with hotel name
-                        const cardHeader = $('<div>').addClass('card-header');
-                        cardHeader.append($('<div>').text(formatHotelName(offer.hotel.name)).addClass('hotel-name'));
-        
-                        // Add room type below hotel name
-                        const roomType = $('<div>').text(offer.offers[0].room ? formatRoomType(offer.offers[0].room.typeEstimated.category) : 'N/A').addClass('room-type');
-                        cardHeader.append(roomType);
-        
-                        // Add the distance in a separate container
-                        const distanceContainer = $('<div>').addClass('distance').text(`${offer.distance.toFixed(2)} km`);
-                        card.append(distanceContainer);
-        
-                        // Add Rating if available
-                        const rating = ratingsMap[offer.hotel.hotelId];
-                        if (rating) {
-                            const ratingDiv = $('<div>').addClass('rating');
-                            ratingDiv.append($('<span>').addClass('label').text('Rating: '));
-                            ratingDiv.append($('<span>').addClass('rating-value').text(rating)); // Append the rating
-                            card.append(ratingDiv);
-                        }
-        
-                        // Create a container for the checkbox and its label
-                        const checkboxContainer = $('<div>').addClass('checkbox-container');
-        
-                        // Add the descriptive text
-                        checkboxContainer.append($('<span>').addClass('checkbox-description').text('Add to Robot: '));
-        
-                        // Add the checkbox
-                        checkboxContainer.append($('<input>').attr('type', 'checkbox').addClass('select-checkbox'));
-        
-                        // Add the container to the card content
-                        card.append(checkboxContainer);
-        
-                        // Create a single .card-content div for all other information
-                        const cardContent = $('<div>').addClass('card-content');
-        
-                        // Get the currency from the form
-                        const currencySymbol = $('#currency').val(); // No need to convert to uppercase
-        
-                        // Add price per night
-                        const pricePerNightDiv = $('<div>').addClass('price-per-night');
-                        pricePerNightDiv.append($('<span>').addClass('label').text('Per Night: '));
-                        pricePerNightDiv.append($('<span>').addClass('amount').text(`${currencySymbol} ${pricePerNight}`)); // Append currency and pricePerNight
-                        cardContent.append(pricePerNightDiv);
-        
-                        // Add total price
-                        const totalPriceDiv = $('<div>').addClass('total-price');
-                        totalPriceDiv.append($('<span>').addClass('label').text('Total: '));
-                        totalPriceDiv.append($('<span>').addClass('amount').text(`${currencySymbol} ${totalPrice}`)); // Append currency and totalPrice
-                        cardContent.append(totalPriceDiv);
-        
-                        // Append the header and content to the card
-                        card.append(cardHeader);
-                        card.append(cardContent);
-        
-                        // Append the card to the results container
-                        resultsContainer.append(card);
+                    // Delay between showing cards
+                    const delayBetweenCards = 300; // 300 ms delay
+                    offersWithDistance.forEach((offer, index) => {
+                        setTimeout(() => {
+                            const totalPrice = Math.round(parseFloat(offer.offers[0].price.total)); // Total price for the stay
+                            const pricePerNight = numberOfNights > 0 ? Math.round((totalPrice / numberOfNights).toFixed(2)) : 'N/A'; // Price per night
+
+                            const card = $('<div>').addClass('card');
+
+                            // Add hotelId in a hidden element
+                            const hiddenHotelId = $('<div>').addClass('hiddenHotelId').text(offer.hotel.hotelId).hide();
+                            card.append(hiddenHotelId);
+
+                            // Card Header with hotel name
+                            const cardHeader = $('<div>').addClass('card-header');
+                            cardHeader.append($('<div>').text(formatHotelName(offer.hotel.name)).addClass('hotel-name'));
+
+                            // Add room type below hotel name
+                            const roomType = $('<div>').text(offer.offers[0].room ? formatRoomType(offer.offers[0].room.typeEstimated.category) : 'N/A').addClass('room-type');
+                            cardHeader.append(roomType);
+
+                            // Add the distance in a separate container
+                            const distanceContainer = $('<div>').addClass('distance').text(`${offer.distance.toFixed(2)} km`);
+                            card.append(distanceContainer);
+
+                            // Add Rating if available
+                            const rating = ratingsMap[offer.hotel.hotelId];
+                            if (rating) {
+                                const ratingDiv = $('<div>').addClass('rating');
+                                ratingDiv.append($('<span>').addClass('label').text('Rating: '));
+                                ratingDiv.append($('<span>').addClass('rating-value').text(rating)); // Append the rating
+                                card.append(ratingDiv);
+                            }
+
+                            // Create a container for the checkbox and its label
+                            const checkboxContainer = $('<div>').addClass('checkbox-container');
+
+                            // Add the descriptive text
+                            checkboxContainer.append($('<span>').addClass('checkbox-description').text('Add to Robot: '));
+
+                            // Add the checkbox
+                            checkboxContainer.append($('<input>').attr('type', 'checkbox').addClass('select-checkbox'));
+
+                            // Add the container to the card content
+                            card.append(checkboxContainer);
+
+                            // Create a single .card-content div for all other information
+                            const cardContent = $('<div>').addClass('card-content');
+
+                            // Get the currency from the form
+                            const currencySymbol = $('#currency').val(); // No need to convert to uppercase
+
+                            // Add price per night
+                            const pricePerNightDiv = $('<div>').addClass('price-per-night');
+                            pricePerNightDiv.append($('<span>').addClass('label').text('Per Night: '));
+                            pricePerNightDiv.append($('<span>').addClass('amount').text(`${currencySymbol} ${pricePerNight}`)); // Append currency and pricePerNight
+                            cardContent.append(pricePerNightDiv);
+
+                            // Add total price
+                            const totalPriceDiv = $('<div>').addClass('total-price');
+                            totalPriceDiv.append($('<span>').addClass('label').text('Total: '));
+                            totalPriceDiv.append($('<span>').addClass('amount').text(`${currencySymbol} ${totalPrice}`)); // Append currency and totalPrice
+                            cardContent.append(totalPriceDiv);
+
+                            // Append the header and content to the card
+                            card.append(cardHeader);
+                            card.append(cardContent);
+
+                            // Append the card to the results container
+                            resultsContainer.append(card);
+                        }, delayBetweenCards * index); // Delay each card by the specified amount multiplied by its index
                     });
                 } else {
                     resultsContainer.html('<div class="no-results-message">No results found</div>');
