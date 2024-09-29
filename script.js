@@ -86,6 +86,8 @@ $(document).ready(function() {
         let selectedHotels = [];
 
         async function convertCurrency(amount, fromCurrency, toCurrency) {
+            console.log('Converting from currency: ',fromCurrency,' to currency: ',toCurrency);
+
             const url = `${conversionApiUrl}${fromCurrency}`;
             const response = await fetch(url);
             const data = await response.json();
@@ -94,6 +96,7 @@ $(document).ready(function() {
                 $('#noResultsMessage').show();
                 throw new Error(`No conversion rate available for ${toCurrency}`);
             }
+            console.log('Converted ammount: ',amount * rate);
             return amount * rate;
         }
 
@@ -220,18 +223,22 @@ $(document).ready(function() {
             }
         }
 
-        async function convertPricesToFormCurrency(hotelOffers, originalCurrency) {
+        async function convertPricesToFormCurrency(hotelOffers) {
             return Promise.all(hotelOffers.map(async offer => {
+                const originalCurrency = offer.offers[0].price.currency; // Check each offer's currency individually
                 const price = parseFloat(offer.offers[0].price.total);
+                
                 if (originalCurrency !== formCurrency) {
                     const convertedPrice = await convertCurrency(price, originalCurrency, formCurrency);
                     offer.offers[0].price.total = Math.round(convertedPrice); // Round to nearest whole number
                 } else {
                     offer.offers[0].price.total = Math.round(price); // Round to nearest whole number if already in formCurrency
                 }
+                
                 return offer;
             }));
         }
+        
 
         // We dont need this function for now, will be used in later stage
         function filterOffersByPrice(hotelOffers, priceLimit, numberOfNights) {
@@ -541,9 +548,9 @@ $(document).ready(function() {
                 ratingsData.data.forEach(rating => {
                     ratingsMap[rating.hotelId] = rating.overallRating;
                 });
-        
-                const originalCurrency = offersData.data[0]?.offers[0]?.price?.currency || formCurrency;
-                const convertedOffers = await convertPricesToFormCurrency(offersData.data, originalCurrency);
+                
+                // No need to determine originalCurrency, as the convertPricesToFormCurrency function now handles each offer's currency
+                const convertedOffers = await convertPricesToFormCurrency(offersData.data);
         
                 // Calculate and add distance to each offer
                 const offersWithDistance = convertedOffers.map(offer => {
