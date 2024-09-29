@@ -225,16 +225,22 @@ $(document).ready(function() {
 
         async function convertPricesToFormCurrency(hotelOffers) {
             return Promise.all(hotelOffers.map(async offer => {
+                const hotelName = offer.hotel.name; // Get the hotel name
                 const originalCurrency = offer.offers[0].price.currency; // Check each offer's currency individually
                 const price = parseFloat(offer.offers[0].price.total);
                 
+                // Log the hotel name and original currency for tracking
+                console.log(`Checking hotel: ${hotelName}, Original currency: ${originalCurrency}, Price: ${price}`);
+        
                 if (originalCurrency !== formCurrency) {
                     const convertedPrice = await convertCurrency(price, originalCurrency, formCurrency);
                     offer.offers[0].price.total = Math.round(convertedPrice); // Round to nearest whole number
+                    console.log(`Converted price for ${hotelName} to ${formCurrency}: ${Math.round(convertedPrice)}`);
                 } else {
                     offer.offers[0].price.total = Math.round(price); // Round to nearest whole number if already in formCurrency
+                    console.log(`No conversion needed for ${hotelName}, Price: ${Math.round(price)}`);
                 }
-                
+        
                 return offer;
             }));
         }
