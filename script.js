@@ -1,5 +1,7 @@
 $(document).ready(function() {
 
+    const resultsContainer = $('#resultsBox'); // Assuming this is where you want to append the results
+
     // Initialize Flatpickr for date range selection
     const datePicker = flatpickr('.datepicker', {
         mode: "range",
@@ -196,33 +198,40 @@ $(document).ready(function() {
         }
         
         
-
-        
-
         async function fetchHotelOffers(validHotelIds) {
             const limitedHotelIds = validHotelIds.slice(0, limitResults);
             const params = `hotelIds=${limitedHotelIds.join(',')}&adults=${adults}&checkInDate=${checkInDate}&checkOutDate=${checkOutDate}&roomQuantity=${numberOfRooms}&paymentPolicy=NONE&bestRateOnly=true&includeClosed=false`;
             const url = `${getHotelOffersUrl}&params=${encodeURIComponent(params)}`;
             console.log('Fetching hotel offers with params:', params);
+            
             const response = await fetch(url, {
                 headers: {
                     'Authorization': `Bearer ${accessToken}`
                 }
             });
+            
             const text = await response.text();
             try {
                 const responseData = JSON.parse(text);
                 console.log('Hotel offers response:', responseData);
+                
+                if (responseData.message) { // Check for the message
+                    resultsContainer.html(`<div class="no-results-message">${responseData.message}</div>`);
+                    return; // Exit if there are no valid offers
+                }
+                
                 if (responseData.errors) {
                     const errorDetails = responseData.errors.map(err => `Code: ${err.code}, Detail: ${err.detail}`).join('; ');
                     throw new Error(`Failed to fetch hotel offers: ${errorDetails}`);
                 }
-                return responseData;
+                
+                return responseData; // Return valid offers
             } catch (err) {
                 throw new Error(`Failed to parse hotel offers response: ${text}`);
             }
         }
-
+        
+        
         async function convertPricesToFormCurrency(hotelOffers) {
             return Promise.all(hotelOffers.map(async offer => {
                 const hotelName = offer.hotel.name; // Get the hotel name
@@ -649,8 +658,11 @@ $(document).ready(function() {
                         }, delayBetweenCards * index); // Delay each card by the specified amount multiplied by its index
                     });
                 } else {
-                    resultsContainer.html('<div class="no-results-message">No results found</div>');
+                    // Show a simple message if no valid offers are found
+                    console.log('No offers found, showing message to the user.');
+                    resultsContainer.html('<div class="no-results-message">No valid hotel offers found. Please try different search criteria.</div>');
                 }
+
         
                 $('#resultsBox').show();
                 $('#submitText').show();
@@ -660,7 +672,7 @@ $(document).ready(function() {
         } catch (error) {
             console.error('Error:', error.message);
             $('#resultsBox').show();
-            resultsContainer.html('<div class="no-results-message">No results found</div>');
+            $('#noResultsMessage').show();
         } finally {
             $('.loader').hide();
         }
