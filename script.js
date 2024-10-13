@@ -9,11 +9,15 @@ $(document).ready(function() {
         altInput: true,
         altFormat: "j M Y", // Display format for the user
         minDate: 'today',
+        locale: {
+            firstDayOfWeek: 1 // Set Monday as the first day of the week
+        },
         onChange: function(selectedDates, dateStr, instance) {
             // Trigger input event for further processing
             instance.element.dispatchEvent(new Event('input'));
         }
     });
+
 
     // Currencies and City based on IP-location
     $.get('https://api.ipgeolocation.io/ipgeo?apiKey=420e90eecc6c4bb285f238f38aea898f', function(response) {
