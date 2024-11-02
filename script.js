@@ -2,6 +2,12 @@ $(document).ready(function() {
 
     const resultsContainer = $('#resultsBox'); // Assuming this is where you want to append the results
 
+    // Function to display the flight tracking modal
+    function askForFlightTracking() {
+        console.log('Displaying flight tracking modal.');
+        $('#flightTrackingModal').modal('show');
+    }
+
 
     // Function to parse query parameters
     function getQueryParams() {
@@ -471,10 +477,10 @@ $(document).ready(function() {
 
         $('#submitToSheet').off('click').on('click', async function() {
             console.log('Submitting data to SHEETY');
-        
+            
             // Show the loader before starting the submission
             $('.loader').show();
-        
+            
             const formData = {
                 location,
                 checkInDate,
@@ -484,21 +490,41 @@ $(document).ready(function() {
                 email,
                 currency: formCurrency,
             };
-        
+            
             const formattedData = {
                 selectedHotels
             };
-        
+            
             try {
                 // Submit to Sheety
                 const sheetyResult = await submitToSheety(formData, formattedData);
+                
+                // Check for confirmation by verifying the presence of "id" in the response
+                if (sheetyResult && sheetyResult.price && sheetyResult.price.id) {
+                    console.log('Data successfully submitted to Sheety:', sheetyResult);
+                } else {
+                    console.warn('Data submitted to Sheety but did not receive a success confirmation:', sheetyResult);
+                }
         
-                // Show success alert regardless of email status
-                alert('Thank you for your submission, we will keep you updated on the lowest prices for your selection!');
+                // Show modal to ask if the user wants to track flights
+                askForFlightTracking();
+                
+                // Event listener for "Yes" button in the modal to confirm flight tracking
+                $('#confirmFlightTracker').on('click', function() {
+                    console.log("User opted to track flights.");
+                    const redirectUrl = 'https://www.robotize.no/flights';
+                    window.location.href = redirectUrl;
+                });
         
+                // Optional: Handle "No" button in the modal
+                $('.btn-secondary').on('click', function() {
+                    console.log("User declined flight tracking.");
+                    // Add any additional logic here if needed
+                });
+            
                 // Reset form and hide results after submission
                 resetForm(); 
-
+        
                 // Use or update the form currency as needed here
                 $('#currency').val(formCurrency).trigger('change'); // Update the currency in the form
         
@@ -541,11 +567,13 @@ $(document).ready(function() {
             } finally {
                 // Hide the loading icon after the submission completes
                 $('.loader').hide();
-
-
-                //window.location.reload(); // Reload the page skip for now
+                // Optionally, you may reload the page if needed
+                // window.location.reload();
             }
         });
+        
+        
+        
         
         function toggleCheckbox(event) {
             event.stopPropagation(); // Prevents the click event from bubbling up

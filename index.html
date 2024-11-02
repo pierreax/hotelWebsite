@@ -3,10 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Title --> 
     <title>Robotize Hotels</title>
+    <!-- Bootstrap CSS for core styling -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="styles.css">
     <!-- Flatpickr CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <!-- jQuery Library -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Flatpickr JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <!-- Bootstrap JS (includes popper.js) for modal functionality and interactive components -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Your custom JavaScript -->
+    <script src="script.js"></script>
 </head>
 <body>
     <div class="container">
@@ -77,24 +88,34 @@
                 Check the hotels you want to track, and click submit.
             </div>
 
-
         </form>
         <div id="noResultsMessage" style="display: none;">
             <p>No results found. Please try adjusting your search criteria.</p>
         </div>
 
-
         <!-- Results Container -->
         <div id="resultsBox" style="display: none;">
             <div id="results" class="results-box"></div>
         </div>
+
+        <!-- Modal for Hotel Tracker Confirmation -->
+        <div class="modal fade" id="flightTrackingModal" tabindex="-1" aria-labelledby="flightTrackingModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="flightTrackingModalLabel">Hotel Tracker</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Thank you for your submission! Would you also like to track flight prices?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="confirmFlightTracker">Yes</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    
-    <!-- jQuery Library -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- Flatpickr JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <!-- Your custom JavaScript -->
-    <script src="script.js"></script>
 </body>
 </html>
