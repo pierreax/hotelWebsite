@@ -2,6 +2,17 @@ $(document).ready(function() {
 
     const resultsContainer = $('#resultsBox'); // Assuming this is where you want to append the results
 
+
+    // Function to parse query parameters
+    function getQueryParams() {
+        const params = new URLSearchParams(window.location.search);
+        const queryParams = {};
+        for (const [key, value] of params.entries()) {
+            queryParams[key] = value;
+        }
+        return queryParams;
+    }
+
     // Initialize Flatpickr for date range selection
     const datePicker = flatpickr('.datepicker', {
         mode: "range",
@@ -26,6 +37,27 @@ $(document).ready(function() {
         // Update the currency based on the IP-response
         $('#currency').val(currency).trigger('change');
     });
+
+    // Retrieve URL parameters and set them as default values in the form
+    const queryParams = getQueryParams();
+    if (queryParams.email) {
+        $('#email').val(queryParams.email);
+    }
+    if (queryParams.currency) {
+        $('#currency').val(queryParams.currency).trigger('change');
+    }
+    if (queryParams.city) {
+        $('#location').val(queryParams.city);
+    }
+
+    // Check for dateFrom and dateTo in the URL and set them in Flatpickr
+    if (queryParams.dateFrom && queryParams.dateTo) {
+        const dateFrom = queryParams.dateFrom;
+        const dateTo = queryParams.dateTo;
+
+        // Set Flatpickr dates if both dateFrom and dateTo are available
+        datePicker.setDate([dateFrom, dateTo], true, "d/m/Y");
+    }
 
     function formatDateToLocalISOString(date) {
         if (!date) return '';
