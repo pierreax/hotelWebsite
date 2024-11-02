@@ -399,6 +399,7 @@ button:disabled {
     color: white;
     font-family: 'Avenir Light', sans-serif;
     transition: background-color 0.3s;
+    width: auto;
 }
 
 .modal-footer .btn-primary:hover {
@@ -410,6 +411,7 @@ button:disabled {
     border: 1px solid var(--border-color);
     color: var(--text-color);
     font-family: 'Avenir Light', sans-serif;
+    width: auto;
 }
 
 .modal-footer .btn-secondary:hover {
