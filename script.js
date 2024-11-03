@@ -8,7 +8,6 @@ $(document).ready(function() {
         $('#flightTrackingModal').modal('show');
     }
 
-
     // Function to parse query parameters
     function getQueryParams() {
         const params = new URLSearchParams(window.location.search);
@@ -34,7 +33,6 @@ $(document).ready(function() {
             instance.element.dispatchEvent(new Event('input'));
         }
     });
-
 
     // Currencies and City based on IP-location
     $.get('https://api.ipgeolocation.io/ipgeo?apiKey=420e90eecc6c4bb285f238f38aea898f', function(response) {
@@ -75,9 +73,6 @@ $(document).ready(function() {
         event.preventDefault();
         $('#noResultsMessage').hide();
         $('#submitText').hide();
-
-
-
         // Show the loading icon
         $('.loader').show();
 
@@ -239,7 +234,6 @@ $(document).ready(function() {
             return { data: aggregatedResults };
         }
         
-        
         async function fetchHotelOffers(validHotelIds) {
             const limitedHotelIds = validHotelIds.slice(0, limitResults);
             const params = `hotelIds=${limitedHotelIds.join(',')}&adults=${adults}&checkInDate=${checkInDate}&checkOutDate=${checkOutDate}&roomQuantity=${numberOfRooms}&paymentPolicy=NONE&bestRateOnly=true&includeClosed=false`;
@@ -271,8 +265,7 @@ $(document).ready(function() {
             } catch (err) {
                 throw new Error(`Failed to parse hotel offers response: ${text}`);
             }
-        }
-        
+        }       
         
         async function convertPricesToFormCurrency(hotelOffers) {
             return Promise.all(hotelOffers.map(async offer => {
@@ -295,7 +288,6 @@ $(document).ready(function() {
                 return offer;
             }));
         }
-        
 
         // We dont need this function for now, will be used in later stage
         function filterOffersByPrice(hotelOffers, priceLimit, numberOfNights) {
@@ -315,8 +307,6 @@ $(document).ready(function() {
                 return parseFloat(offer.pricePerNight) <= priceLimit;
             });
         }
-
-        
 
         async function submitToSheety(formData, formattedData) {
             const data = {
@@ -562,7 +552,6 @@ $(document).ready(function() {
                 $('.loader').hide();
             }
         });
-        
           
         function toggleCheckbox(event) {
             event.stopPropagation(); // Prevents the click event from bubbling up
