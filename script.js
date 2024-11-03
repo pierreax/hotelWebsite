@@ -398,10 +398,6 @@ $(document).ready(function() {
             }).get();
         }
 
-        
-        
-             
-
         function formatHotelName(hotelName) {
             if (typeof hotelName !== 'string') return 'N/A';
             return hotelName
@@ -414,8 +410,6 @@ $(document).ready(function() {
                 .join(' ');
         }
         
-
-
         function formatRoomType(roomType) {
             if (typeof roomType !== 'string') return 'N/A';
             return roomType
@@ -473,8 +467,6 @@ $(document).ready(function() {
             $('#submitText').hide();
         }
         
-
-
         $('#submitToSheet').off('click').on('click', async function() {
             console.log('Submitting data to SHEETY');
             
@@ -519,7 +511,8 @@ $(document).ready(function() {
                 // Optional: Handle "No" button in the modal
                 $('.btn-secondary').on('click', function() {
                     console.log("User declined flight tracking.");
-                    // Add any additional logic here if needed
+                    // Reload the page after submission
+                    location.reload();
                 });
             
                 // Reset form and hide results after submission
@@ -567,14 +560,10 @@ $(document).ready(function() {
             } finally {
                 // Hide the loading icon after the submission completes
                 $('.loader').hide();
-                // Optionally, you may reload the page if needed
-                // window.location.reload();
             }
         });
         
-        
-        
-        
+          
         function toggleCheckbox(event) {
             event.stopPropagation(); // Prevents the click event from bubbling up
             const checkbox = $(this).find('input[type="checkbox"]');
@@ -582,8 +571,6 @@ $(document).ready(function() {
             handleCheckboxChange();
         }
         
-        
-
         // Attach event listener to the checkbox-container
         $('#resultsBox').on('click', '.checkbox-container', toggleCheckbox);
 
