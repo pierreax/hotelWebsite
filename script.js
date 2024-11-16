@@ -85,18 +85,34 @@ $(document).ready(async function() {
         return amount * rate;
     }
 
-    // Function to get Coordinates by Location
     async function getLocationCoordinates(location) {
-        console.log('Getting coordinates for location: ',location);
+        console.log('Getting coordinates for location: ', location);
         const apiUrl = `/api/getCoordinatesByLocation?location=${encodeURIComponent(location)}`;
-        const response = await fetch(apiUrl);
-        const data = await response.json();
-        if (!data || !data.latitude || !data.longitude) {
-            throw new Error('Invalid coordinates received');
+    
+        try {
+            const response = await fetch(apiUrl);
+            
+            // Check if the response status is OK
+            if (!response.ok) {
+                throw new Error(`Error: ${response.statusText}`);
+            }
+    
+            const data = await response.json();
+            
+            if (!data || !data.latitude || !data.longitude) {
+                throw new Error('Invalid coordinates received');
+            }
+    
+            console.log('Coordinates from location:', data);
+            return data;
+        } catch (error) {
+            console.error('Error fetching coordinates:', error.message);
+            // Handle the error gracefully on the front-end
+            alert('Failed to fetch coordinates. Please try again later.');
+            throw error; // Rethrow or handle as necessary
         }
-        console.log('Coordinates from location:', data);
-        return data;
     }
+    
 
     // --------- Step 3 Hotel APIs in order ------------
     

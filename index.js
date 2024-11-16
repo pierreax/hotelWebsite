@@ -27,8 +27,8 @@ app.get('/', (req, res) => {
 
 // API to get Coordinates By Location from Google
 app.get('/api/getCoordinatesByLocation', async (req, res) => {
-    console.log('Coordinate API Triggered', location);
     const { location } = req.query;
+    console.log('Coordinate API Triggered', location);
 
     if (!location) {
         return res.status(400).json({ error: "Please provide a location." });
