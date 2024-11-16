@@ -232,6 +232,8 @@ $(document).ready(async function() {
     $('#searchForm').on('submit', async function(event) {
         event.preventDefault();  // Prevent default form submission behavior
         resetUIForSubmission();  // Reset the UI before starting the submission
+
+        // Step 4.0 Functions for Search 'Submit' Button
     
         // Step 4.1 Retrieve form data and validate
         const { location, checkInDate, checkOutDate, adults, numberOfRooms, email, limitResults, formCurrency, numberOfNights } = getFormData();
@@ -242,9 +244,13 @@ $(document).ready(async function() {
             return;
         }
     
+
+        // -------------- LOGIC when the Search button is pressed -----------------------
+
         console.log('Form Data:', { location, checkInDate, checkOutDate, adults, numberOfRooms, email, formCurrency });
     
         try {
+            console.log('Search button is pressed!');
             // Get the location coordinates
             const locationCoordinates = await getLocationCoordinates(location);
     
@@ -324,7 +330,7 @@ $(document).ready(async function() {
         $('.loader').hide();
     }
     
-    // -------- Submit to Sheety --------------
+    // --------Submit to Sheety --------------
     async function submitToSheety(formData, formattedData) {
         const data = {
             location: formData.location,
@@ -484,7 +490,7 @@ $(document).ready(async function() {
         }
     }
 
-        
+    // ------- SUBMIT BUTTON -------  
     $('#submitToSheet').off('click').on('click', async function() {
         console.log('Submitting data to SHEETY');
         
@@ -505,6 +511,7 @@ $(document).ready(async function() {
             selectedHotels
         };
         
+        // ------- LOGIC when the Submit button is pressed
         try {
             // Submit to Sheety
             const sheetyResult = await submitToSheety(formData, formattedData);
@@ -560,12 +567,7 @@ $(document).ready(async function() {
 
         try {
     
-            // Get coordinates for the location
-            const coords = await getLocationCoordinates(location);
-            if (!coords || !coords.latitude || !coords.longitude) {
-                $('#noResultsMessage').show();
-                throw new Error('Invalid coordinates received');
-            }
+
         
             const { latitude, longitude } = coords;
             const getHotelsByCoordinatesUrlWithParams = `/api/getHotelsByCoordinates?latitude=${latitude}&longitude=${longitude}&radius=10&radiusUnit=KM&hotelSource=ALL`;
