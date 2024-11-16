@@ -711,5 +711,4 @@ $(document).ready(async function() {
         $('.loader').hide();
     }
         
-    });
 });
