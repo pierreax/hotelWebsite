@@ -141,12 +141,14 @@ $(document).ready(async function() {
         }
 
         async function getLocationCoordinates(location) {
+            console.log('Getting coordinates for location: ',location);
             const apiUrl = `/api/getCoordinatesByLocation?location=${encodeURIComponent(location)}`;
             const response = await fetch(apiUrl);
             const data = await response.json();
             if (!data || !data.latitude || !data.longitude) {
                 throw new Error('Invalid coordinates received');
             }
+            console.log('Coordinates from location:', data);
             return data;
         }
 

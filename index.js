@@ -131,14 +131,20 @@ app.get('/api/getHotelOffers', async (req, res) => {
     }
 });
 
-// Example of handling coordinates (for location-based requests)
+// API to get Coordinates By Location from Google
 app.get('/api/getCoordinatesByLocation', async (req, res) => {
     const { location } = req.query;
+
+    if (!location) {
+        return res.status(400).json({ error: "Please provide a location." });
+    }
+
     try {
-        const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${location}&key=${GOOGLE_API_KEY}`);
+        const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${GOOGLE_API_KEY}`;
+        const response = await fetch(geocodingUrl);
         const data = await response.json();
 
-        if (data.status === 'OK') {
+        if (data.status === 'OK' && data.results.length > 0) {
             const coordinates = data.results[0].geometry.location;
             res.json(coordinates);  // Send back latitude and longitude
         } else {
