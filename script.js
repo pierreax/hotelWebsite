@@ -52,18 +52,7 @@ $(document).ready(async function() {
         $('#currency').val(currency).trigger('change');
     });
 
-    // Retrieve URL parameters and set them as default values in the form
-    const queryParams = getQueryParams();
-    if (queryParams.email) {
-        $('#email').val(queryParams.email);
-    }
-    if (queryParams.currency) {
-        $('#currency').val(queryParams.currency).trigger('change');
-    }
-    if (queryParams.city) {
-        $('#location').val(queryParams.city);
-    }
-
+    
     // Check for dateFrom and dateTo in the URL and set them in Flatpickr
     if (queryParams.dateFrom && queryParams.dateTo) {
         const dateFrom = queryParams.dateFrom;
