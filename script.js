@@ -565,9 +565,6 @@ $(document).ready(async function() {
 
     try {
 
-
-    
-        const { latitude, longitude } = coords;
         const getHotelsByCoordinatesUrlWithParams = `/api/getHotelsByCoordinates?latitude=${latitude}&longitude=${longitude}&radius=10&radiusUnit=KM&hotelSource=ALL`;
     
         // Fetch hotel data based on coordinates
