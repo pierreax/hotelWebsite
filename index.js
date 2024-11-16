@@ -48,6 +48,60 @@ app.get('/api/getAccessToken', async (req, res) => {
     }
 });
 
+// API to get hotels by coordinates from Amadeus
+app.get('/api/getHotelsByCoordinates', async (req, res) => {
+    const { latitude, longitude, radius = 10, radiusUnit = 'KM', hotelSource = 'ALL' } = req.query;
+    const accessToken = req.headers['authorization'] ? req.headers['authorization'].split(' ')[1] : null;
+
+    if (!accessToken) {
+        return res.status(401).json({ message: 'Unauthorized: Access token missing' });
+    }
+
+    if (!latitude || !longitude) {
+        return res.status(400).json({ message: 'Latitude and longitude are required' });
+    }
+
+    try {
+        const hotelsResponse = await fetch(`https://api.amadeus.com/v1/reference-data/locations/hotels/by-geocode?latitude=${latitude}&longitude=${longitude}&radius=${radius}&radiusUnit=${radiusUnit}&hotelSource=${hotelSource}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`
+            }
+        });
+
+        // If the response is not OK, handle the error
+        if (!hotelsResponse.ok) {
+            const errorText = await hotelsResponse.text();
+            let errorMessage;
+
+            try {
+                // Attempt to parse the error text as JSON
+                const errorJson = JSON.parse(errorText);
+                errorMessage = errorJson.errors?.[0]?.detail || 'Unknown error occurred';
+            } catch (parseError) {
+                // If parsing fails, fallback to raw error text
+                errorMessage = errorText || 'Unknown error occurred';
+            }
+
+            return res.status(hotelsResponse.status).json({ message: `Error fetching hotels: ${errorMessage}` });
+        }
+
+        const hotelsData = await hotelsResponse.json();
+        
+        // Check if there are no hotels in the response
+        if (!hotelsData.data || hotelsData.data.length === 0) {
+            return res.status(200).json({ message: 'There are no available hotels in the area' });
+        }
+
+        // Return the hotels data if successful
+        res.status(200).json(hotelsData);
+
+    } catch (error) {
+        console.error('Error fetching hotels:', error.message);
+        res.status(500).json({ message: `Error fetching hotels: ${error.message}` });
+    }
+});
+
 // API to get hotel offers from Amadeus
 app.get('/api/getHotelOffers', async (req, res) => {
     const { hotelIds, adults, checkInDate, checkOutDate, roomQuantity } = req.query;
