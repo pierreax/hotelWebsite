@@ -27,15 +27,16 @@ app.get('/', (req, res) => {
 
 // API to get Coordinates By Location from Google
 app.get('/api/getCoordinatesByLocation', async (req, res) => {
+    console.log('Coordinate API Triggered', location);
     const { location } = req.query;
-    console.log('Coordinate API Triggered');
 
     if (!location) {
         return res.status(400).json({ error: "Please provide a location." });
     }
 
     try {
-        const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${GOOGLE_API_KEY}`;
+        // Make sure GOOGLE_API_KEY is stored in an environment variable for security
+        const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${process.env.GOOGLE_API_KEY}`;
         const response = await fetch(geocodingUrl);
         const data = await response.json();
 
@@ -50,6 +51,7 @@ app.get('/api/getCoordinatesByLocation', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch coordinates' });
     }
 });
+
 
 
 // ------------ AMADEUS ---------------
