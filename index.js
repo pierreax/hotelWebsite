@@ -36,7 +36,7 @@ app.get('/api/getCoordinatesByLocation', async (req, res) => {
 
     try {
         // Make sure GOOGLE_API_KEY is stored in an environment variable for security
-        const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${process.env.GOOGLE_API_KEY}`;
+        const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${GOOGLE_API_KEY}`;
         const response = await fetch(geocodingUrl);
         const data = await response.json();
 
