@@ -8,6 +8,8 @@ async function getAccessToken() {
 
 $(document).ready(async function() {
 
+    // ------- STEP 0 Load Page and Initialize ----------
+
     // Fetch access token when document is ready
     await getAccessToken(); // Await the access token
 
@@ -81,6 +83,8 @@ $(document).ready(async function() {
         return localDate.toISOString().split('T')[0];
     }
 
+    // ---------- Step 2 Utility Functions ---------------
+
     // Function to convert currency
     async function convertCurrency(amount, fromCurrency, toCurrency) {
         console.log('Converting from currency: ', fromCurrency, ' to currency: ', toCurrency);
@@ -107,47 +111,129 @@ $(document).ready(async function() {
         console.log('Coordinates from location:', data);
         return data;
     }
+
+    // --------- Step 3 Hotel APIs in order ------------
     
 
-    // Fetch hotels by coordinates
+    // 3.1 Fetch hotels by coordinates
     async function fetchHotelsByCoordinates({ latitude, longitude }) {
         const apiUrl = `/api/getHotelsByCoordinates?latitude=${latitude}&longitude=${longitude}&radius=10&radiusUnit=KM&hotelSource=ALL`;
         const response = await fetch(apiUrl, { headers: { 'Authorization': `Bearer ${accessToken}` } });
         const hotelsData = await response.json();
         return hotelsData.data;
     }
+
+
+    // 3.2 Fetch Hotel Offers
+    async function fetchHotelOffers(validHotelIds) {
+        const limitedHotelIds = validHotelIds.slice(0, limitResults);
+        const params = new URLSearchParams({
+            hotelIds: limitedHotelIds.join(','),
+            adults: adults,
+            checkInDate: checkInDate,
+            checkOutDate: checkOutDate,
+            roomQuantity: numberOfRooms,
+            paymentPolicy: 'NONE',
+            bestRateOnly: true,
+            includeClosed: false
+        });
     
+        // Use the new backend URL for fetching hotel offers
+        const url = `/api/getHotelOffers?${params.toString()}`;
+        console.log('Fetching hotel offers with params:', params.toString());
+    
+        try {
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
+    
+            const text = await response.text();
+    
+            try {
+                const responseData = JSON.parse(text);
+                console.log('Hotel offers response:', responseData);
+    
+                if (responseData.message) { // Check for the message
+                    resultsContainer.html(`<div class="no-results-message">${responseData.message}</div>`);
+                    return; // Exit if there are no valid offers
+                }
+    
+                if (responseData.errors) {
+                    const errorDetails = responseData.errors.map(err => `Code: ${err.code}, Detail: ${err.detail}`).join('; ');
+                    throw new Error(`Failed to fetch hotel offers: ${errorDetails}`);
+                }
+    
+                return responseData; // Return valid offers
+    
+            } catch (err) {
+                throw new Error(`Failed to parse hotel offers response: ${text}`);
+            }
+    
+        } catch (error) {
+            console.error('Error fetching hotel offers:', error.message);
+            throw error;
+        }
+    }
+           
+    // 3.2B Convert Hotel Offers to Form Currency 
+    async function convertPricesToFormCurrency(hotelOffers) {
+        return Promise.all(hotelOffers.map(async offer => {
+            const hotelName = offer.hotel.name; // Get the hotel name
+            const originalCurrency = offer.offers[0].price.currency; // Check each offer's currency individually
+            const price = parseFloat(offer.offers[0].price.total);
+            
+            // Log the hotel name and original currency for tracking
+            console.log(`Checking hotel: ${hotelName}, Original currency: ${originalCurrency}, Price: ${price}`);
+    
+            if (originalCurrency !== formCurrency) {
+                const convertedPrice = await convertCurrency(price, originalCurrency, formCurrency);
+                offer.offers[0].price.total = Math.round(convertedPrice); // Round to nearest whole number
+                console.log(`Converted price for ${hotelName} to ${formCurrency}: ${Math.round(convertedPrice)}`);
+            } else {
+                offer.offers[0].price.total = Math.round(price); // Round to nearest whole number if already in formCurrency
+                console.log(`No conversion needed for ${hotelName}, Price: ${Math.round(price)}`);
+            }
+    
+            return offer;
+        }));
+    }
+
+    // 3.3 Fetch Hotel Ratings for Hotel IDs
     async function fetchHotelRatings(hotelIds) {
-        if (!hotelIds || hotelIds.length === 0) {
-            throw new Error('No hotel IDs provided.');
+        try {
+            const response = await fetch('/api/getHotelRatings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ hotelIds })
+            });
+    
+            const data = await response.json();
+    
+            if (response.ok) {
+                return data; // This will be the aggregated ratings data
+            } else {
+                console.error('Error fetching hotel ratings:', data);
+                throw new Error('Failed to fetch hotel ratings.');
+            }
+        } catch (error) {
+            console.error('Error in fetchHotelRatings:', error.message);
+            throw error;
         }
-    
-        const chunks = chunkArray(hotelIds, 3); // Split hotelIds into chunks (adjust size as needed)
-        const allRatings = [];
-    
-        for (const chunk of chunks) {
-            const ratings = await fetchRatingsForChunk(chunk);
-            allRatings.push(ratings);
-        }
-    
-        return allRatings.flat(); // Flatten the array of results
     }
     
-    // Fetch ratings for a chunk of hotels
-    async function fetchRatingsForChunk(chunk) {
-        const params = `hotelIds=${chunk.join(',')}`;
-        const url = `/api/getHotelRatings?${params}`;
-        const response = await fetch(url, { headers: { 'Authorization': `Bearer ${accessToken}` } });
-        const data = await response.json();
-        return data;
-    }
+
+    // -------- Step 4 Search Form Submission -----------
     
 
     $('#searchForm').on('submit', async function(event) {
         event.preventDefault();  // Prevent default form submission behavior
         resetUIForSubmission();  // Reset the UI before starting the submission
     
-        // Retrieve form data and validate
+        // Step 4.1 Retrieve form data and validate
         const { location, checkInDate, checkOutDate, adults, numberOfRooms, email, limitResults, formCurrency, numberOfNights } = getFormData();
         if (!checkInDate || !checkOutDate || numberOfNights <= 0) {
             alert('Please enter valid check-in and check-out dates.');
@@ -238,82 +324,7 @@ $(document).ready(async function() {
         $('.loader').hide();
     }
     
-        
-    async function fetchHotelOffers(validHotelIds) {
-        const limitedHotelIds = validHotelIds.slice(0, limitResults);
-        const params = new URLSearchParams({
-            hotelIds: limitedHotelIds.join(','),
-            adults: adults,
-            checkInDate: checkInDate,
-            checkOutDate: checkOutDate,
-            roomQuantity: numberOfRooms,
-            paymentPolicy: 'NONE',
-            bestRateOnly: true,
-            includeClosed: false
-        });
-    
-        // Use the new backend URL for fetching hotel offers
-        const url = `/api/getHotelOffers?${params.toString()}`;
-        console.log('Fetching hotel offers with params:', params.toString());
-    
-        try {
-            const response = await fetch(url, {
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`
-                }
-            });
-    
-            const text = await response.text();
-    
-            try {
-                const responseData = JSON.parse(text);
-                console.log('Hotel offers response:', responseData);
-    
-                if (responseData.message) { // Check for the message
-                    resultsContainer.html(`<div class="no-results-message">${responseData.message}</div>`);
-                    return; // Exit if there are no valid offers
-                }
-    
-                if (responseData.errors) {
-                    const errorDetails = responseData.errors.map(err => `Code: ${err.code}, Detail: ${err.detail}`).join('; ');
-                    throw new Error(`Failed to fetch hotel offers: ${errorDetails}`);
-                }
-    
-                return responseData; // Return valid offers
-    
-            } catch (err) {
-                throw new Error(`Failed to parse hotel offers response: ${text}`);
-            }
-    
-        } catch (error) {
-            console.error('Error fetching hotel offers:', error.message);
-            throw error;
-        }
-    }
-           
-        
-    async function convertPricesToFormCurrency(hotelOffers) {
-        return Promise.all(hotelOffers.map(async offer => {
-            const hotelName = offer.hotel.name; // Get the hotel name
-            const originalCurrency = offer.offers[0].price.currency; // Check each offer's currency individually
-            const price = parseFloat(offer.offers[0].price.total);
-            
-            // Log the hotel name and original currency for tracking
-            console.log(`Checking hotel: ${hotelName}, Original currency: ${originalCurrency}, Price: ${price}`);
-    
-            if (originalCurrency !== formCurrency) {
-                const convertedPrice = await convertCurrency(price, originalCurrency, formCurrency);
-                offer.offers[0].price.total = Math.round(convertedPrice); // Round to nearest whole number
-                console.log(`Converted price for ${hotelName} to ${formCurrency}: ${Math.round(convertedPrice)}`);
-            } else {
-                offer.offers[0].price.total = Math.round(price); // Round to nearest whole number if already in formCurrency
-                console.log(`No conversion needed for ${hotelName}, Price: ${Math.round(price)}`);
-            }
-    
-            return offer;
-        }));
-    }
-
+    // -------- Submit to Sheety --------------
     async function submitToSheety(formData, formattedData) {
         const data = {
             location: formData.location,
@@ -355,6 +366,7 @@ $(document).ready(async function() {
         }
     }
     
+    // ---------- Card Functionality -------------
 
     // Function to handle checkbox change
     function handleCheckboxChange() {
@@ -396,6 +408,7 @@ $(document).ready(async function() {
         }).get();
     }
 
+    // Format Hotel Names
     function formatHotelName(hotelName) {
         if (typeof hotelName !== 'string') return 'N/A';
         return hotelName
@@ -408,6 +421,7 @@ $(document).ready(async function() {
             .join(' ');
     }
         
+    // Format Hotel Room Types
     function formatRoomType(roomType) {
         if (typeof roomType !== 'string') return 'N/A';
         return roomType
@@ -420,6 +434,7 @@ $(document).ready(async function() {
             .join(' ');
     }
 
+    // Format Hotel Distances
     function calculateDistance(lat1, lon1, lat2, lon2) {
         const R = 6371; // Radius of the Earth in km
         const dLat = (lat2 - lat1) * (Math.PI / 180);

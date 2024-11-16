@@ -23,6 +23,36 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// ------------ Initialization ---------------
+
+// API to get Coordinates By Location from Google
+app.get('/api/getCoordinatesByLocation', async (req, res) => {
+    const { location } = req.query;
+
+    if (!location) {
+        return res.status(400).json({ error: "Please provide a location." });
+    }
+
+    try {
+        const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${GOOGLE_API_KEY}`;
+        const response = await fetch(geocodingUrl);
+        const data = await response.json();
+
+        if (data.status === 'OK' && data.results.length > 0) {
+            const coordinates = data.results[0].geometry.location;
+            res.json(coordinates);  // Send back latitude and longitude
+        } else {
+            res.status(404).json({ error: 'Location not found' });
+        }
+    } catch (error) {
+        console.error('Error fetching coordinates:', error.message);
+        res.status(500).json({ error: 'Failed to fetch coordinates' });
+    }
+});
+
+
+// ------------ AMADEUS ---------------
+
 // API to get the Amadeus access token
 app.get('/api/getAccessToken', async (req, res) => {
     try {
@@ -131,30 +161,72 @@ app.get('/api/getHotelOffers', async (req, res) => {
     }
 });
 
-// API to get Coordinates By Location from Google
-app.get('/api/getCoordinatesByLocation', async (req, res) => {
-    const { location } = req.query;
 
-    if (!location) {
-        return res.status(400).json({ error: "Please provide a location." });
+// Helper function to chunk an array into smaller chunks of size 3
+function chunkArray(array, size) {
+    const result = [];
+    for (let i = 0; i < array.length; i += size) {
+        result.push(array.slice(i, i + size));
     }
+    return result;
+}
 
+// Route to fetch hotel ratings from Amadeus
+app.post('/api/getHotelRatings', async (req, res) => {
     try {
-        const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${GOOGLE_API_KEY}`;
-        const response = await fetch(geocodingUrl);
-        const data = await response.json();
+        const { hotelIds } = req.body;
 
-        if (data.status === 'OK' && data.results.length > 0) {
-            const coordinates = data.results[0].geometry.location;
-            res.json(coordinates);  // Send back latitude and longitude
-        } else {
-            res.status(404).json({ error: 'Location not found' });
+        if (!hotelIds || hotelIds.length === 0) {
+            return res.status(400).send({ error: 'No hotel IDs provided.' });
         }
+
+        // Split the hotel IDs into chunks of 3
+        const chunks = chunkArray(hotelIds, 3);
+        const allRatings = [];
+
+        for (const chunk of chunks) {
+            try {
+                const ratings = await fetchRatingsForChunk(chunk);
+                allRatings.push(ratings);
+            } catch (err) {
+                console.error('Error fetching ratings for chunk:', chunk, err);
+                // Optionally return an error message if fetching fails for a chunk
+                return res.status(500).send({ error: 'Error fetching hotel ratings for chunk.' });
+            }
+        }
+
+        // Flatten and return the aggregated ratings
+        return res.json(allRatings.flat());
     } catch (error) {
-        console.error('Error fetching coordinates:', error.message);
-        res.status(500).json({ error: 'Failed to fetch coordinates' });
+        console.error('Error in /api/getHotelRatings:', error);
+        return res.status(500).send({ error: 'Error processing hotel ratings request.' });
     }
 });
+
+// Fetch ratings for a chunk of hotels from Amadeus API
+async function fetchRatingsForChunk(chunk) {
+    const hotelIdsString = chunk.join(',');
+
+    try {
+        // Call the Amadeus API
+        const response = await amadeus.shopping.hotelRatings.get({
+            hotelIds: hotelIdsString
+        });
+
+        if (response.data) {
+            return response.data;
+        } else {
+            throw new Error('No ratings data found for the hotels.');
+        }
+    } catch (error) {
+        console.error('Error fetching hotel ratings for IDs:', hotelIdsString, error);
+        throw error;
+    }
+}
+
+// ------------ EMAIL ---------------
+
+
 
 // Microsoft Graph setup for sending emails
 const SCOPE = 'https://graph.microsoft.com/.default';
