@@ -6,7 +6,7 @@ async function getAccessToken() {
     accessToken = tokenData.access_token;
 }
 
-$(document).ready(function() {
+$(document).ready(async function() {
 
     // Fetch access token when document is ready
     await getAccessToken(); // Await the access token
