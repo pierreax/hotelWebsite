@@ -74,167 +74,170 @@ $(document).ready(async function() {
         datePicker.setDate([dateFrom, dateTo], true, "d/m/Y");
     }
 
+    // Function to format Date to Local date
     function formatDateToLocalISOString(date) {
         if (!date) return '';
         const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
         return localDate.toISOString().split('T')[0];
     }
 
+    // Function to convert currency
+    async function convertCurrency(amount, fromCurrency, toCurrency) {
+        console.log('Converting from currency: ', fromCurrency, ' to currency: ', toCurrency);
+        const url = `https://v6.exchangerate-api.com/v6/0fdee0a5645b6916b5a20bb3/latest/${fromCurrency}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        const rate = data.conversion_rates[toCurrency];
+        if (!rate) {
+            $('#noResultsMessage').show();
+            throw new Error(`No conversion rate available for ${toCurrency}`);
+        }
+        return amount * rate;
+    }
+
+    // Function to get Coordinates by Location
+    async function getLocationCoordinates(location) {
+        console.log('Getting coordinates for location: ',location);
+        const apiUrl = `/api/getCoordinatesByLocation?location=${encodeURIComponent(location)}`;
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        if (!data || !data.latitude || !data.longitude) {
+            throw new Error('Invalid coordinates received');
+        }
+        console.log('Coordinates from location:', data);
+        return data;
+    }
+    
+
+    // Fetch hotels by coordinates
+    async function fetchHotelsByCoordinates({ latitude, longitude }) {
+        const apiUrl = `/api/getHotelsByCoordinates?latitude=${latitude}&longitude=${longitude}&radius=10&radiusUnit=KM&hotelSource=ALL`;
+        const response = await fetch(apiUrl, { headers: { 'Authorization': `Bearer ${accessToken}` } });
+        const hotelsData = await response.json();
+        return hotelsData.data;
+    }
+    
+    async function fetchHotelRatings(hotelIds) {
+        if (!hotelIds || hotelIds.length === 0) {
+            throw new Error('No hotel IDs provided.');
+        }
+    
+        const chunks = chunkArray(hotelIds, 3); // Split hotelIds into chunks (adjust size as needed)
+        const allRatings = [];
+    
+        for (const chunk of chunks) {
+            const ratings = await fetchRatingsForChunk(chunk);
+            allRatings.push(ratings);
+        }
+    
+        return allRatings.flat(); // Flatten the array of results
+    }
+    
+    // Fetch ratings for a chunk of hotels
+    async function fetchRatingsForChunk(chunk) {
+        const params = `hotelIds=${chunk.join(',')}`;
+        const url = `/api/getHotelRatings?${params}`;
+        const response = await fetch(url, { headers: { 'Authorization': `Bearer ${accessToken}` } });
+        const data = await response.json();
+        return data;
+    }
+    
+
     $('#searchForm').on('submit', async function(event) {
-        event.preventDefault();
+        event.preventDefault();  // Prevent default form submission behavior
+        resetUIForSubmission();  // Reset the UI before starting the submission
+    
+        // Retrieve form data and validate
+        const { location, checkInDate, checkOutDate, adults, numberOfRooms, email, limitResults, formCurrency, numberOfNights } = getFormData();
+        if (!checkInDate || !checkOutDate || numberOfNights <= 0) {
+            alert('Please enter valid check-in and check-out dates.');
+            $('.datepicker').focus();
+            hideLoading();
+            return;
+        }
+    
+        console.log('Form Data:', { location, checkInDate, checkOutDate, adults, numberOfRooms, email, formCurrency });
+    
+        try {
+            // Get the location coordinates
+            const locationCoordinates = await getLocationCoordinates(location);
+    
+            // Fetch hotels by coordinates
+            const hotelsData = await fetchHotelsByCoordinates(locationCoordinates);
+            const hotelIds = hotelsData.map(hotel => hotel.hotelId);
+    
+            // Fetch ratings for the hotels
+            const hotelRatings = await fetchHotelRatings(hotelIds);
+    
+            // Aggregate hotel ratings
+            const aggregatedResults = aggregateHotelRatings(hotelRatings);
+            console.log('Aggregated Results:', aggregatedResults);
+    
+            // Process aggregated results (you can show them in the UI)
+            displayHotelResults(aggregatedResults);
+    
+        } catch (error) {
+            console.error('Error during form submission:', error.message);
+            $('#noResultsMessage').show();
+        } finally {
+            hideLoading();  // Hide the loading icon once the process is complete
+        }
+    });
+    
+    // Reset the UI for a new submission (hide results, etc.)
+    function resetUIForSubmission() {
         $('#noResultsMessage').hide();
         $('#submitText').hide();
-        // Show the loading icon
         $('.loader').show();
-
-        // Retrieve form data
+    }
+    
+    // Get form data and validate check-in/check-out dates
+    function getFormData() {
         const location = $('#location').val();
-        const dateRange = datePicker.selectedDates; // Access Flatpickr instance correctly
-        const adults = $('#adults').val(); // Will be "2" by default
-        const numberOfRooms = $('#numberOfRooms').val(); // Will be "1" by default
+        const dateRange = datePicker.selectedDates;
+        const adults = $('#adults').val();
+        const numberOfRooms = $('#numberOfRooms').val();
         const email = $('#email').val();
         const limitResults = parseInt($('#limitResults').val(), 10);
         const formCurrency = $('#currency').val();
-
-        // Convert selected dates to local format
+    
         const checkInDate = formatDateToLocalISOString(dateRange[0]);
         const checkOutDate = formatDateToLocalISOString(dateRange[1]);
         const numberOfNights = dateRange[1] && dateRange[0] ? Math.round((dateRange[1] - dateRange[0]) / (1000 * 60 * 60 * 24)) : 0;
-
-        // Validate date range
-        if (!checkInDate || !checkOutDate || numberOfNights <= 0) {
-            alert('Please enter valid check-in and check-out dates.');
-            // Focus on the datepicker input field
-            $('.datepicker').focus();
-            
-            $('.loader').hide(); // Hide the loading icon
-            return;
-        }
-
-        console.log('Form Data:', {
-            location,
-            checkInDate,
-            checkOutDate,
-            adults,
-            numberOfRooms,
-            email,
-            formCurrency,
-        });
-
-        
-        let internalHotelIds = [];
-        let locationCoordinates;
-        let selectedHotels = [];
-
-        // Function to convert currency
-        async function convertCurrency(amount, fromCurrency, toCurrency) {
-            console.log('Converting from currency: ', fromCurrency, ' to currency: ', toCurrency);
-            const url = `https://v6.exchangerate-api.com/v6/0fdee0a5645b6916b5a20bb3/latest/${fromCurrency}`;
-            const response = await fetch(url);
-            const data = await response.json();
-            const rate = data.conversion_rates[toCurrency];
-            if (!rate) {
-                $('#noResultsMessage').show();
-                throw new Error(`No conversion rate available for ${toCurrency}`);
-            }
-            return amount * rate;
-        }
-
-        async function getLocationCoordinates(location) {
-            console.log('Getting coordinates for location: ',location);
-            const apiUrl = `/api/getCoordinatesByLocation?location=${encodeURIComponent(location)}`;
-            const response = await fetch(apiUrl);
-            const data = await response.json();
-            if (!data || !data.latitude || !data.longitude) {
-                throw new Error('Invalid coordinates received');
-            }
-            console.log('Coordinates from location:', data);
-            return data;
-        }
-
-        async function fetchHotelRatings(validHotelIds) {
-            // Ensure that the validHotelIds array is not empty
-            if (!Array.isArray(validHotelIds) || validHotelIds.length === 0) {
-                throw new Error('No hotel IDs provided.');
-            }
-
-        
-        // Function to fetch ratings for a chunk of hotel IDs
-        async function fetchRatingsForChunk(chunk) {
-            // Construct the query parameters
-            const params = `hotelIds=${chunk.join(',')}`;
-            
-            // Construct the full URL with encoded query parameters for the new backend
-            const url = `/api/getHotelRatings?${params}`;  // Use relative path to your backend
-            console.log('Fetching hotel ratings with params:', params);
-
-            try {
-                // Make the API request
-                const response = await fetch(url, {
-                    headers: {
-                        'Authorization': `Bearer ${accessToken}`
-                    }
-                });
-
-                // Check if the response status is OK
-                if (!response.ok) {
-                    throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
-                }
-
-                // Parse the response as text
-                const text = await response.text();
-
-                // Try parsing the response data as JSON
-                try {
-                    const responseData = JSON.parse(text);
-                    console.log('Hotel ratings response:', responseData);
-
-                    // Check for API-specific error structure
-                    if (responseData.errors) {
-                        const errorDetails = responseData.errors.map(err => `Code: ${err.code}, Detail: ${err.detail}`).join('; ');
-                        throw new Error(`Failed to fetch hotel ratings: ${errorDetails}`);
-                    }
-
-                    return responseData; // Return the parsed data
-
-                } catch (jsonError) {
-                    throw new Error(`Failed to parse JSON response: ${text}`);
-                }
-
-            } catch (error) {
-                // Log and rethrow the error for further handling
-                console.error('Error fetching hotel ratings:', error.message);
-                throw error; // Re-throwing the error to be handled by the caller
-            }
-        }
-
     
-        // Function to chunk an array into smaller arrays of a specified size
-        function chunkArray(array, size) {
-            const result = [];
-            for (let i = 0; i < array.length; i += size) {
-                result.push(array.slice(i, i + size));
-            }
-            return result;
-        }
-    
-        // Create chunks of hotel IDs (max 3 per chunk)
-        const chunks = chunkArray(validHotelIds, 3);
-    
-        // Array to hold all responses
-        const allResponses = [];
-    
-        // Fetch ratings for each chunk and aggregate results
-        for (const chunk of chunks) {
-            const ratings = await fetchRatingsForChunk(chunk);
-            allResponses.push(ratings);
-        }
-    
-        // Aggregate all responses into a single object or array
-        const aggregatedResults = allResponses.flatMap(response => response.data || []);
-        console.log(aggregatedResults);
-        return { data: aggregatedResults };
+        return { location, checkInDate, checkOutDate, adults, numberOfRooms, email, limitResults, formCurrency, numberOfNights };
     }
+    
+    // Display the hotel results in the UI
+    function displayHotelResults(results) {
+        // Example: Display results in a container
+        const resultsContainer = $('#resultsBox');
+        resultsContainer.empty(); // Clear previous results
+    
+        if (results && results.length > 0) {
+            results.forEach(result => {
+                const hotelCard = createHotelCard(result);
+                resultsContainer.append(hotelCard);
+            });
+        } else {
+            $('#noResultsMessage').show();
+        }
+    }
+    
+    // Create a card for displaying hotel details
+    function createHotelCard(result) {
+        const card = $('<div>').addClass('card');
+        // Add more elements to card (hotel name, price, etc.)
+        card.append($('<div>').text(result.hotelName));
+        card.append($('<div>').text(`Price: ${result.price}`));
+        return card;
+    }
+    
+    // Hide the loading icon
+    function hideLoading() {
+        $('.loader').hide();
+    }
+    
         
     async function fetchHotelOffers(validHotelIds) {
         const limitedHotelIds = validHotelIds.slice(0, limitResults);
