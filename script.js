@@ -232,8 +232,6 @@ $(document).ready(async function() {
     $('#searchForm').on('submit', async function(event) {
         event.preventDefault();  // Prevent default form submission behavior
         resetUIForSubmission();  // Reset the UI before starting the submission
-
-        // Step 4.0 Functions for Search 'Submit' Button
     
         // Step 4.1 Retrieve form data and validate
         const { location, checkInDate, checkOutDate, adults, numberOfRooms, email, limitResults, formCurrency, numberOfNights } = getFormData();
