@@ -227,6 +227,52 @@ async function fetchRatingsForChunk(chunk) {
     }
 }
 
+// --------- SHEETY ----------------
+
+app.post('/api/sendDataToSheety', async (req, res) => {
+    const sheetyEndpoint = 'https://api.sheety.co/YOUR_SHEETY_API_URL/sheet1'; // Replace with your Sheety endpoint
+    const formData = req.body; // Data sent from the front-end
+
+    console.log('Received data for Sheety:', formData);
+
+    // Prepare the data to send to Sheety
+    const sheetData = {
+        location: formData.location,
+        checkInDate: formData.checkInDate,
+        checkOutDate: formData.checkOutDate,
+        adults: formData.adults,
+        numberOfRooms: formData.numberOfRooms,
+        email: formData.email,
+        currency: formData.currency,
+        selectedHotels: formData.selectedHotels // Modify according to your sheet's structure
+    };
+
+    try {
+        // Send the data to Sheety
+        const response = await fetch(sheetyEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ sheet1: sheetData }) // Modify the object according to the Sheety API
+        });
+
+        // Parse the response
+        const responseData = await response.json();
+
+        if (response.ok) {
+            console.log('Data successfully submitted to Sheety:', responseData);
+            res.status(200).json(responseData); // Send success response back to the client
+        } else {
+            console.error('Error submitting data to Sheety:', responseData);
+            res.status(500).json({ error: 'Failed to submit data to Sheety' });
+        }
+    } catch (error) {
+        console.error('Error in submitting data to Sheety:', error.message);
+        res.status(500).json({ error: 'Error in submitting data to Sheety' });
+    }
+});
+
 // ------------ EMAIL ---------------
 
 
