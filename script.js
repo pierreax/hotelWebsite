@@ -100,7 +100,7 @@ $(document).ready(async function() {
             const data = await response.json();
             console.log(data);
             
-            if (!data || !data.latitude || !data.longitude) {
+            if (!data || !data.lat || !data.lng) {
                 throw new Error('Invalid coordinates received');
             }
     
