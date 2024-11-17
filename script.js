@@ -98,6 +98,7 @@ $(document).ready(async function() {
             }
     
             const data = await response.json();
+            console.log(data);
             
             if (!data || !data.latitude || !data.longitude) {
                 throw new Error('Invalid coordinates received');
