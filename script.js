@@ -113,8 +113,8 @@ $(document).ready(async function() {
     
 
     // 3.1 Fetch hotels by coordinates
-    async function fetchHotelsByCoordinates({ latitude, longitude }) {
-        const apiUrl = `/api/getHotelsByCoordinates?latitude=${latitude}&longitude=${longitude}&radius=10&radiusUnit=KM&hotelSource=ALL`;
+    async function fetchHotelsByCoordinates({ lat, lng }) {
+        const apiUrl = `/api/getHotelsByCoordinates?latitude=${lat}&longitude=${lng}&radius=10&radiusUnit=KM&hotelSource=ALL`;
         const response = await fetch(apiUrl, { headers: { 'Authorization': `Bearer ${accessToken}` } });
         const hotelsData = await response.json();
         return hotelsData.data;
@@ -310,7 +310,7 @@ $(document).ready(async function() {
             const locationCoordinates = await getLocationCoordinates(location);
     
             // Fetch hotels by coordinates
-            const hotelsData = await fetchHotelsByCoordinates(locationCoordinates);
+            const hotelsData = await fetchHotelsByCoordinates(locationCoordinates.lat, locationCoordinates.lng);
             const hotelIds = hotelsData.map(hotel => hotel.hotelId);
     
             // Fetch ratings for the hotels
