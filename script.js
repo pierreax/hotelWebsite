@@ -114,6 +114,7 @@ $(document).ready(async function() {
 
     // 3.1 Fetch hotels by coordinates
     async function fetchHotelsByCoordinates({ lat, lng }) {
+        console.log(lat,lng);
         const apiUrl = `/api/getHotelsByCoordinates?latitude=${lat}&longitude=${lng}&radius=10&radiusUnit=KM&hotelSource=ALL`;
         const response = await fetch(apiUrl, { headers: { 'Authorization': `Bearer ${accessToken}` } });
         const hotelsData = await response.json();
@@ -308,8 +309,6 @@ $(document).ready(async function() {
             console.log('Search button is pressed!');
             // Get the location coordinates
             const locationCoordinates = await getLocationCoordinates(location);
-            console.log(locationCoordinates);
-            console.log(locationCoordinates.lat);
     
             // Fetch hotels by coordinates
             const hotelsData = await fetchHotelsByCoordinates(locationCoordinates.lat, locationCoordinates.lng);
