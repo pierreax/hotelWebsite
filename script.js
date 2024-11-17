@@ -97,13 +97,7 @@ $(document).ready(async function() {
                 throw new Error(`Error: ${response.statusText}`);
             }
     
-            const data = await response.json();
-            console.log(data);
-            
-            if (!data || !data.lat || !data.lng) {
-                throw new Error('Invalid coordinates received');
-            }
-    
+            const data = await response.json();    
             console.log('Coordinates from location:', data);
             return data;
         } catch (error) {
