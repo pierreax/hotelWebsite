@@ -308,6 +308,8 @@ $(document).ready(async function() {
             console.log('Search button is pressed!');
             // Get the location coordinates
             const locationCoordinates = await getLocationCoordinates(location);
+            print(locationCoordinates);
+            print(locationCoordinates.lat);
     
             // Fetch hotels by coordinates
             const hotelsData = await fetchHotelsByCoordinates(locationCoordinates.lat, locationCoordinates.lng);
