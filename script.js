@@ -202,26 +202,39 @@ $(document).ready(async function() {
             const response = await fetch('/api/getHotelRatings', {
                 method: 'POST',
                 headers: {
+                    'Authorization': `Bearer ${accessToken}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ hotelIds })
             });
     
-            const data = await response.json();
-    
-            if (response.ok) {
-                return data; // This will be the aggregated ratings data
-            } else {
-                console.error('Error fetching hotel ratings:', data);
-                throw new Error('Failed to fetch hotel ratings.');
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Error fetching hotel ratings: ${errorText}`);
             }
+    
+            const ratingsData = await response.json();
+            console.log('Hotel Ratings Data:', ratingsData);
+            return ratingsData; // This will contain the aggregated ratings
         } catch (error) {
-            console.error('Error in fetchHotelRatings:', error.message);
+            console.error('Error fetching hotel ratings:', error.message);
             throw error;
         }
     }
 
-    // 3.4 Create Card with Hotel information
+    // 3.4 Merge Ratings with Offers
+    function mergeRatingsWithOffers(hotelOffers, hotelRatings) {
+        const ratingsMap = new Map(hotelRatings.map(rating => [rating.hotelId, rating.overallRating]));
+    
+        return hotelOffers.map(offer => ({
+            ...offer,
+            rating: ratingsMap.get(offer.hotelId) || 'N/A' // Default to 'N/A' if no rating found
+        }));
+    }
+    
+    
+
+    // 3.5 Create Card with Hotel information
 
     // Create a card for displaying hotel details
     function createHotelCard(result) {
@@ -325,6 +338,10 @@ $(document).ready(async function() {
             // 5. Fetch ratings for the hotels
             console.log('Searching ratings for hotels:', hotelOffers);
             const hotelRatings = await fetchHotelRatings(hotelOffers);
+
+            // 5b. Merge ratings with hotel offers
+            const combinedResults = mergeRatingsWithOffers(hotelOffers, hotelRatings);
+            console.log('Combined Results with Ratings:', combinedResults);
     
             // 6. Aggregate hotel ratings
             const aggregatedResults = aggregateHotelRatings(hotelRatings);
