@@ -320,10 +320,10 @@ $(document).ready(async function() {
 
             // 4. Fetch hotel offers using the valid hotel IDs
             console.log('Searching offers for :', hotelIds);
-            const hotelOffers = await fetchHotelOffers(hotelIdsString);
+            const hotelOffers = await fetchHotelOffers(hotelIds);
 
             // 5. Fetch ratings for the hotels
-            console.log(' Ratings - Current Access Token:', accessToken);
+            console.log('Searching ratings for hotels:', hotelOffers);
             const hotelRatings = await fetchHotelRatings(hotelOffers);
     
             // 6. Aggregate hotel ratings
