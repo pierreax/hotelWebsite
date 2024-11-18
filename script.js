@@ -16,9 +16,6 @@ $(document).ready(async function() {
     $('#destination').val(queryParams.get('city'));
 
 
-    // Fetch access token when document is ready
-    await getAccessToken(); // Await the access token
-
     const resultsContainer = $('#resultsBox'); // Assuming this is where you want to append the results
 
     // Function to display the flight tracking modal
@@ -308,22 +305,23 @@ $(document).ready(async function() {
     
         try {
             console.log('Search button is pressed!');
+            // 0. Get the Access Token for Amadeus
+            await getAccessToken(); // Await the access token
+
             // 1. Get the location coordinates
             const locationCoordinates = await getLocationCoordinates(destination);
 
             // 2. Fetch hotels by coordinates
-            console.log('Hotels - Current Access Token:', accessToken);
             const hotelsData = await fetchHotelsByCoordinates(locationCoordinates.lat, locationCoordinates.lng);
             
 
             // 3. Extract valid hotel IDs from hotelsData
             const hotelIds = hotelsData.map(hotel => hotel.hotelId);
-            console.log(hotelIds)
 
             // 4. Fetch hotel offers using the valid hotel IDs
-            await getAccessToken(); // Await the access token again
-            console.log('Offers - Current Access Token:', accessToken);
-            const hotelOffers = await fetchHotelOffers(hotelIds);
+            const hotelIdsString = hotelIds.join(','); // Convert array to comma-separated string
+            console.log('Searching offers for :', hotelIdsString);
+            const hotelOffers = await fetchHotelOffers(hotelIdsString);
 
             // 5. Fetch ratings for the hotels
             console.log(' Ratings - Current Access Token:', accessToken);
