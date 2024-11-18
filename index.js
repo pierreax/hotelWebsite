@@ -139,7 +139,7 @@ app.get('/api/getHotelsByCoordinates', async (req, res) => {
 app.get('/api/getHotelOffers', async (req, res) => {
     const { hotelIds, adults, checkInDate, checkOutDate, roomQuantity } = req.query;
     try {
-        const response = await fetch('https://api.amadeus.com/v1/shopping/hotel-offers', {
+        const response = await fetch('https://api.amadeus.com/v3/shopping/hotel-offers', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${req.headers.authorization}`  // Pass the access token here
