@@ -126,6 +126,7 @@ $(document).ready(async function() {
     // 3.2 Fetch Hotel Offers
     async function fetchHotelOffers(validHotelIds) {
         const limitedHotelIds = validHotelIds.slice(0, limitResults);
+        console.log(checkInDate);
         const params = new URLSearchParams({
             hotelIds: limitedHotelIds.join(','),
             adults: adults,
