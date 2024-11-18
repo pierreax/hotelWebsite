@@ -312,16 +312,20 @@ $(document).ready(async function() {
             const locationCoordinates = await getLocationCoordinates(destination);
 
             // 2. Fetch hotels by coordinates
+            console.log('Hotels - Current Access Token:', accessToken);
             const hotelsData = await fetchHotelsByCoordinates(locationCoordinates.lat, locationCoordinates.lng);
+            
 
             // 3. Extract valid hotel IDs from hotelsData
             const hotelIds = hotelsData.map(hotel => hotel.hotelId);
             console.log(hotelIds)
 
             // 4. Fetch hotel offers using the valid hotel IDs
+            console.log('Offers - Current Access Token:', accessToken);
             const hotelOffers = await fetchHotelOffers(hotelIds);
 
             // 5. Fetch ratings for the hotels
+            console.log(' Ratings - Current Access Token:', accessToken);
             const hotelRatings = await fetchHotelRatings(hotelOffers);
     
             // 6. Aggregate hotel ratings
