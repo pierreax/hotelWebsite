@@ -200,6 +200,7 @@ $(document).ready(async function() {
     async function fetchHotelRatings(hotelOffers) {
         const hotelIds = hotelOffers.map(hotel => hotel.hotelId); // Extract hotelIds
         const chunkSize = 3;
+        console.log('Searching for ratings for: ',hotelIds);
 
         // Helper function to split hotelIds into chunks of size 3
         function chunkArray(array, size) {
