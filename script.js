@@ -113,13 +113,14 @@ $(document).ready(async function() {
     
 
     // 3.1 Fetch hotels by coordinates
-    async function fetchHotelsByCoordinates({ lat, lng }) {
-        console.log(lat,lng);
+    async function fetchHotelsByCoordinates(lat, lng) {
+        console.log(lat, lng);
         const apiUrl = `/api/getHotelsByCoordinates?latitude=${lat}&longitude=${lng}&radius=10&radiusUnit=KM&hotelSource=ALL`;
         const response = await fetch(apiUrl, { headers: { 'Authorization': `Bearer ${accessToken}` } });
         const hotelsData = await response.json();
         return hotelsData.data;
     }
+
 
 
     // 3.2 Fetch Hotel Offers
