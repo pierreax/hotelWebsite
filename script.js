@@ -198,7 +198,7 @@ $(document).ready(async function() {
 
     // 3.3 Fetch Hotel Ratings for Hotel IDs
     async function fetchHotelRatings(hotelOffers) {
-        const hotelIds = hotelOffers.map(hotel => hotel.hotelId); // Extract hotelIds
+        const hotelIds = hotelOffers.map(offer => offer.hotel.hotelId);
         const chunkSize = 3;
         console.log('Searching for ratings for: ',hotelIds);
 
