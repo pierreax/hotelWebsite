@@ -223,6 +223,7 @@ async function fetchRatingsForChunk(hotelIds) {
     try {
         // Construct the URL with query parameters
         const amadeusUrl = `https://api.amadeus.com/v2/e-reputation/hotel-sentiments?hotelIds=${hotelIdsString}`;
+        console.log('Authorization token:', process.env.AMADEUS_API_TOKEN);
         
         // Make the request to the Amadeus API
         const response = await fetch(amadeusUrl, {
@@ -236,9 +237,10 @@ async function fetchRatingsForChunk(hotelIds) {
         // Check if the response is OK
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('Error fetching hotel ratings:', errorText);
-            throw new Error(`Error fetching hotel ratings: ${response.statusText}`);
+            console.error('Error response from Amadeus API:', errorText);
+            throw new Error(`Error fetching hotel ratings: ${errorText}`);
         }
+        
 
         // Parse and return the response data
         const data = await response.json();
