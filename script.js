@@ -321,6 +321,7 @@ $(document).ready(async function() {
             console.log(hotelIds)
 
             // 4. Fetch hotel offers using the valid hotel IDs
+            await getAccessToken(); // Await the access token again
             console.log('Offers - Current Access Token:', accessToken);
             const hotelOffers = await fetchHotelOffers(hotelIds);
 
