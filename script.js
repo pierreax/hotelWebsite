@@ -1,4 +1,4 @@
-let accessToken;
+let accessToken, checkInDate, checkOutDate, adults, numberOfRooms, email, formCurrency, location;
 
 async function getAccessToken() {
     const tokenResponse = await fetch('/api/getAccessToken');
@@ -126,12 +126,11 @@ $(document).ready(async function() {
     // 3.2 Fetch Hotel Offers
     async function fetchHotelOffers(validHotelIds) {
         const limitedHotelIds = validHotelIds.slice(0, limitResults);
-        console.log(checkInDate);
         const params = new URLSearchParams({
             hotelIds: limitedHotelIds.join(','),
             adults: adults,
-            checkInDate: checkInDate,
-            checkOutDate: checkOutDate,
+            checkInDate: checkInDate, // Use the global variable directly
+            checkOutDate: checkOutDate, // Use the global variable directly
             roomQuantity: numberOfRooms,
             paymentPolicy: 'NONE',
             bestRateOnly: true,
@@ -141,7 +140,7 @@ $(document).ready(async function() {
         // Use the new backend URL for fetching hotel offers
         const url = `/api/getHotelOffers?${params.toString()}`;
         console.log('Fetching hotel offers with params:', params.toString());
-    
+        
         try {
             const response = await fetch(url, {
                 headers: {
@@ -176,7 +175,7 @@ $(document).ready(async function() {
             throw error;
         }
     }
-           
+       
     // 3.2B Convert Hotel Offers to Form Currency 
     async function convertPricesToFormCurrency(hotelOffers) {
         return Promise.all(hotelOffers.map(async offer => {
@@ -349,19 +348,18 @@ $(document).ready(async function() {
     
     // Get form data and validate check-in/check-out dates
     function getFormData() {
-        const location = $('#location').val();
+        location = $('#location').val();
         const dateRange = datePicker.selectedDates;
-        const adults = $('#adults').val();
-        const numberOfRooms = $('#numberOfRooms').val();
-        const email = $('#email').val();
-        const limitResults = parseInt($('#limitResults').val(), 10);
-        const formCurrency = $('#currency').val();
-    
-        const checkInDate = formatDateToLocalISOString(dateRange[0]);
-        const checkOutDate = formatDateToLocalISOString(dateRange[1]);
+        adults = $('#adults').val();
+        numberOfRooms = $('#numberOfRooms').val();
+        email = $('#email').val();
+        formCurrency = $('#currency').val();
+        
+        checkInDate = formatDateToLocalISOString(dateRange[0]);
+        checkOutDate = formatDateToLocalISOString(dateRange[1]);
         const numberOfNights = dateRange[1] && dateRange[0] ? Math.round((dateRange[1] - dateRange[0]) / (1000 * 60 * 60 * 24)) : 0;
     
-        return { location, checkInDate, checkOutDate, adults, numberOfRooms, email, limitResults, formCurrency, numberOfNights };
+        return { location, checkInDate, checkOutDate, adults, numberOfRooms, email, formCurrency, numberOfNights };
     }
     
         
