@@ -221,20 +221,35 @@ async function fetchRatingsForChunk(hotelIds) {
     const hotelIdsString = hotelIds.join(',');
 
     try {
-        const response = await amadeus.shopping.hotelRatings.get({
-            hotelIds: hotelIdsString
+        // Construct the URL with query parameters
+        const amadeusUrl = `https://api.amadeus.com/v2/e-reputation/hotel-sentiments?hotelIds=${hotelIdsString}`;
+        
+        // Make the request to the Amadeus API
+        const response = await fetch(amadeusUrl, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${process.env.AMADEUS_API_TOKEN}`, // Use the bearer token
+                'Content-Type': 'application/json'
+            }
         });
 
-        if (response.data) {
-            return response.data; // Return ratings data
-        } else {
-            throw new Error('No ratings data found for the hotels.');
+        // Check if the response is OK
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error fetching hotel ratings:', errorText);
+            throw new Error(`Error fetching hotel ratings: ${response.statusText}`);
         }
+
+        // Parse and return the response data
+        const data = await response.json();
+        console.log('Amadeus API Response:', data);
+        return data.data; // Return the ratings array from the response
     } catch (error) {
         console.error('Error fetching hotel ratings for IDs:', hotelIdsString, error);
         throw error;
     }
 }
+
 
 
 // --------- SHEETY ----------------
