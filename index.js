@@ -198,15 +198,6 @@ app.get('/api/getHotelOffers', async (req, res) => {
 
 
 
-// Helper function to chunk an array into smaller chunks of size 3
-function chunkArray(array, size) {
-    const result = [];
-    for (let i = 0; i < array.length; i += size) {
-        result.push(array.slice(i, i + size));
-    }
-    return result;
-}
-
 // Route to fetch hotel ratings from Amadeus
 app.post('/api/getHotelRatings', async (req, res) => {
     try {
@@ -216,23 +207,9 @@ app.post('/api/getHotelRatings', async (req, res) => {
             return res.status(400).send({ error: 'No hotel IDs provided.' });
         }
 
-        // Split the hotel IDs into chunks of 3
-        const chunks = chunkArray(hotelIds, 3);
-        const allRatings = [];
-
-        for (const chunk of chunks) {
-            try {
-                const ratings = await fetchRatingsForChunk(chunk);
-                allRatings.push(ratings);
-            } catch (err) {
-                console.error('Error fetching ratings for chunk:', chunk, err);
-                // Optionally return an error message if fetching fails for a chunk
-                return res.status(500).send({ error: 'Error fetching hotel ratings for chunk.' });
-            }
-        }
-
-        // Flatten and return the aggregated ratings
-        return res.json(allRatings.flat());
+        // Fetch ratings for the provided hotel IDs
+        const ratings = await fetchRatingsForChunk(hotelIds);
+        return res.status(200).json(ratings); // Return ratings directly
     } catch (error) {
         console.error('Error in /api/getHotelRatings:', error);
         return res.status(500).send({ error: 'Error processing hotel ratings request.' });
@@ -240,17 +217,16 @@ app.post('/api/getHotelRatings', async (req, res) => {
 });
 
 // Fetch ratings for a chunk of hotels from Amadeus API
-async function fetchRatingsForChunk(chunk) {
-    const hotelIdsString = chunk.join(',');
+async function fetchRatingsForChunk(hotelIds) {
+    const hotelIdsString = hotelIds.join(',');
 
     try {
-        // Call the Amadeus API
         const response = await amadeus.shopping.hotelRatings.get({
             hotelIds: hotelIdsString
         });
 
         if (response.data) {
-            return response.data;
+            return response.data; // Return ratings data
         } else {
             throw new Error('No ratings data found for the hotels.');
         }
@@ -259,6 +235,7 @@ async function fetchRatingsForChunk(chunk) {
         throw error;
     }
 }
+
 
 // --------- SHEETY ----------------
 

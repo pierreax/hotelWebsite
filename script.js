@@ -197,30 +197,60 @@ $(document).ready(async function() {
     }
 
     // 3.3 Fetch Hotel Ratings for Hotel IDs
-    async function fetchHotelRatings(hotelIds) {
-        try {
-            const response = await fetch('/api/getHotelRatings', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ hotelIds })
-            });
-    
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Error fetching hotel ratings: ${errorText}`);
+    async function fetchHotelRatings(hotelOffers) {
+        const hotelIds = hotelOffers.map(hotel => hotel.hotelId); // Extract hotelIds
+        const chunkSize = 3;
+
+        // Helper function to split hotelIds into chunks of size 3
+        function chunkArray(array, size) {
+            const result = [];
+            for (let i = 0; i < array.length; i += size) {
+                result.push(array.slice(i, i + size));
             }
-    
-            const ratingsData = await response.json();
-            console.log('Hotel Ratings Data:', ratingsData);
-            return ratingsData; // This will contain the aggregated ratings
-        } catch (error) {
-            console.error('Error fetching hotel ratings:', error.message);
-            throw error;
+            return result;
         }
+
+        const hotelChunks = chunkArray(hotelIds, chunkSize);
+        console.log('Hotel Chunks:', hotelChunks);
+
+        const updatedOffers = [...hotelOffers]; // Create a copy to add ratings
+
+        // Fetch ratings for each chunk
+        for (const chunk of hotelChunks) {
+            try {
+                // Send request to fetch ratings for the current chunk
+                const response = await fetch('/api/getHotelRatings', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ hotelIds: chunk })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Error fetching hotel ratings: ${errorText}`);
+                }
+
+                const ratingsData = await response.json();
+                console.log('Ratings Data for Chunk:', chunk, ratingsData);
+
+                // Add ratings to the corresponding hotels in updatedOffers
+                ratingsData.forEach(rating => {
+                    const hotel = updatedOffers.find(h => h.hotelId === rating.hotelId);
+                    if (hotel) {
+                        hotel.rating = rating.overallRating || 'N/A'; // Add rating
+                    }
+                });
+            } catch (error) {
+                console.error(`Error fetching ratings for chunk ${chunk}:`, error.message);
+            }
+        }
+
+        return updatedOffers; // Return the updated offers with ratings
     }
+
 
     // 3.4 Merge Ratings with Offers
     function mergeRatingsWithOffers(hotelOffers, hotelRatings) {
@@ -342,10 +372,6 @@ $(document).ready(async function() {
             // 5b. Merge ratings with hotel offers
             const combinedResults = mergeRatingsWithOffers(hotelOffers, hotelRatings);
             console.log('Combined Results with Ratings:', combinedResults);
-    
-            // 6. Aggregate hotel ratings
-            const aggregatedResults = aggregateHotelRatings(hotelRatings);
-            console.log('Aggregated Results:', aggregatedResults);
     
             // 7. Process aggregated results (you can show them in the UI)
             displayHotelResults(aggregatedResults);
