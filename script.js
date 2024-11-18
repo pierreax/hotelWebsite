@@ -124,7 +124,7 @@ $(document).ready(async function() {
     async function fetchHotelOffers(validHotelIds) {
         const limitedHotelIds = validHotelIds.slice(0, limitResults);
         const params = new URLSearchParams({
-            hotelIds: limitedHotelIds.join(','),
+            hotelIds: limitedHotelIds,
             adults: adults,
             checkInDate: checkInDate, // Use the global variable directly
             checkOutDate: checkOutDate, // Use the global variable directly
@@ -319,8 +319,7 @@ $(document).ready(async function() {
             const hotelIds = hotelsData.map(hotel => hotel.hotelId);
 
             // 4. Fetch hotel offers using the valid hotel IDs
-            const hotelIdsString = hotelIds.join(','); // Convert array to comma-separated string
-            console.log('Searching offers for :', hotelIdsString);
+            console.log('Searching offers for :', hotelIds);
             const hotelOffers = await fetchHotelOffers(hotelIdsString);
 
             // 5. Fetch ratings for the hotels
