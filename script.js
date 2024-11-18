@@ -119,7 +119,7 @@ $(document).ready(async function() {
         const response = await fetch(apiUrl, { headers: { 'Authorization': `Bearer ${accessToken}` } });
         const hotelsData = await response.json();
         return hotelsData.data;
-    }
+    }    
 
 
 
@@ -308,21 +308,27 @@ $(document).ready(async function() {
     
         try {
             console.log('Search button is pressed!');
-            // Get the location coordinates
+            // 1. Get the location coordinates
             const locationCoordinates = await getLocationCoordinates(location);
-    
-            // Fetch hotels by coordinates
+
+            // 2. Fetch hotels by coordinates
             const hotelsData = await fetchHotelsByCoordinates(locationCoordinates.lat, locationCoordinates.lng);
+            console.log(hotelsData);
+
+            // 3. Extract valid hotel IDs from hotelsData
             const hotelIds = hotelsData.map(hotel => hotel.hotelId);
+
+            // 4. Fetch hotel offers using the valid hotel IDs
+            const hotelOffers = await fetchHotelOffers(hotelIds);
+
+            // 5. Fetch ratings for the hotels
+            const hotelRatings = await fetchHotelRatings(hotelOffers);
     
-            // Fetch ratings for the hotels
-            const hotelRatings = await fetchHotelRatings(hotelIds);
-    
-            // Aggregate hotel ratings
+            // 6. Aggregate hotel ratings
             const aggregatedResults = aggregateHotelRatings(hotelRatings);
             console.log('Aggregated Results:', aggregatedResults);
     
-            // Process aggregated results (you can show them in the UI)
+            // 7. Process aggregated results (you can show them in the UI)
             displayHotelResults(aggregatedResults);
     
         } catch (error) {
