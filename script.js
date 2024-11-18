@@ -313,10 +313,10 @@ $(document).ready(async function() {
 
             // 2. Fetch hotels by coordinates
             const hotelsData = await fetchHotelsByCoordinates(locationCoordinates.lat, locationCoordinates.lng);
-            console.log(hotelsData);
 
             // 3. Extract valid hotel IDs from hotelsData
             const hotelIds = hotelsData.map(hotel => hotel.hotelId);
+            console.log(hotelIds)
 
             // 4. Fetch hotel offers using the valid hotel IDs
             const hotelOffers = await fetchHotelOffers(hotelIds);
