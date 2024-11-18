@@ -121,10 +121,9 @@ $(document).ready(async function() {
 
 
     // 3.2 Fetch Hotel Offers
-    async function fetchHotelOffers(validHotelIds) {
-        const limitedHotelIds = validHotelIds.slice(0, limitResults);
+    async function fetchHotelOffers(hotelIds) {
         const params = new URLSearchParams({
-            hotelIds: limitedHotelIds,
+            hotelIds: hotelIds,
             adults: adults,
             checkInDate: checkInDate, // Use the global variable directly
             checkOutDate: checkOutDate, // Use the global variable directly
