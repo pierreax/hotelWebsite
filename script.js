@@ -149,7 +149,7 @@ $(document).ready(async function() {
     
             try {
                 const responseData = JSON.parse(text);
-                console.log('Hotel offers response:', responseData);
+                console.log('Hotel offers response:', responseData.data);
     
                 if (responseData.message) { // Check for the message
                     resultsContainer.html(`<div class="no-results-message">${responseData.message}</div>`);
@@ -161,7 +161,7 @@ $(document).ready(async function() {
                     throw new Error(`Failed to fetch hotel offers: ${errorDetails}`);
                 }
     
-                return responseData; // Return valid offers
+                return responseData.data; // Return valid offers
     
             } catch (err) {
                 throw new Error(`Failed to parse hotel offers response: ${text}`);
