@@ -348,7 +348,7 @@ $(document).ready(async function() {
     
     // Get form data and validate check-in/check-out dates
     function getFormData() {
-        location = $('#location').val();
+        location = $('#location').val();  // Assign directly to global variable
         const dateRange = datePicker.selectedDates;
         adults = $('#adults').val();
         numberOfRooms = $('#numberOfRooms').val();
@@ -358,9 +358,10 @@ $(document).ready(async function() {
         checkInDate = formatDateToLocalISOString(dateRange[0]);
         checkOutDate = formatDateToLocalISOString(dateRange[1]);
         const numberOfNights = dateRange[1] && dateRange[0] ? Math.round((dateRange[1] - dateRange[0]) / (1000 * 60 * 60 * 24)) : 0;
-    
+        
         return { location, checkInDate, checkOutDate, adults, numberOfRooms, email, formCurrency, numberOfNights };
     }
+    
     
         
     // --------Submit to Sheety --------------
