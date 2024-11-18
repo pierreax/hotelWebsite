@@ -135,34 +135,67 @@ app.get('/api/getHotelsByCoordinates', async (req, res) => {
     }
 });
 
-// API to get hotel offers from Amadeus
 app.get('/api/getHotelOffers', async (req, res) => {
     const { hotelIds, adults, checkInDate, checkOutDate, roomQuantity } = req.query;
+    const accessToken = req.headers['authorization'] ? req.headers['authorization'].split(' ')[1] : null;
+
+    if (!accessToken) {
+        return res.status(401).json({ message: 'Unauthorized: Access token missing' });
+    }
+
+    if (!hotelIds || !checkInDate || !checkOutDate || !adults || !roomQuantity) {
+        return res.status(400).json({ message: 'Missing required query parameters' });
+    }
+
     try {
-        const response = await fetch('https://api.amadeus.com/v3/shopping/hotel-offers', {
+        // Construct the Amadeus API URL with query parameters
+        const amadeusUrl = new URL('https://api.amadeus.com/v3/shopping/hotel-offers');
+        amadeusUrl.search = new URLSearchParams({
+            hotelIds,
+            adults,
+            checkInDate,
+            checkOutDate,
+            roomQuantity,
+            paymentPolicy: 'NONE',
+            bestRateOnly: true,
+            includeClosed: false
+        }).toString();
+
+        const response = await fetch(amadeusUrl.toString(), {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${req.headers.authorization}`  // Pass the access token here
-            },
-            params: {
-                hotelIds: hotelIds,
-                adults: adults,
-                checkInDate: checkInDate,
-                checkOutDate: checkOutDate,
-                roomQuantity: roomQuantity,
-                paymentPolicy: 'NONE',
-                bestRateOnly: true,
-                includeClosed: false
+                'Authorization': `Bearer ${accessToken}`
             }
         });
 
+        // If the response is not OK, handle the error
+        if (!response.ok) {
+            const errorText = await response.text();
+            let errorMessage;
+
+            try {
+                // Attempt to parse the error text as JSON
+                const errorJson = JSON.parse(errorText);
+                errorMessage = errorJson.errors?.[0]?.detail || 'Unknown error occurred';
+            } catch (parseError) {
+                // If parsing fails, fallback to raw error text
+                errorMessage = errorText || 'Unknown error occurred';
+            }
+
+            return res.status(response.status).json({ message: `Error fetching hotel offers: ${errorMessage}` });
+        }
+
         const data = await response.json();
-        res.json(data);  // Send back the fetched hotel offers data
+
+        // Return the hotel offers data if successful
+        res.status(200).json(data);
+
     } catch (error) {
         console.error('Error fetching hotel offers:', error.message);
-        res.status(500).json({ error: 'Failed to fetch hotel offers' });
+        res.status(500).json({ message: `Error fetching hotel offers: ${error.message}` });
     }
 });
+
 
 
 // Helper function to chunk an array into smaller chunks of size 3
