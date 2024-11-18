@@ -1,4 +1,4 @@
-let accessToken, checkInDate, checkOutDate, adults, numberOfRooms, email, formCurrency, location;
+let accessToken, checkInDate, checkOutDate, adults, numberOfRooms, email, formCurrency, destination;
 
 async function getAccessToken() {
     const tokenResponse = await fetch('/api/getAccessToken');
@@ -13,7 +13,7 @@ $(document).ready(async function() {
     const queryParams = new URLSearchParams(window.location.search);
     $('#email').val(queryParams.get('email'));
     $('#currency').val(queryParams.get('currency')).trigger('change');
-    $('#location').val(queryParams.get('city'));
+    $('#destination').val(queryParams.get('city'));
 
 
     // Fetch access token when document is ready
@@ -85,9 +85,9 @@ $(document).ready(async function() {
         return amount * rate;
     }
 
-    async function getLocationCoordinates(location) {
-        console.log('Getting coordinates for location: ', location);
-        const apiUrl = `/api/getCoordinatesByLocation?location=${encodeURIComponent(location)}`;
+    async function getLocationCoordinates(destination) {
+        console.log('Getting coordinates for destination: ', destination);
+        const apiUrl = `/api/getCoordinatesByLocation?location=${encodeURIComponent(destination)}`;
     
         try {
             const response = await fetch(apiUrl);
@@ -98,7 +98,7 @@ $(document).ready(async function() {
             }
     
             const data = await response.json();    
-            console.log('Coordinates from location:', data);
+            console.log('Coordinates from destination:', data);
             return data;
         } catch (error) {
             console.error('Error fetching coordinates:', error.message);
@@ -293,7 +293,7 @@ $(document).ready(async function() {
         resetUIForSubmission();  // Reset the UI before starting the submission
     
         // Step 4.1 Retrieve form data and validate
-        const { location, checkInDate, checkOutDate, adults, numberOfRooms, email, limitResults, formCurrency, numberOfNights } = getFormData();
+        const { destination, checkInDate, checkOutDate, adults, numberOfRooms, email, limitResults, formCurrency, numberOfNights } = getFormData();
         if (!checkInDate || !checkOutDate || numberOfNights <= 0) {
             alert('Please enter valid check-in and check-out dates.');
             $('.datepicker').focus();
@@ -304,12 +304,12 @@ $(document).ready(async function() {
 
         // -------------- LOGIC when the Search button is pressed -----------------------
 
-        console.log('Form Data:', { location, checkInDate, checkOutDate, adults, numberOfRooms, email, formCurrency });
+        console.log('Form Data:', { destination, checkInDate, checkOutDate, adults, numberOfRooms, email, formCurrency });
     
         try {
             console.log('Search button is pressed!');
             // 1. Get the location coordinates
-            const locationCoordinates = await getLocationCoordinates(location);
+            const locationCoordinates = await getLocationCoordinates(destination);
 
             // 2. Fetch hotels by coordinates
             const hotelsData = await fetchHotelsByCoordinates(locationCoordinates.lat, locationCoordinates.lng);
@@ -348,7 +348,7 @@ $(document).ready(async function() {
     
     // Get form data and validate check-in/check-out dates
     function getFormData() {
-        location = $('#location').val();  // Assign directly to global variable
+        destination = $('#destination').val();  // Assign directly to global variable
         const dateRange = datePicker.selectedDates;
         adults = $('#adults').val();
         numberOfRooms = $('#numberOfRooms').val();
@@ -359,7 +359,7 @@ $(document).ready(async function() {
         checkOutDate = formatDateToLocalISOString(dateRange[1]);
         const numberOfNights = dateRange[1] && dateRange[0] ? Math.round((dateRange[1] - dateRange[0]) / (1000 * 60 * 60 * 24)) : 0;
         
-        return { location, checkInDate, checkOutDate, adults, numberOfRooms, email, formCurrency, numberOfNights };
+        return { destination, checkInDate, checkOutDate, adults, numberOfRooms, email, formCurrency, numberOfNights };
     }
     
     
@@ -367,7 +367,7 @@ $(document).ready(async function() {
     // --------Submit to Sheety --------------
     async function submitToSheety(formData, formattedData) {
         const data = {
-            location: formData.location,
+            location: formData.destination,
             checkInDate: formData.checkInDate,
             checkOutDate: formData.checkOutDate,
             adults: formData.adults,
@@ -495,7 +495,7 @@ $(document).ready(async function() {
         $('.loader').show();
         
         const formData = {
-            location,
+            destination,
             checkInDate,
             checkOutDate,
             adults,
@@ -521,7 +521,7 @@ $(document).ready(async function() {
             }
 
             // Send email via the backend
-            await sendEmail(location, checkInDate, checkOutDate, adults, numberOfRooms, email, formCurrency, formattedData.selectedHotels);
+            await sendEmail(desintation, checkInDate, checkOutDate, adults, numberOfRooms, email, formCurrency, formattedData.selectedHotels);
     
             // Show modal to ask if the user wants to track flights
             askForFlightTracking();
@@ -564,7 +564,7 @@ $(document).ready(async function() {
 
 
     // FINAL STEP Function to send email after submission
-    async function sendEmail(location, checkInDate, checkOutDate, adults, numberOfRooms, email, formCurrency, selectedHotels) {
+    async function sendEmail(destination, checkInDate, checkOutDate, adults, numberOfRooms, email, formCurrency, selectedHotels) {
         try {
             const emailResponse = await fetch('/api/SendMail', {
                 method: 'POST',
@@ -574,7 +574,7 @@ $(document).ready(async function() {
                 body: JSON.stringify({
                     subject: "New submission for your Hotel Robot",
                     body: `Great news, somebody just signed up for your Hotel Robot! Here are the details:<br><br>
-                        Location: ${location}<br>
+                        Destination: ${destination}<br>
                         Check-In Date: ${checkInDate}<br>
                         Check-Out Date: ${checkOutDate}<br>
                         Adults: ${adults}<br>
