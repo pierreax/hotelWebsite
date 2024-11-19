@@ -262,67 +262,82 @@ $(document).ready(async function() {
             rating: ratingsMap.get(offer.hotelId) || 'N/A' // Default to 'N/A' if no rating found
         }));
     }
+
+    // 3.5 Display Results
+    function displayHotelResults(hotelOffers) {
+        $('#resultsBox').empty(); // Clear any previous results
+    
+        if (hotelOffers.length === 0) {
+            $('#noResultsMessage').show();
+            return;
+        }
+    
+        hotelOffers.forEach(offer => {
+            const card = createHotelCard({
+                hotelId: offer.hotel.hotelId,
+                hotelName: offer.hotel.name || 'Unknown Hotel',
+                roomType: offer.offers?.[0]?.room?.type || 'N/A',
+                distance: offer.distance || 'N/A',
+                pricePerNight: offer.offers?.[0]?.price?.total || 'N/A',
+                totalPrice: offer.offers?.reduce((sum, current) => sum + parseFloat(current.price.total || 0), 0) || 'N/A',
+                rating: 'N/A', // Skip rating for now
+            });
+    
+            $('#resultsBox').append(card);
+        });
+    }
+    
     
     
 
-    // 3.5 Create Card with Hotel information
-
-    // Create a card for displaying hotel details
+    // 3.5b Create Card with Hotel information
     function createHotelCard(result) {
         const card = $('<div>').addClass('card');
-        
+    
         // Add hidden hotelId element
         const hiddenHotelId = $('<div>').addClass('hiddenHotelId').text(result.hotelId).hide();
         card.append(hiddenHotelId);
-
+    
         // Card Header with hotel name
         const cardHeader = $('<div>').addClass('card-header');
-        cardHeader.append($('<div>').text(formatHotelName(result.hotelName)).addClass('hotel-name'));
-
+        cardHeader.append($('<div>').text(result.hotelName).addClass('hotel-name'));
+        card.append(cardHeader);
+    
         // Add room type below hotel name
         const roomType = $('<div>').text(result.roomType).addClass('room-type');
-        cardHeader.append(roomType);
-
+        card.append(roomType);
+    
         // Add the distance in a separate container
         const distanceContainer = $('<div>').addClass('distance').text(`${result.distance} km`);
         card.append(distanceContainer);
-
+    
+        // Add Price per Night
+        const pricePerNightDiv = $('<div>').addClass('price-per-night');
+        pricePerNightDiv.append($('<span>').addClass('label').text('Per Night: '));
+        pricePerNightDiv.append($('<span>').addClass('amount').text(`${result.pricePerNight}`));
+        card.append(pricePerNightDiv);
+    
+        // Add Total Price
+        const totalPriceDiv = $('<div>').addClass('total-price');
+        totalPriceDiv.append($('<span>').addClass('label').text('Total: '));
+        totalPriceDiv.append($('<span>').addClass('amount').text(`${result.totalPrice}`));
+        card.append(totalPriceDiv);
+    
         // Add Rating if available
-        if (result.rating) {
-            const ratingDiv = $('<div>').addClass('rating');
-            ratingDiv.append($('<span>').addClass('label').text('Rating: '));
-            ratingDiv.append($('<span>').addClass('rating-value').text(result.rating)); // Append the rating
-            card.append(ratingDiv);
-        }
-
+        const ratingDiv = $('<div>').addClass('rating');
+        ratingDiv.append($('<span>').addClass('label').text('Rating: '));
+        ratingDiv.append($('<span>').addClass('rating-value').text(result.rating));
+        card.append(ratingDiv);
+    
         // Create a container for the checkbox and its label
         const checkboxContainer = $('<div>').addClass('checkbox-container');
         checkboxContainer.append($('<span>').addClass('checkbox-description').text('Add to Robot: '));
         checkboxContainer.append($('<input>').attr('type', 'checkbox').addClass('select-checkbox'));
         card.append(checkboxContainer);
-
-        // Create a single .card-content div for all other information
-        const cardContent = $('<div>').addClass('card-content');
-        const currencySymbol = $('#currency').val(); // No need to convert to uppercase
-        
-        // Add price per night
-        const pricePerNightDiv = $('<div>').addClass('price-per-night');
-        pricePerNightDiv.append($('<span>').addClass('label').text('Per Night: '));
-        pricePerNightDiv.append($('<span>').addClass('amount').text(`${currencySymbol} ${result.pricePerNight}`));
-        cardContent.append(pricePerNightDiv);
-
-        // Add total price
-        const totalPriceDiv = $('<div>').addClass('total-price');
-        totalPriceDiv.append($('<span>').addClass('label').text('Total: '));
-        totalPriceDiv.append($('<span>').addClass('amount').text(`${currencySymbol} ${result.totalPrice}`));
-        cardContent.append(totalPriceDiv);
-
-        // Append the header and content to the card
-        card.append(cardHeader);
-        card.append(cardContent);
-
+    
         return card;
     }
+    
 
     
 
@@ -367,15 +382,15 @@ $(document).ready(async function() {
             const hotelOffers = await fetchHotelOffers(hotelIds);
 
             // 5. Fetch ratings for the hotels
-            console.log('Searching ratings for hotels:', hotelOffers);
-            const hotelRatings = await fetchHotelRatings(hotelOffers);
+           // console.log('Searching ratings for hotels:', hotelOffers);
+            //const hotelRatings = await fetchHotelRatings(hotelOffers);
 
             // 5b. Merge ratings with hotel offers
-            const combinedResults = mergeRatingsWithOffers(hotelOffers, hotelRatings);
-            console.log('Combined Results with Ratings:', combinedResults);
+            //const combinedResults = mergeRatingsWithOffers(hotelOffers, hotelRatings);
+            //console.log('Combined Results with Ratings:', combinedResults);
     
             // 7. Process aggregated results (you can show them in the UI)
-            displayHotelResults(aggregatedResults);
+            displayHotelResults(hotelOffers);
     
         } catch (error) {
             console.error('Error during form submission:', error.message);
