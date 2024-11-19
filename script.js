@@ -264,7 +264,7 @@ $(document).ready(async function() {
     }
 
     // 3.5 Display Results
-    function displayHotelResults(hotelOffers, locationCoordinates.lat, locationCoordinates.lng) {
+    function displayHotelResults(hotelOffers, destinationlat, destinationlng) {
         $('#resultsBox').empty(); // Clear any previous results
 
         if (hotelOffers.length === 0) {
@@ -280,8 +280,8 @@ $(document).ready(async function() {
             const formattedHotelName = formatHotelName(offer.hotel.name || 'Unknown Hotel');
             const formattedRoomType = formatRoomType(offer.offers?.[0]?.room?.typeEstimated.category || 'N/A');
             const formattedDistance = offer.distance !== 'N/A' 
-                ? calculateDistance(offer.hotel.latitude, offer.hotel.longitude, locationCoordinates.lat, locationCoordinates.lng) 
-                : 'N/A'; // Replace `destinationLatitude` and `destinationLongitude` with actual values if available
+                ? calculateDistance(offer.hotel.latitude, offer.hotel.longitude, destinationlat, destinationlng) 
+                : 'N/A';
 
             // Create the card with the formatted data
             const card = createHotelCard({
