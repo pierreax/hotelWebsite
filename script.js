@@ -264,7 +264,7 @@ $(document).ready(async function() {
     }
 
     // 3.5 Display Results
-    function displayHotelResults(hotelOffers) {
+    function displayHotelResults(hotelOffers, locationCoordinates.lat, locationCoordinates.lng) {
         $('#resultsBox').empty(); // Clear any previous results
 
         if (hotelOffers.length === 0) {
@@ -405,7 +405,7 @@ $(document).ready(async function() {
     
             // 7. Process aggregated results (you can show them in the UI)
             console.log('Creating cards for :', hotelIds);
-            displayHotelResults(hotelOffers);
+            displayHotelResults(hotelOffers,locationCoordinates.lat, locationCoordinates.lng);
     
         } catch (error) {
             console.error('Error during form submission:', error.message);
