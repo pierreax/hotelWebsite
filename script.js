@@ -282,6 +282,8 @@ $(document).ready(async function() {
                 totalPrice: offer.offers?.reduce((sum, current) => sum + parseFloat(current.price.total || 0), 0) || 'N/A',
                 rating: 'N/A', // Skip rating for now
             });
+
+            console.log('Created a card for: ', hotelId);
     
             $('#resultsBox').append(card);
         });
@@ -390,6 +392,7 @@ $(document).ready(async function() {
             //console.log('Combined Results with Ratings:', combinedResults);
     
             // 7. Process aggregated results (you can show them in the UI)
+            console.log('Creating cards for :', hotelIds);
             displayHotelResults(hotelOffers);
     
         } catch (error) {
