@@ -202,34 +202,40 @@ app.get('/api/getHotelOffers', async (req, res) => {
 app.post('/api/getHotelRatings', async (req, res) => {
     try {
         const { hotelIds } = req.body;
+        const accessToken = req.headers['authorization'] ? req.headers['authorization'].split(' ')[1] : null;
+
+        if (!accessToken) {
+            return res.status(401).json({ message: 'Unauthorized: Access token missing' });
+        }
 
         if (!hotelIds || hotelIds.length === 0) {
-            return res.status(400).send({ error: 'No hotel IDs provided.' });
+            return res.status(400).json({ error: 'No hotel IDs provided.' });
         }
 
         // Fetch ratings for the provided hotel IDs
-        const ratings = await fetchRatingsForChunk(hotelIds);
+        const ratings = await fetchRatingsForChunk(hotelIds, accessToken);
         return res.status(200).json(ratings); // Return ratings directly
     } catch (error) {
         console.error('Error in /api/getHotelRatings:', error);
-        return res.status(500).send({ error: 'Error processing hotel ratings request.' });
+        return res.status(500).json({ error: 'Error processing hotel ratings request.' });
     }
 });
 
 // Fetch ratings for a chunk of hotels from Amadeus API
-async function fetchRatingsForChunk(hotelIds) {
+async function fetchRatingsForChunk(hotelIds, accessToken) {
     const hotelIdsString = hotelIds.join(',');
 
     try {
         // Construct the URL with query parameters
         const amadeusUrl = `https://api.amadeus.com/v2/e-reputation/hotel-sentiments?hotelIds=${hotelIdsString}`;
-        console.log('Authorization token:', process.env.AMADEUS_API_TOKEN);
-        
+        console.log('Amadeus API URL:', amadeusUrl);
+        console.log('Authorization token:', accessToken);
+
         // Make the request to the Amadeus API
         const response = await fetch(amadeusUrl, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${process.env.AMADEUS_API_TOKEN}`, 
+                'Authorization': `Bearer ${accessToken}`,
                 'Content-Type': 'application/json'
             }
         });
@@ -240,7 +246,6 @@ async function fetchRatingsForChunk(hotelIds) {
             console.error('Error response from Amadeus API:', errorText);
             throw new Error(`Error fetching hotel ratings: ${errorText}`);
         }
-        
 
         // Parse and return the response data
         const data = await response.json();
@@ -251,6 +256,7 @@ async function fetchRatingsForChunk(hotelIds) {
         throw error;
     }
 }
+
 
 
 
