@@ -266,30 +266,40 @@ $(document).ready(async function() {
     // 3.5 Display Results
     function displayHotelResults(hotelOffers) {
         $('#resultsBox').empty(); // Clear any previous results
-    
+
         if (hotelOffers.length === 0) {
             $('#noResultsMessage').show();
             $('#resultsBox').hide(); // Hide the results box if no offers
             return;
         }
-    
+
         $('#resultsBox').show(); // Ensure the results box is visible
+
         hotelOffers.forEach(offer => {
+            // Preprocess the data with the formatting functions
+            const formattedHotelName = formatHotelName(offer.hotel.name || 'Unknown Hotel');
+            const formattedRoomType = formatRoomType(offer.offers?.[0]?.room?.typeEstimated.category || 'N/A');
+            const formattedDistance = offer.distance !== 'N/A' 
+                ? calculateDistance(offer.hotel.latitude, offer.hotel.longitude, destinationLatitude, destinationLongitude) 
+                : 'N/A'; // Replace `destinationLatitude` and `destinationLongitude` with actual values if available
+
+            // Create the card with the formatted data
             const card = createHotelCard({
                 hotelId: offer.hotel.hotelId,
-                hotelName: offer.hotel.name || 'Unknown Hotel',
-                roomType: offer.offers?.[0]?.room?.typeEstimated.category || 'N/A',
-                distance: offer.distance || 'N/A',
+                hotelName: formattedHotelName,
+                roomType: formattedRoomType,
+                distance: formattedDistance,
                 pricePerNight: offer.offers?.[0]?.price?.total || 'N/A',
                 totalPrice: offer.offers?.reduce((sum, current) => sum + parseFloat(current.price.total || 0), 0) || 'N/A',
                 rating: 'N/A', // Skip rating for now
             });
-    
+
             console.log('Created a card for: ', offer.hotel.hotelId);
-    
+
             $('#resultsBox').append(card);
         });
     }
+
     
     
     
