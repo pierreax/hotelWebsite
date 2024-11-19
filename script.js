@@ -278,7 +278,7 @@ $(document).ready(async function() {
             const card = createHotelCard({
                 hotelId: offer.hotel.hotelId,
                 hotelName: offer.hotel.name || 'Unknown Hotel',
-                roomType: offer.offers?.[0]?.room?.type || 'N/A',
+                roomType: offer.offers?.[0]?.room?.typeEstimated.category || 'N/A',
                 distance: offer.distance || 'N/A',
                 pricePerNight: offer.offers?.[0]?.price?.total || 'N/A',
                 totalPrice: offer.offers?.reduce((sum, current) => sum + parseFloat(current.price.total || 0), 0) || 'N/A',
@@ -383,7 +383,6 @@ $(document).ready(async function() {
             const hotelIds = hotelsData.map(hotel => hotel.hotelId);
 
             // 4. Fetch hotel offers using the valid hotel IDs
-            console.log('Searching offers for :', hotelIds);
             const hotelOffers = await fetchHotelOffers(hotelIds);
 
             // 5. Fetch ratings for the hotels
