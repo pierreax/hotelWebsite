@@ -283,7 +283,7 @@ $(document).ready(async function() {
                 rating: 'N/A', // Skip rating for now
             });
 
-            console.log('Created a card for: ', hotelId);
+            console.log('Created a card for: ', offer.hotel.hotelId);
     
             $('#resultsBox').append(card);
         });
