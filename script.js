@@ -269,9 +269,11 @@ $(document).ready(async function() {
     
         if (hotelOffers.length === 0) {
             $('#noResultsMessage').show();
+            $('#resultsBox').hide(); // Hide the results box if no offers
             return;
         }
     
+        $('#resultsBox').show(); // Ensure the results box is visible
         hotelOffers.forEach(offer => {
             const card = createHotelCard({
                 hotelId: offer.hotel.hotelId,
@@ -282,12 +284,13 @@ $(document).ready(async function() {
                 totalPrice: offer.offers?.reduce((sum, current) => sum + parseFloat(current.price.total || 0), 0) || 'N/A',
                 rating: 'N/A', // Skip rating for now
             });
-
+    
             console.log('Created a card for: ', offer.hotel.hotelId);
     
             $('#resultsBox').append(card);
         });
     }
+    
     
     
     
