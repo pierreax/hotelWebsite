@@ -280,7 +280,7 @@ $(document).ready(async function() {
             const formattedHotelName = formatHotelName(offer.hotel.name || 'Unknown Hotel');
             const formattedRoomType = formatRoomType(offer.offers?.[0]?.room?.typeEstimated.category || 'N/A');
             const formattedDistance = offer.distance !== 'N/A' 
-                ? calculateDistance(offer.hotel.latitude, offer.hotel.longitude, destinationLatitude, destinationLongitude) 
+                ? calculateDistance(offer.hotel.latitude, offer.hotel.longitude, locationCoordinates.lat, locationCoordinates.lng) 
                 : 'N/A'; // Replace `destinationLatitude` and `destinationLongitude` with actual values if available
 
             // Create the card with the formatted data
