@@ -229,7 +229,7 @@ async function fetchRatingsForChunk(hotelIds) {
         const response = await fetch(amadeusUrl, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${process.env.AMADEUS_API_TOKEN}`, // Use the bearer token
+                'Authorization': `Bearer ${process.env.AMADEUS_API_TOKEN}`, 
                 'Content-Type': 'application/json'
             }
         });
