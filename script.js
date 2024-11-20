@@ -289,8 +289,8 @@ $(document).ready(async function() {
                 hotelName: formattedHotelName,
                 roomType: formattedRoomType,
                 distance: formattedDistance,
-                pricePerNight: offer.offers?.[0]?.price?.total || 'N/A',
-                totalPrice: offer.offers?.reduce((sum, current) => sum + parseFloat(current.price.total || 0), 0) || 'N/A',
+                const totalPrice = parseFloat(offer.offers[0].price.total);
+                const pricePerNight = totalPrice / numberOfNights;
                 rating: 'N/A', // Skip rating for now
             });
 
