@@ -357,6 +357,7 @@ $(document).ready(async function() {
         return hotelOffers.map(offer => {
             const offerCurrency = offer.offers[0].price.currency;
             const rate = fxRates[offerCurrency] || 1; // Default to 1 if no rate found (assuming same currency)
+            console.log('Rate for ', offerCurrency, rate);
     
             offer.offers[0].price.total = (offer.offers[0].price.total * rate).toFixed(2); // Convert price
             offer.offers[0].price.currency = formCurrency; // Update currency
@@ -388,6 +389,8 @@ $(document).ready(async function() {
         // -------------- LOGIC when the Search button is pressed -----------------------
 
         console.log('Form Data:', { destination, checkInDate, checkOutDate, adults, numberOfRooms, email, formCurrency });
+
+        let fxRates = {};
     
         try {
             console.log('Search button is pressed!');
