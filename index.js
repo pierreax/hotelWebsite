@@ -11,6 +11,7 @@ const EMAIL_CLIENT_ID = process.env.EMAIL_CLIENT_ID;
 const EMAIL_CLIENT_SECRET = process.env.EMAIL_CLIENT_SECRET;
 const EMAIL_TENANT_ID = process.env.EMAIL_TENANT_ID;
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
+const EXCHANGE_RATE_API_KEY = process.env.EXCHANGE_RATE_API_KEY;
 
 // Middleware to parse JSON requests
 app.use(express.json());
@@ -51,6 +52,29 @@ app.get('/api/getCoordinatesByLocation', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch coordinates' });
     }
 });
+
+// Function to fetch FX rates based on form currency
+async function fetchFxRates(formCurrency) {
+    try {
+        const url = `https://v6.exchangerate-api.com/v6/${EXCHANGE_RATE_API_KEY}/latest/${formCurrency}`;
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch FX rates: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        if (data.conversion_rates) {
+            return data.conversion_rates; // Return all conversion rates
+        } else {
+            throw new Error('Conversion rates not found in API response');
+        }
+    } catch (error) {
+        console.error('Error fetching FX rates:', error.message);
+        throw error;
+    }
+}
+
 
 
 

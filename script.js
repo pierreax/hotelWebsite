@@ -352,6 +352,18 @@ $(document).ready(async function() {
     
         return card;
     }
+
+    function convertOfferPrices(hotelOffers, fxRates, formCurrency) {
+        return hotelOffers.map(offer => {
+            const offerCurrency = offer.offers[0].price.currency;
+            const rate = fxRates[offerCurrency] || 1; // Default to 1 if no rate found (assuming same currency)
+    
+            offer.offers[0].price.total = (offer.offers[0].price.total * rate).toFixed(2); // Convert price
+            offer.offers[0].price.currency = formCurrency; // Update currency
+            return offer;
+        });
+    }
+    
     
 
     
@@ -382,6 +394,16 @@ $(document).ready(async function() {
             // 0. Get the Access Token for Amadeus
             await getAccessToken(); // Await the access token
 
+            // 0. Fetch current FX rates based on form currency
+            console.log('Fetching FX rates for form currency:', formCurrency);
+            const fxRatesResponse = await fetch(`/api/getFxRates?baseCurrency=${formCurrency}`);
+            if (!fxRatesResponse.ok) {
+                throw new Error('Failed to fetch FX rates.');
+            }
+            fxRates = await fxRatesResponse.json();
+            console.log('Fetched FX Rates:', fxRates);
+
+
             // 1. Get the location coordinates
             const locationCoordinates = await getLocationCoordinates(destination);
 
@@ -395,6 +417,9 @@ $(document).ready(async function() {
             // 4. Fetch hotel offers using the valid hotel IDs
             const hotelOffers = await fetchHotelOffers(hotelIds);
 
+            //4b. Convert hotelOffers to Form Currency
+            const convertedOffers = convertOfferPrices(hotelOffers, fxRates, formCurrency);
+
             // 5. Fetch ratings for the hotels
            // console.log('Searching ratings for hotels:', hotelOffers);
             //const hotelRatings = await fetchHotelRatings(hotelOffers);
@@ -405,7 +430,7 @@ $(document).ready(async function() {
     
             // 7. Process aggregated results (you can show them in the UI)
             console.log('Creating cards for :', hotelIds);
-            displayHotelResults(hotelOffers,locationCoordinates.lat, locationCoordinates.lng);
+            displayHotelResults(convertedOffers,locationCoordinates.lat, locationCoordinates.lng);
     
         } catch (error) {
             console.error('Error during form submission:', error.message);
