@@ -431,6 +431,7 @@ $(document).ready(async function() {
             const hotelOffers = await fetchHotelOffers(hotelIds);
 
             //4b. Convert hotelOffers to Form Currency
+            console.log(hotelOffers);
             const convertedOffers = convertOfferPrices(hotelOffers, fxRates, formCurrency);
 
             // 5. Fetch ratings for the hotels
@@ -442,6 +443,7 @@ $(document).ready(async function() {
             //console.log('Combined Results with Ratings:', combinedResults);
     
             // 7. Process aggregated results (you can show them in the UI)
+            console.log(convertedOffers);
             displayHotelResults(convertedOffers,locationCoordinates.lat, locationCoordinates.lng);
     
         } catch (error) {
