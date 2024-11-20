@@ -356,14 +356,24 @@ $(document).ready(async function() {
     function convertOfferPrices(hotelOffers, fxRates, formCurrency) {
         return hotelOffers.map(offer => {
             const offerCurrency = offer.offers[0].price.currency;
-            const rate = fxRates[offerCurrency] || 1; // Default to 1 if no rate found (assuming same currency)
+    
+            // Ensure the FX rate exists for the offer currency
+            if (!fxRates[offerCurrency]) {
+                console.error(`No FX rate found for ${offerCurrency}. Skipping conversion.`);
+                return offer;
+            }
+    
+            const rate = fxRates[offerCurrency]; // Get the FX rate for the offer currency
             console.log('Rate for ', offerCurrency, rate);
     
-            offer.offers[0].price.total = (offer.offers[0].price.total * rate).toFixed(2); // Convert price
-            offer.offers[0].price.currency = formCurrency; // Update currency
+            // Convert price: Divide by FX rate (e.g., GBP to NOK)
+            offer.offers[0].price.total = (offer.offers[0].price.total / rate).toFixed(2);
+            offer.offers[0].price.currency = formCurrency; // Update currency to formCurrency (e.g., NOK)
+            
             return offer;
         });
     }
+    
     
     
 
@@ -432,7 +442,6 @@ $(document).ready(async function() {
             //console.log('Combined Results with Ratings:', combinedResults);
     
             // 7. Process aggregated results (you can show them in the UI)
-            console.log('Creating cards for :', hotelIds);
             displayHotelResults(convertedOffers,locationCoordinates.lat, locationCoordinates.lng);
     
         } catch (error) {
