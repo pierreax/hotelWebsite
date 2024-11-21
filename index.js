@@ -320,7 +320,7 @@ app.post('/api/sendDataToSheety', async (req, res) => {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ sheet1: sheetData }) // Wrap in sheet name key as required by Sheety
+            body: JSON.stringify({ prices: sheetData }) // Wrap in sheet name key as required by Sheety
         });
 
         // Parse the response
