@@ -275,13 +275,19 @@ $(document).ready(async function() {
     
         $('#resultsBox').show(); // Ensure the results box is visible
     
-        hotelOffers.forEach(offer => {
+        // Sort hotel offers by distance to the destination
+        const sortedOffers = hotelOffers.sort((a, b) => {
+            const distanceA = calculateDistance(a.hotel.latitude, a.hotel.longitude, destinationlat, destinationlng);
+            const distanceB = calculateDistance(b.hotel.latitude, b.hotel.longitude, destinationlat, destinationlng);
+            return distanceA - distanceB; // Ascending order
+        });
+    
+        // Display sorted hotel offers
+        sortedOffers.forEach(offer => {
             // Preprocess the data with the formatting functions
             const formattedHotelName = formatHotelName(offer.hotel.name || 'Unknown Hotel');
             const formattedRoomType = formatRoomType(offer.offers?.[0]?.room?.typeEstimated.category || 'N/A');
-            const formattedDistance = offer.distance !== 'N/A' 
-                ? calculateDistance(offer.hotel.latitude, offer.hotel.longitude, destinationlat, destinationlng) 
-                : 'N/A';
+            const formattedDistance = calculateDistance(offer.hotel.latitude, offer.hotel.longitude, destinationlat, destinationlng);
     
             // Calculate price details
             const totalPrice = parseFloat(offer.offers[0].price.total);
@@ -292,7 +298,7 @@ $(document).ready(async function() {
                 hotelId: offer.hotel.hotelId,
                 hotelName: formattedHotelName,
                 roomType: formattedRoomType,
-                distance: formattedDistance,
+                distance: `${formattedDistance} km`, // Display distance
                 totalPrice: totalPrice.toFixed(2), // Ensure totalPrice is a string with two decimals
                 pricePerNight: pricePerNight.toFixed(2), // Ensure pricePerNight is a string with two decimals
                 rating: 'N/A', // Skip rating for now
@@ -303,11 +309,6 @@ $(document).ready(async function() {
             $('#resultsBox').append(card);
         });
     }
-    
-
-    
-    
-    
     
 
     // 3.5b Create Card with Hotel information
