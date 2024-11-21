@@ -15,7 +15,6 @@ $(document).ready(async function() {
     $('#currency').val(queryParams.get('currency')).trigger('change');
     $('#destination').val(queryParams.get('city'));
 
-
     const resultsContainer = $('#resultsBox'); // Assuming this is where you want to append the results
 
     // Function to display the flight tracking modal
@@ -23,7 +22,6 @@ $(document).ready(async function() {
         console.log('Displaying flight tracking modal.');
         $('#flightTrackingModal').modal('show');
     }
-
 
     // Initialize Flatpickr for date range selection
     const datePicker = flatpickr('.datepicker', {
@@ -44,12 +42,11 @@ $(document).ready(async function() {
     // Currencies and City based on IP-location
     $.get('https://api.ipgeolocation.io/ipgeo?apiKey=420e90eecc6c4bb285f238f38aea898f', function(response) {
         currency = response.currency.code;
-        console.log('Setting currency to:',currency);
+        console.log('Setting currency to:', currency);
         // Update the currency based on the IP-response
         $('#currency').val(currency).trigger('change');
     });
 
-    
     // Check for dateFrom and dateTo in the URL and set them in Flatpickr
     if (queryParams.dateFrom && queryParams.dateTo) {
         const dateFrom = queryParams.dateFrom;
@@ -68,20 +65,7 @@ $(document).ready(async function() {
 
     // ---------- Step 2 Utility Functions ---------------
 
-    // Function to convert currency
-    async function convertCurrency(amount, fromCurrency, toCurrency) {
-        console.log('Converting from currency: ', fromCurrency, ' to currency: ', toCurrency);
-        const url = `https://v6.exchangerate-api.com/v6/0fdee0a5645b6916b5a20bb3/latest/${fromCurrency}`;
-        const response = await fetch(url);
-        const data = await response.json();
-        const rate = data.conversion_rates[toCurrency];
-        if (!rate) {
-            $('#noResultsMessage').show();
-            throw new Error(`No conversion rate available for ${toCurrency}`);
-        }
-        return amount * rate;
-    }
-
+    // Function to get location coordinates
     async function getLocationCoordinates(destination) {
         console.log('Getting coordinates for destination: ', destination);
         const apiUrl = `/api/getCoordinatesByLocation?location=${encodeURIComponent(destination)}`;
@@ -107,7 +91,7 @@ $(document).ready(async function() {
     
 
     // --------- Step 3 Hotel APIs in order ------------
-    
+
 
     // 3.1 Fetch hotels by coordinates
     async function fetchHotelsByCoordinates(lat, lng) {
@@ -117,8 +101,6 @@ $(document).ready(async function() {
         const hotelsData = await response.json();
         return hotelsData.data;
     }    
-
-
 
     // 3.2 Fetch Hotel Offers
     async function fetchHotelOffers(hotelIds) {
@@ -200,7 +182,7 @@ $(document).ready(async function() {
     async function fetchHotelRatings(hotelOffers) {
         const hotelIds = hotelOffers.map(offer => offer.hotel.hotelId);
         const chunkSize = 3;
-        console.log('Searching for ratings for: ',hotelIds);
+        console.log('Searching for ratings for: ', hotelIds);
 
         // Helper function to split hotelIds into chunks of size 3
         function chunkArray(array, size) {
@@ -309,7 +291,74 @@ $(document).ready(async function() {
             $('#resultsBox').append(card);
         });
     }
-    
+
+    // ------- SUBMIT to Sheety BUTTON -------  
+    $('#submitToSheet').off('click').on('click', async function() {
+        console.log('Submitting data to SHEETY');
+        
+        // Validate that at least one hotel is selected
+        if (selectedHotels.length === 0) {
+            alert('Please select at least one hotel before submitting.');
+            return; // Exit if no hotels are selected
+        }
+        
+        // Show the loader before starting the submission
+        $('.loader').show();
+        
+        const formData = {
+            destination,
+            checkInDate,
+            checkOutDate,
+            adults,
+            numberOfRooms,
+            email,
+            currency: formCurrency,
+        };
+        
+        const formattedData = {
+            selectedHotels
+        };
+        
+        // ------- LOGIC when the Submit button is pressed
+        try {
+            // Submit to Sheety
+            const sheetyResult = await submitToSheety(formData, formattedData);
+            
+            // Check for confirmation by verifying the presence of "id" in the response
+            if (sheetyResult && sheetyResult.price && sheetyResult.price.id) {
+                console.log('Data successfully submitted to Sheety:', sheetyResult);
+            } else {
+                console.warn('Data submitted to Sheety but did not receive a success confirmation:', sheetyResult);
+            }
+
+            // Send email via the backend
+            await sendEmail(destination, checkInDate, checkOutDate, adults, numberOfRooms, email, formCurrency, formattedData.selectedHotels);
+
+            // Show modal to ask if the user wants to track flights
+            askForFlightTracking();
+            
+            // Event listener for "Yes" button in the modal to confirm flight tracking
+            $('#confirmFlightTracker').on('click', function() {
+                console.log("User opted to track flights.");
+                const redirectUrl = 'https://www.robotize.no/flights';
+                window.location.href = redirectUrl;
+            });
+
+            // Optional: Handle "No" button in the modal
+            $('.btn-secondary').on('click', function() {
+                console.log("User declined flight tracking.");
+                // Reload the page after submission
+                window.location.reload();
+            });            
+
+            
+        } catch (error) {
+            console.error('Error during form submission:', error.message);
+        } finally {
+            // Hide the loading icon after the submission completes
+            $('.loader').hide();
+        }
+    });
 
     // 3.5b Create Card with Hotel information
     function createHotelCard(result) {
@@ -359,34 +408,7 @@ $(document).ready(async function() {
         return card;
     }
 
-    function convertOfferPrices(hotelOffers, fxRates, formCurrency) {
-        return hotelOffers.map(offer => {
-            const offerCurrency = offer.offers[0].price.currency;
-    
-            // Ensure the FX rate exists for the offer currency
-            if (!fxRates[offerCurrency]) {
-                console.error(`No FX rate found for ${offerCurrency}. Skipping conversion.`);
-                return offer;
-            }
-    
-            const rate = fxRates[offerCurrency]; // Get the FX rate for the offer currency
-            console.log('Rate for ', offerCurrency, rate);
-    
-            // Convert price: Divide by FX rate (e.g., GBP to NOK)
-            offer.offers[0].price.total = (offer.offers[0].price.total / rate).toFixed(2);
-            offer.offers[0].price.currency = formCurrency; // Update currency to formCurrency (e.g., NOK)
-            
-            return offer;
-        });
-    }
-    
-    
-    
-
-    
-
     // -------- Step 4 Search Form Submission -----------
-    
 
     $('#searchForm').on('submit', async function(event) {
         event.preventDefault();  // Prevent default form submission behavior
@@ -422,7 +444,6 @@ $(document).ready(async function() {
             fxRates = await fxRatesResponse.json();
             console.log('Fetched FX Rates:', fxRates);
 
-
             // 1. Get the location coordinates
             const locationCoordinates = await getLocationCoordinates(destination);
 
@@ -450,7 +471,7 @@ $(document).ready(async function() {
     
             // 7. Process aggregated results (you can show them in the UI)
             console.log(convertedOffers);
-            displayHotelResults(convertedOffers,locationCoordinates.lat, locationCoordinates.lng, numberOfNights);
+            displayHotelResults(convertedOffers, locationCoordinates.lat, locationCoordinates.lng, numberOfNights);
     
         } catch (error) {
             console.error('Error during form submission:', error.message);
@@ -482,8 +503,6 @@ $(document).ready(async function() {
         
         return { destination, checkInDate, checkOutDate, adults, numberOfRooms, email, formCurrency, numberOfNights };
     }
-    
-    
         
     // --------Submit to Sheety --------------
     async function submitToSheety(formData, formattedData) {
@@ -608,68 +627,29 @@ $(document).ready(async function() {
         return distance.toFixed(2); // Distance in km
     }
 
-    // ------- SUBMIT to Sheety BUTTON -------  
-    $('#submitToSheet').off('click').on('click', async function() {
-        console.log('Submitting data to SHEETY');
-        
-        // Show the loader before starting the submission
-        $('.loader').show();
-        
-        const formData = {
-            destination,
-            checkInDate,
-            checkOutDate,
-            adults,
-            numberOfRooms,
-            email,
-            currency: formCurrency,
-        };
-        
-        const formattedData = {
-            selectedHotels
-        };
-        
-        // ------- LOGIC when the Submit button is pressed
-        try {
-            // Submit to Sheety
-            const sheetyResult = await submitToSheety(formData, formattedData);
-            
-            // Check for confirmation by verifying the presence of "id" in the response
-            if (sheetyResult && sheetyResult.price && sheetyResult.price.id) {
-                console.log('Data successfully submitted to Sheety:', sheetyResult);
-            } else {
-                console.warn('Data submitted to Sheety but did not receive a success confirmation:', sheetyResult);
+    // 3.2A Convert Hotel Offers to Form Currency 
+    function convertOfferPrices(hotelOffers, fxRates, formCurrency) {
+        return hotelOffers.map(offer => {
+            const offerCurrency = offer.offers[0].price.currency;
+
+            // Ensure the FX rate exists for the offer currency
+            if (!fxRates[offerCurrency]) {
+                console.error(`No FX rate found for ${offerCurrency}. Skipping conversion.`);
+                return offer;
             }
 
-            // Send email via the backend
-            await sendEmail(desintation, checkInDate, checkOutDate, adults, numberOfRooms, email, formCurrency, formattedData.selectedHotels);
-    
-            // Show modal to ask if the user wants to track flights
-            askForFlightTracking();
+            const rate = fxRates[offerCurrency]; // Get the FX rate for the offer currency
+            console.log('Rate for ', offerCurrency, rate);
+
+            // Convert price: Divide by FX rate (e.g., GBP to NOK)
+            offer.offers[0].price.total = (offer.offers[0].price.total / rate).toFixed(2);
+            offer.offers[0].price.currency = formCurrency; // Update currency to formCurrency (e.g., NOK)
             
-            // Event listener for "Yes" button in the modal to confirm flight tracking
-            $('#confirmFlightTracker').on('click', function() {
-                console.log("User opted to track flights.");
-                const redirectUrl = 'https://www.robotize.no/flights';
-                window.location.href = redirectUrl;
-            });
+            return offer;
+        });
+    }
     
-            // Optional: Handle "No" button in the modal
-            $('.btn-secondary').on('click', function() {
-                console.log("User declined flight tracking.");
-                // Reload the page after submission
-                window.location.reload();
-            });            
-    
-            
-        } catch (error) {
-            console.error('Error during form submission:', error.message);
-        } finally {
-            // Hide the loading icon after the submission completes
-            $('.loader').hide();
-        }
-    });
-          
+
     function toggleCheckbox(event) {
         event.stopPropagation(); // Prevents the click event from bubbling up
         const checkbox = $(this).find('input[type="checkbox"]');

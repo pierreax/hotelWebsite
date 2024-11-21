@@ -12,6 +12,7 @@ const EMAIL_CLIENT_SECRET = process.env.EMAIL_CLIENT_SECRET;
 const EMAIL_TENANT_ID = process.env.EMAIL_TENANT_ID;
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
 const EXCHANGE_RATE_API_KEY = process.env.EXCHANGE_RATE_API_KEY;
+const SHEETY_API_URL = process.env.SHEETY_API_URL;
 
 // Middleware to parse JSON requests
 app.use(express.json());
@@ -291,13 +292,9 @@ async function fetchRatingsForChunk(hotelIds, accessToken) {
     }
 }
 
-
-
-
 // --------- SHEETY ----------------
 
 app.post('/api/sendDataToSheety', async (req, res) => {
-    const sheetyEndpoint = 'https://api.sheety.co/YOUR_SHEETY_API_URL/sheet1'; // Replace with your Sheety endpoint
     const formData = req.body; // Data sent from the front-end
 
     console.log('Received data for Sheety:', formData);
@@ -311,17 +308,19 @@ app.post('/api/sendDataToSheety', async (req, res) => {
         numberOfRooms: formData.numberOfRooms,
         email: formData.email,
         currency: formData.currency,
-        selectedHotels: formData.selectedHotels // Modify according to your sheet's structure
+        selectedHotels: Array.isArray(formData.selectedHotels)
+            ? JSON.stringify(formData.selectedHotels) // Serialize selectedHotels as a string if it's an array
+            : "No hotels selected"
     };
 
     try {
         // Send the data to Sheety
-        const response = await fetch(sheetyEndpoint, {
+        const response = await fetch(SHEETY_API_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ sheet1: sheetData }) // Modify the object according to the Sheety API
+            body: JSON.stringify({ sheet1: sheetData }) // Wrap in sheet name key as required by Sheety
         });
 
         // Parse the response
@@ -332,11 +331,11 @@ app.post('/api/sendDataToSheety', async (req, res) => {
             res.status(200).json(responseData); // Send success response back to the client
         } else {
             console.error('Error submitting data to Sheety:', responseData);
-            res.status(500).json({ error: 'Failed to submit data to Sheety' });
+            res.status(response.status).json({ error: 'Failed to submit data to Sheety', details: responseData });
         }
     } catch (error) {
         console.error('Error in submitting data to Sheety:', error.message);
-        res.status(500).json({ error: 'Error in submitting data to Sheety' });
+        res.status(500).json({ error: 'Error in submitting data to Sheety', message: error.message });
     }
 });
 
@@ -413,7 +412,7 @@ async function sendEmail(subject, body, recipientEmail, token) {
 
 // Route to send an email using Microsoft Graph
 app.post('/api/sendMail', async (req, res) => {
-    const { subject = "New submission for your Flight Robot", body = "Great news, somebody just signed up for your Hotel Robot", recipient_email } = req.body;
+    const { subject = "New submission for your Hotel Robot", body = "Great news, somebody just signed up for your Hotel Robot", recipient_email } = req.body;
 
     try {
         const token = await getGraphAccessToken();  // Get access token
