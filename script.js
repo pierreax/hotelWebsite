@@ -309,8 +309,8 @@ $(document).ready(async function() {
                 roomType: formattedRoomType,
                 distance: `${formattedDistance} km`,
                 totalPrice: totalPrice.toFixed(2),
-                pricePerNight: pricePerNight,
-                rating: offer.rating // Use the fetched rating
+                pricePerNight: pricePerNight
+                //rating: offer.rating // Use the fetched rating
             });
 
             console.log('Created a card for:', offer.hotel.hotelId);
