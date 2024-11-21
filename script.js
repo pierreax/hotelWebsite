@@ -555,12 +555,12 @@ $(document).ready(async function() {
             const convertedOffers = convertPricesToFormCurrency(hotelOffers, fxRates, formCurrency);
             console.log('Converted Offers:', convertedOffers);
 
-            console.log('Fetching hotel ratings...');
-            const hotelRatings = await fetchHotelRatings(convertedOffers);
-            console.log('Hotel Offers with Ratings:', hotelRatings);
+            //console.log('Fetching hotel ratings...');
+            //const hotelRatings = await fetchHotelRatings(convertedOffers);
+            //console.log('Hotel Offers with Ratings:', hotelRatings);
 
             console.log('Displaying hotel results...');
-            displayHotelResults(hotelRatings, locationCoordinates.lat, locationCoordinates.lng, numberOfNights);
+            displayHotelResults(convertedOffers, locationCoordinates.lat, locationCoordinates.lng, numberOfNights);
 
         } catch (error) {
             console.error('Error during form submission:', error.message);
