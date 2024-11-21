@@ -676,7 +676,7 @@ $(document).ready(async function() {
         const ratingDiv = $('<div>').addClass('rating');
         ratingDiv.append($('<span>').addClass('label').text('Rating: '));
         ratingDiv.append($('<span>').addClass('rating-value').text(result.rating));
-        card.append(ratingDiv);
+        //card.append(ratingDiv);
 
         // Create a container for the checkbox and its label
         const checkboxContainer = $('<div>').addClass('checkbox-container');
