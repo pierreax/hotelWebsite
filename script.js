@@ -264,7 +264,7 @@ $(document).ready(async function() {
     }
 
     // 3.5 Display Results
-    function displayHotelResults(hotelOffers, destinationlat, destinationlng) {
+    function displayHotelResults(hotelOffers, destinationlat, destinationlng, numberOfNights) {
         $('#resultsBox').empty(); // Clear any previous results
 
         if (hotelOffers.length === 0) {
@@ -444,7 +444,7 @@ $(document).ready(async function() {
     
             // 7. Process aggregated results (you can show them in the UI)
             console.log(convertedOffers);
-            displayHotelResults(convertedOffers,locationCoordinates.lat, locationCoordinates.lng);
+            displayHotelResults(convertedOffers,locationCoordinates.lat, locationCoordinates.lng, numberOfNights);
     
         } catch (error) {
             console.error('Error during form submission:', error.message);
