@@ -266,15 +266,15 @@ $(document).ready(async function() {
     // 3.5 Display Results
     function displayHotelResults(hotelOffers, destinationlat, destinationlng, numberOfNights) {
         $('#resultsBox').empty(); // Clear any previous results
-
+    
         if (hotelOffers.length === 0) {
             $('#noResultsMessage').show();
             $('#resultsBox').hide(); // Hide the results box if no offers
             return;
         }
-
+    
         $('#resultsBox').show(); // Ensure the results box is visible
-
+    
         hotelOffers.forEach(offer => {
             // Preprocess the data with the formatting functions
             const formattedHotelName = formatHotelName(offer.hotel.name || 'Unknown Hotel');
@@ -282,23 +282,28 @@ $(document).ready(async function() {
             const formattedDistance = offer.distance !== 'N/A' 
                 ? calculateDistance(offer.hotel.latitude, offer.hotel.longitude, destinationlat, destinationlng) 
                 : 'N/A';
-
+    
+            // Calculate price details
+            const totalPrice = parseFloat(offer.offers[0].price.total);
+            const pricePerNight = totalPrice / numberOfNights;
+    
             // Create the card with the formatted data
             const card = createHotelCard({
                 hotelId: offer.hotel.hotelId,
                 hotelName: formattedHotelName,
                 roomType: formattedRoomType,
                 distance: formattedDistance,
-                const totalPrice = parseFloat(offer.offers[0].price.total);
-                const pricePerNight = totalPrice / numberOfNights;
+                totalPrice: totalPrice.toFixed(2), // Ensure totalPrice is a string with two decimals
+                pricePerNight: pricePerNight.toFixed(2), // Ensure pricePerNight is a string with two decimals
                 rating: 'N/A', // Skip rating for now
             });
-
+    
             console.log('Created a card for: ', offer.hotel.hotelId);
-
+    
             $('#resultsBox').append(card);
         });
     }
+    
 
     
     
