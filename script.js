@@ -572,8 +572,6 @@ $(document).ready(function() {
         });
         
         
-        
-        
         function toggleCheckbox(event) {
             event.stopPropagation(); // Prevents the click event from bubbling up
             const checkbox = $(this).find('input[type="checkbox"]');
@@ -589,6 +587,7 @@ $(document).ready(function() {
         // Attach event listener to all existing checkboxes
         $('#resultsBox').on('click', '.select-checkbox', toggleCheckbox);
 
+
         try {
             const tokenResponse = await fetch(getAccessTokenUrl);
             const tokenData = await tokenResponse.json();
@@ -602,13 +601,14 @@ $(document).ready(function() {
                 throw new Error('Invalid coordinates received');
             }
             const { lat, lng } = coords;
-            const getHotelsByCoordinatesUrlWithParams = `${getHotelsByCoordinatesUrl}&latitude=${lat}&longitude=${lng}&radius=10&radiusUnit=KM&hotelSource=ALL`;
+            const getHotelsByCoordinatesUrlWithParams = `${getHotelsByCoordinatesUrl}?latitude=${lat}&longitude=${lng}&radius=10&radiusUnit=KM&hotelSource=ALL`;
         
             const hotelsResponse = await fetch(getHotelsByCoordinatesUrlWithParams, {
                 headers: {
                     'Authorization': `Bearer ${accessToken}`
                 }
             });
+
             const hotelsData = await hotelsResponse.json();
             console.log('Hotels in the area:', hotelsData);
         
