@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const { v4: uuidv4 } = require('uuid'); // Import UUID library
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -331,48 +332,89 @@ async function fetchRatingsForChunk(hotelIds, accessToken) {
 
 // --------- SHEETY ----------------
 
+const { v4: uuidv4 } = require('uuid'); // Import UUID library
+
 app.post('/api/sendDataToSheety', async (req, res) => {
-    const formData = req.body; // Data sent from the front-end
+    // Get data from the request body
+    const formData = req.body;
+    console.log('Incoming request body:', JSON.stringify(formData, null, 2));
 
-    console.log('Received data for Sheety:', formData);
+    // Check if the required fields are present
+    if (!formData.location || !formData.checkInDate || !formData.checkOutDate || 
+        !formData.adults || !formData.numberOfRooms || !formData.email ||
+        !formData.selectedHotels || formData.selectedHotels.length === 0) {
+        return res.status(400).json({
+            error: "Missing required fields in the request body."
+        });
+    }
 
-    // Prepare the data to send to Sheety
-    const sheetData = {
-        location: formData.location,
-        checkInDate: formData.checkInDate,
-        checkOutDate: formData.checkOutDate,
-        adults: formData.adults,
-        numberOfRooms: formData.numberOfRooms,
-        email: formData.email,
-        currency: formData.currency,
-        selectedHotels: Array.isArray(formData.selectedHotels)
-            ? JSON.stringify(formData.selectedHotels) // Serialize selectedHotels as a string if it's an array
-            : "No hotels selected"
+    // Generate a unique token for this submission
+    const uniqueToken = uuidv4(); // Generate a UUID
+
+    // Extract and format data
+    const hotelNames = formData.selectedHotels.map(hotel => hotel.hotelName).join(', ');
+    const hotelIds = formData.selectedHotels.map(hotel => hotel.hotelId).join(', ');
+    const roomTypes = formData.selectedHotels.map(hotel => hotel.roomType).join(', ');
+    const prices = formData.selectedHotels.map(hotel => hotel.pricePerNight.replace(/[^\d.,]/g, '')).join(', '); // Remove currency symbols
+    const totalPrices = formData.selectedHotels.map(hotel => hotel.totalPrice.replace(/[^\d.,]/g, '')).join(', '); // Remove currency symbols
+
+    // Format data to match Sheety's schema
+    const sheetyData = {
+        price: {
+            hotel: hotelIds, // Use hotel IDs from the form data
+            hotelName: hotelNames, // Use hotel names from the form data
+            adults: formData.adults,
+            rooms: formData.numberOfRooms,
+            roomtype: roomTypes, // Use room types from the form data
+            checkin: formData.checkInDate,
+            checkout: formData.checkOutDate,
+            latestPrice: totalPrices, // Prices from the form data, currency symbols removed
+            lowestPrice: totalPrices, // Send the same price as lowest price initially
+            currency: formData.currency, // Currency from the form data
+            email: formData.email,
+            token: uniqueToken // Add the unique token to the data
+        }
     };
 
+    console.log('Formatted data to be sent to Sheety:', JSON.stringify(sheetyData, null, 2));
+
+    // Sheety URL (change this to the correct Sheety endpoint for your sheet)
+    const sheetyUrl = SHEETY_API_URL;
+
     try {
-        // Send the data to Sheety
-        const response = await fetch(SHEETY_API_URL, {
+        // Send data to Sheety
+        const response = await fetch(sheetyUrl, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ prices: sheetData }) // Wrap in sheet name key as required by Sheety
+            body: JSON.stringify(sheetyData)
         });
 
-        // Parse the response
-        const responseData = await response.json();
+        // Log the response status
+        console.log('Sheety response status:', response.status);
 
-        if (response.ok) {
-            console.log('Data successfully submitted to Sheety:', responseData);
-            res.status(200).json(responseData); // Send success response back to the client
-        } else {
-            console.error('Error submitting data to Sheety:', responseData);
-            res.status(response.status).json({ error: 'Failed to submit data to Sheety', details: responseData });
+        // Check if the response is successful
+        if (!response.ok) {
+            const responseBody = await response.text(); // Get the raw response body for debugging
+            console.error(`Error sending data to Sheety: ${responseBody}`);
+            return res.status(response.status).json({
+                error: `Error sending data to Sheety: ${responseBody}`
+            });
         }
+
+        const result = await response.json();
+
+        // Log the successful response
+        console.log('Successful response from Sheety:', JSON.stringify(result, null, 2));
+
+        res.status(200).json(result); // Return the successful response from Sheety
+
     } catch (error) {
-        console.error('Error in submitting data to Sheety:', error.message);
-        res.status(500).json({ error: 'Error in submitting data to Sheety', message: error.message });
+        console.error('Error sending data to Sheety:', error.message);
+        res.status(500).json({
+            error: `Error sending data to Sheety: ${error.message}`
+        });
     }
 });
 
