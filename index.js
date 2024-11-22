@@ -1,6 +1,6 @@
 const express = require('express');
 const path = require('path');
-const { v4: uuidv4 } = require('uuid'); 
+const { v4: uuidv4 } = require('uuid'); // Import UUID library
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -331,8 +331,6 @@ async function fetchRatingsForChunk(hotelIds, accessToken) {
 }
 
 // --------- SHEETY ----------------
-
-const { v4: uuidv4 } = require('uuid'); // Import UUID library
 
 app.post('/api/sendDataToSheety', async (req, res) => {
     // Get data from the request body
