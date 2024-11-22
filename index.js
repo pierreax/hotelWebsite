@@ -144,7 +144,7 @@ app.get('/api/getHotelsByCoordinates', async (req, res) => {
 
     try {
         // Fetch hotels data from Amadeus API
-        const hotelsResponse = await fetch(`https://api.amadeus.com/v1/reference-data/locations/hotels/by-geocode?latitude=${latitude}&longitude=${longitude}&radius=${radius}&radiusUnit=${radiusUnit}&hotelSource=${hotelSource}`, {
+        const hotelsResponse = await fetch(`https://api.amadeus.com/v1/reference-data/locations/hotels/by-geocode?latitude=${lat}&longitude=${lng}&radius=${radius}&radiusUnit=${radiusUnit}&hotelSource=${hotelSource}`, {
             headers: {
                 'Authorization': `Bearer ${accessToken}`
             }

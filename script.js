@@ -601,8 +601,8 @@ $(document).ready(function() {
                 $('#noResultsMessage').show();
                 throw new Error('Invalid coordinates received');
             }
-            const { latitude, longitude } = coords;
-            const getHotelsByCoordinatesUrlWithParams = `${getHotelsByCoordinatesUrl}&latitude=${latitude}&longitude=${longitude}&radius=10&radiusUnit=KM&hotelSource=ALL`;
+            const { lat, lng } = coords;
+            const getHotelsByCoordinatesUrlWithParams = `${getHotelsByCoordinatesUrl}&latitude=${lat}&longitude=${lng}&radius=10&radiusUnit=KM&hotelSource=ALL`;
         
             const hotelsResponse = await fetch(getHotelsByCoordinatesUrlWithParams, {
                 headers: {
