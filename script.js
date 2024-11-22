@@ -242,7 +242,7 @@ $(document).ready(function() {
         async function fetchHotelOffers(validHotelIds) {
             const limitedHotelIds = validHotelIds.slice(0, limitResults);
             const params = `hotelIds=${limitedHotelIds.join(',')}&adults=${adults}&checkInDate=${checkInDate}&checkOutDate=${checkOutDate}&roomQuantity=${numberOfRooms}&paymentPolicy=NONE&bestRateOnly=true&includeClosed=false`;
-            const url = `${getHotelOffersUrl}&params=${encodeURIComponent(params)}`;
+            const url = `${getHotelOffersUrl}?params=${encodeURIComponent(params)}`;
             console.log('Fetching hotel offers with params:', params);
             
             const response = await fetch(url, {
