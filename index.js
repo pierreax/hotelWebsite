@@ -126,7 +126,7 @@ app.get('/api/getAccessToken', async (req, res) => {
 // API to get hotels by coordinates from Amadeus
 app.get('/api/getHotelsByCoordinates', async (req, res) => {
     const accessToken = req.headers['authorization'] ? req.headers['authorization'].split(' ')[1] : null;
-    const { latitude, longitude, radius = 10, radiusUnit = 'KM', hotelSource = 'ALL' } = req.query;
+    const { lat, lng, radius = 10, radiusUnit = 'KM', hotelSource = 'ALL' } = req.query;
 
     // Unauthorized if accessToken is missing
     if (!accessToken) {
