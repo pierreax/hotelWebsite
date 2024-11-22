@@ -692,13 +692,13 @@ $(document).ready(function() {
                             card.append(distanceContainer);
 
                             // Add Rating if available
-                            const rating = ratingsMap[offer.hotel.hotelId];
-                            if (rating) {
-                                const ratingDiv = $('<div>').addClass('rating');
-                                ratingDiv.append($('<span>').addClass('label').text('Rating: '));
-                                ratingDiv.append($('<span>').addClass('rating-value').text(rating)); // Append the rating
-                                card.append(ratingDiv);
-                            }
+                            //const rating = ratingsMap[offer.hotel.hotelId];
+                            //if (rating) {
+                            //    const ratingDiv = $('<div>').addClass('rating');
+                                //ratingDiv.append($('<span>').addClass('label').text('Rating: '));
+                                //ratingDiv.append($('<span>').addClass('rating-value').text(rating)); // Append the rating
+                                //card.append(ratingDiv);
+                            //}
 
                             // Create a container for the checkbox and its label
                             const checkboxContainer = $('<div>').addClass('checkbox-container');
