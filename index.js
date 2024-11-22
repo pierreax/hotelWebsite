@@ -136,7 +136,7 @@ app.get('/api/getHotelsByCoordinates', async (req, res) => {
     }
 
     // Latitude and longitude are required
-    if (!latitude || !longitude) {
+    if (!lat || !lng) {
         return res.status(400).json({
             message: 'Latitude and longitude are required'
         });
