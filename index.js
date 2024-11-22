@@ -29,7 +29,6 @@ app.get('/', (req, res) => {
 
 // API to get Coordinates By Location from Google
 app.get('/api/getCoordinatesByLocation', async (req, res) => {
-    // Ensure the location is correctly parsed from the query string
     const { location } = req.query;
     console.log('Coordinate API Triggered for location:', location);
 
@@ -42,12 +41,12 @@ app.get('/api/getCoordinatesByLocation', async (req, res) => {
     }
 
     try {
-        // Ensure the location is correctly encoded and appended to the API URL
         const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${GOOGLE_API_KEY}`;
         const response = await fetch(geocodingUrl);
         const data = await response.json();
 
-        // Check the response and return coordinates if available
+        console.log('Google API response:', data);  // Log the entire response from Google API
+
         if (data.status === 'OK' && data.results.length > 0) {
             const coordinates = data.results[0].geometry.location;
             console.log('Coordinates:', coordinates);
