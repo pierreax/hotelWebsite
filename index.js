@@ -418,8 +418,6 @@ app.post('/api/sendDataToSheety', async (req, res) => {
 
 // ------------ EMAIL ---------------
 
-
-
 // API endpoint to send email
 app.post('/api/sendEmail', async (req, res) => {
     try {

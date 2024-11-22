@@ -546,7 +546,7 @@ $(document).ready(function() {
             
                 // Attempt to send email via your backend (index.js)
                 try {
-                    const emailResponse = await fetch('/api/sendEmail', {
+                    const emailResponse = await fetch(sendEmailUrl, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
