@@ -241,54 +241,34 @@ $(document).ready(function() {
         
         async function fetchHotelOffers(validHotelIds) {
             const limitedHotelIds = validHotelIds.slice(0, limitResults);
-        
-            // Construct the params string with the required query parameters
             const params = `hotelIds=${limitedHotelIds.join(',')}&adults=${adults}&checkInDate=${checkInDate}&checkOutDate=${checkOutDate}&roomQuantity=${numberOfRooms}&paymentPolicy=NONE&bestRateOnly=true&includeClosed=false`;
-        
-            // Construct the URL by passing params in the query string
-            const url = `${getHotelOffersUrl}?params=${encodeURIComponent(params)}`;
+            const url = `${getHotelOffersUrl}&params=${encodeURIComponent(params)}`;
             console.log('Fetching hotel offers with params:', params);
-        
-            // Try-catch, block to handle errors and maintain the same error structure as the Azure function
-            try {
-                const response = await fetch(url, {
-                    headers: {
-                        'Authorization': `Bearer ${accessToken}`
-                    }
-                });
-        
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    let errorMessage;
-        
-                    try {
-                        const errorJson = JSON.parse(errorText);
-                        errorMessage = errorJson.errors?.[0]?.detail || 'Unknown error occurred';
-                    } catch (parseError) {
-                        errorMessage = errorText || 'Unknown error occurred';
-                    }
-        
-                    throw new Error(`Failed to fetch hotel offers: ${errorMessage}`);
+            
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
                 }
-        
-                const responseData = await response.json();
+            });
+            
+            const text = await response.text();
+            try {
+                const responseData = JSON.parse(text);
                 console.log('Hotel offers response:', responseData);
-        
-                // Handle response messages or errors
+                
                 if (responseData.message) { // Check for the message
                     resultsContainer.html(`<div class="no-results-message">${responseData.message}</div>`);
                     return; // Exit if there are no valid offers
                 }
-        
+                
                 if (responseData.errors) {
                     const errorDetails = responseData.errors.map(err => `Code: ${err.code}, Detail: ${err.detail}`).join('; ');
                     throw new Error(`Failed to fetch hotel offers: ${errorDetails}`);
                 }
-        
+                
                 return responseData; // Return valid offers
             } catch (err) {
-                console.error('Error fetching hotel offers:', err.message);
-                throw new Error(`Failed to fetch hotel offers: ${err.message}`);
+                throw new Error(`Failed to parse hotel offers response: ${text}`);
             }
         }
         

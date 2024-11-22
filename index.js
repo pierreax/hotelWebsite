@@ -192,13 +192,16 @@ app.get('/api/getHotelsByCoordinates', async (req, res) => {
 });
 
 app.get('/api/getHotelOffers', async (req, res) => {
+    // Extract parameters from query
     const { hotelIds, adults, checkInDate, checkOutDate, roomQuantity } = req.query;
     const accessToken = req.headers['authorization'] ? req.headers['authorization'].split(' ')[1] : null;
 
+    // Check if access token is provided
     if (!accessToken) {
         return res.status(401).json({ message: 'Unauthorized: Access token missing' });
     }
 
+    // Validate required query parameters
     if (!hotelIds || !checkInDate || !checkOutDate || !adults || !roomQuantity) {
         return res.status(400).json({ message: 'Missing required query parameters' });
     }
@@ -212,11 +215,15 @@ app.get('/api/getHotelOffers', async (req, res) => {
             checkInDate,
             checkOutDate,
             roomQuantity,
-            paymentPolicy: 'NONE',
-            bestRateOnly: true,
-            includeClosed: false
+            paymentPolicy: 'NONE',  // Set default payment policy
+            bestRateOnly: true,    // Filter for best rates
+            includeClosed: false   // Exclude closed hotels
         }).toString();
 
+        // Log the URL for debugging
+        console.log('Fetching hotel offers with URL:', amadeusUrl.toString());
+
+        // Make the request to Amadeus API with the Authorization header
         const response = await fetch(amadeusUrl.toString(), {
             method: 'GET',
             headers: {
@@ -230,7 +237,7 @@ app.get('/api/getHotelOffers', async (req, res) => {
             let errorMessage;
 
             try {
-                // Attempt to parse the error text as JSON
+                // Attempt to parse the error response as JSON
                 const errorJson = JSON.parse(errorText);
                 errorMessage = errorJson.errors?.[0]?.detail || 'Unknown error occurred';
             } catch (parseError) {
@@ -241,12 +248,21 @@ app.get('/api/getHotelOffers', async (req, res) => {
             return res.status(response.status).json({ message: `Error fetching hotel offers: ${errorMessage}` });
         }
 
+        // Parse the response data as JSON
         const data = await response.json();
 
-        // Return the hotel offers data if successful
+        // Check if no valid hotel offers are found
+        if (!data || !data.data || data.data.length === 0) {
+            return res.status(200).json({
+                message: 'No valid hotel offers available for the selected criteria.'
+            });
+        }
+
+        // Return the hotel offers data
         res.status(200).json(data);
 
     } catch (error) {
+        // Catch any unexpected errors and send an appropriate message
         console.error('Error fetching hotel offers:', error.message);
         res.status(500).json({ message: `Error fetching hotel offers: ${error.message}` });
     }
