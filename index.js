@@ -420,22 +420,15 @@ app.post('/api/sendDataToSheety', async (req, res) => {
 
 
 
-// Microsoft Graph setup for sending emails
-const SCOPE = 'https://graph.microsoft.com/.default';
-const TOKEN_ENDPOINT = `https://login.microsoftonline.com/${EMAIL_TENANT_ID}/oauth2/v2.0/token`;
-const EMAIL_ADDRESS = "pierre@robotize.no"; // The email address to send from
-
-module.exports = async function (context, req) {
+// API endpoint to send email
+app.post('/api/sendEmail', async (req, res) => {
     try {
         // Extract parameters from the request body
         const { subject, body, recipient_email } = req.body;
 
         // Basic validation for required parameters
         if (!subject || !body || !recipient_email) {
-            return context.res = {
-                status: 400,
-                body: "Missing required parameters: subject, body, or recipient_email."
-            };
+            return res.status(400).json({ message: "Missing required parameters: subject, body, or recipient_email." });
         }
 
         // Get access token for Microsoft Graph API
@@ -444,19 +437,13 @@ module.exports = async function (context, req) {
         // Send the email via Microsoft Graph API
         const result = await sendEmail(subject, body, recipient_email, token);
 
-        context.res = {
-            status: result ? 200 : 500,
-            body: result ? "Email sent successfully." : "Failed to send email."
-        };
+        return res.status(result ? 200 : 500).json({ message: result ? "Email sent successfully." : "Failed to send email." });
 
     } catch (error) {
-        context.log.error('Error in function execution', error);
-        context.res = {
-            status: 500,
-            body: "An error occurred while processing the request."
-        };
+        console.error('Error during email sending:', error.message);
+        return res.status(500).json({ message: "An error occurred while processing the request." });
     }
-};
+});
 
 // Helper function to get the Microsoft Graph API access token
 async function getAccessToken() {
