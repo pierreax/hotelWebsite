@@ -121,6 +121,7 @@ $(document).ready(function() {
         const getHotelRatingsUrl = '/api/getHotelRatings';
         const sheetyUrl = '/api/sendDataToSheety';
         const conversionApiUrl = '/api/getFxRates';
+        const sendEmailUrl = '/api/sendEmail';
 
         let accessToken;
         let internalHotelIds = [];
@@ -543,9 +544,9 @@ $(document).ready(function() {
                 // Use or update the form currency as needed here
                 $('#currency').val(formCurrency).trigger('change'); // Update the currency in the form
         
-                // Attempt to send email via Azure Function after the user alert
+                // Attempt to send email via your backend (index.js)
                 try {
-                    const emailResponse = await fetch('https://hotelfunctionapp.azurewebsites.net/api/SendMail?code=M4SsG9-Y-KkKq0tVZR3gL8SzUjkkrvEiZ5--G03OrLjkAzFuQjUgGg%3D%3D', {
+                    const emailResponse = await fetch('/api/sendEmail', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -563,29 +564,25 @@ $(document).ready(function() {
                                 Selected Hotels:<br>
                                 ${formattedData.selectedHotels.length > 0 
                                     ? formattedData.selectedHotels.map(hotel => 
-                                        `- ${hotel.hotelName}<br>`
-                                    ).join('') 
+                                        `- ${hotel.hotelName}<br>`).join('') 
                                     : 'No hotels selected'}<br><br>
                                 Thank you!`,
                             recipient_email: email
                         })
                     });
-        
+
                     if (!emailResponse.ok) {
                         console.error('Failed to send email.');
                     }
                 } catch (emailError) {
                     console.error('Error during email sending:', emailError.message);
+                } finally {
+                    // Hide the loading icon after the submission completes
+                    $('.loader').hide();
+                    // Optionally, you may reload the page if needed
+                    // window.location.reload();
                 }
-            } catch (error) {
-                console.error('Error during form submission:', error.message);
-            } finally {
-                // Hide the loading icon after the submission completes
-                $('.loader').hide();
-                // Optionally, you may reload the page if needed
-                // window.location.reload();
-            }
-        });
+
         
         
         function toggleCheckbox(event) {
