@@ -249,7 +249,7 @@ $(document).ready(function() {
             const url = `${getHotelOffersUrl}?params=${encodeURIComponent(params)}`;
             console.log('Fetching hotel offers with params:', params);
         
-            // Try-catch block to handle errors and maintain the same error structure as the Azure function
+            // Try-catch, block to handle errors and maintain the same error structure as the Azure function
             try {
                 const response = await fetch(url, {
                     headers: {
