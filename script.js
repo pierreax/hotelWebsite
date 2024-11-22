@@ -597,7 +597,7 @@ $(document).ready(function() {
             console.log('Getting coordinates for location:',location);
             const coords = await getLocationCoordinates(location);
             console.log(coords);
-            if (!coords || !coords.Lat || !coords.Lng) {
+            if (!coords || !coords.lat || !coords.lng) {
                 $('#noResultsMessage').show();
                 throw new Error('Invalid coordinates received');
             }
