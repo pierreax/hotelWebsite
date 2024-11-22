@@ -602,7 +602,7 @@ $(document).ready(function() {
             }
             const { lat, lng } = coords;
             console.log(lat, lng);
-            const getHotelsByCoordinatesUrlWithParams = `${getHotelsByCoordinatesUrl}?latitude=${lat}&longitude=${lng}&radius=10&radiusUnit=KM&hotelSource=ALL`;
+            const getHotelsByCoordinatesUrlWithParams = `${getHotelsByCoordinatesUrl}?lat=${lat}&lng=${lng}&radius=10&radiusUnit=KM&hotelSource=ALL`;
         
             const hotelsResponse = await fetch(getHotelsByCoordinatesUrlWithParams, {
                 headers: {
