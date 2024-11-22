@@ -55,7 +55,6 @@ app.get('/api/getCoordinatesByLocation', async (req, res) => {
 });
 
 
-
 app.get('/api/getFxRates', async (req, res) => {
     const { baseCurrency } = req.query;
 
