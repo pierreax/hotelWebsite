@@ -490,7 +490,7 @@ $(document).ready(function() {
         }
         
 
-
+        // SUBMIT TO SHEETY AND SEND EMAIL
         $('#submitToSheet').off('click').on('click', async function() {
             console.log('Submitting data to SHEETY');
             
@@ -521,7 +521,7 @@ $(document).ready(function() {
                 } else {
                     console.warn('Data submitted to Sheety but did not receive a success confirmation:', sheetyResult);
                 }
-        
+            
                 // Show modal to ask if the user wants to track flights
                 askForFlightTracking();
                 
@@ -531,7 +531,7 @@ $(document).ready(function() {
                     const redirectUrl = 'https://www.robotize.no/flights';
                     window.location.href = redirectUrl;
                 });
-        
+            
                 // Optional: Handle "No" button in the modal
                 $('.btn-secondary').on('click', function() {
                     console.log("User declined flight tracking.");
@@ -540,10 +540,10 @@ $(document).ready(function() {
             
                 // Reset form and hide results after submission
                 resetForm(); 
-        
+            
                 // Use or update the form currency as needed here
                 $('#currency').val(formCurrency).trigger('change'); // Update the currency in the form
-        
+            
                 // Attempt to send email via your backend (index.js)
                 try {
                     const emailResponse = await fetch('/api/sendEmail', {
@@ -570,20 +570,22 @@ $(document).ready(function() {
                             recipient_email: email
                         })
                     });
-
+        
                     if (!emailResponse.ok) {
                         console.error('Failed to send email.');
                     }
                 } catch (emailError) {
                     console.error('Error during email sending:', emailError.message);
-                } finally {
-                    // Hide the loading icon after the submission completes
-                    $('.loader').hide();
-                    // Optionally, you may reload the page if needed
-                    // window.location.reload();
                 }
-
-        
+            } catch (error) {
+                console.error('Error during form submission:', error.message);
+            } finally {
+                // Hide the loading icon after the submission completes
+                $('.loader').hide();
+                // Optionally, you may reload the page if needed
+                // window.location.reload();
+            }
+        });
         
         function toggleCheckbox(event) {
             event.stopPropagation(); // Prevents the click event from bubbling up
