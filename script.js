@@ -143,7 +143,7 @@ $(document).ready(function() {
         }
 
         async function getLocationCoordinates(location) {
-            const apiUrl = `${getCoordinatesByLocationUrl}&location=${encodeURIComponent(location)}`;
+            const apiUrl = `${getCoordinatesByLocationUrl}?location=${encodeURIComponent(location)}`;
             console.log('API URL:',apiUrl);
             const response = await fetch(apiUrl);
             const text = await response.text();
