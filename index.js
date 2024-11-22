@@ -29,6 +29,7 @@ app.get('/', (req, res) => {
 
 // API to get Coordinates By Location from Google
 app.get('/api/getCoordinatesByLocation', async (req, res) => {
+    // Ensure the location is correctly parsed from the query string
     const { location } = req.query;
     console.log('Coordinate API Triggered for location:', location);
 
@@ -41,19 +42,23 @@ app.get('/api/getCoordinatesByLocation', async (req, res) => {
     }
 
     try {
+        // Ensure the location is correctly encoded and appended to the API URL
         const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${GOOGLE_API_KEY}`;
         const response = await fetch(geocodingUrl);
         const data = await response.json();
 
+        // Check the response and return coordinates if available
         if (data.status === 'OK' && data.results.length > 0) {
             const coordinates = data.results[0].geometry.location;
-            res.json(coordinates);  // Send back latitude and longitude
+            console.log('Coordinates:', coordinates);
+            return res.json(coordinates);  // Send back latitude and longitude
         } else {
-            res.status(404).json({ error: 'Location not found' });
+            console.log('No results found for location:', location);
+            return res.status(404).json({ error: 'Location not found' });
         }
     } catch (error) {
         console.error('Error fetching coordinates:', error.message);
-        res.status(500).json({ error: 'Failed to fetch coordinates' });
+        return res.status(500).json({ error: 'Failed to fetch coordinates' });
     }
 });
 
