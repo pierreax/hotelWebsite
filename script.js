@@ -144,6 +144,7 @@ $(document).ready(function() {
 
         async function getLocationCoordinates(location) {
             const apiUrl = `${getCoordinatesByLocationUrl}&location=${encodeURIComponent(location)}`;
+            console.log('API URL:',apiUrl);
             const response = await fetch(apiUrl);
             const text = await response.text();
             try {
@@ -593,6 +594,7 @@ $(document).ready(function() {
             const tokenData = await tokenResponse.json();
             accessToken = tokenData.access_token;
         
+            console.log('Getting coordinates for location:',location);
             const coords = await getLocationCoordinates(location);
             if (!coords || !coords.latitude || !coords.longitude) {
                 $('#noResultsMessage').show();
