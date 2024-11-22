@@ -242,7 +242,7 @@ $(document).ready(function() {
         async function fetchHotelOffers(validHotelIds) {
             const limitedHotelIds = validHotelIds.slice(0, limitResults);
             const params = `hotelIds=${limitedHotelIds.join(',')}&adults=${adults}&checkInDate=${checkInDate}&checkOutDate=${checkOutDate}&roomQuantity=${numberOfRooms}&paymentPolicy=NONE&bestRateOnly=true&includeClosed=false`;
-            const url = `${getHotelOffersUrl}&params=${encodeURIComponent(params)}`;
+            const url = `${getHotelOffersUrl}?params=${encodeURIComponent(params)}`;
             console.log('Fetching hotel offers with params:', params);
             
             const response = await fetch(url, {
@@ -624,10 +624,10 @@ $(document).ready(function() {
                 // const ratingsData = await fetchHotelRatings(hotelIds); - Skip Hotel ratings for now
         
                 // Map ratings data by hotelId for quick lookup
-                const ratingsMap = {};
-                ratingsData.data.forEach(rating => {
-                    ratingsMap[rating.hotelId] = rating.overallRating;
-                });
+                //const ratingsMap = {};
+                //ratingsData.data.forEach(rating => {
+                //    ratingsMap[rating.hotelId] = rating.overallRating;
+                //});
                 
                 // No need to determine originalCurrency, as the convertPricesToFormCurrency function now handles each offer's currency
                 const convertedOffers = await convertPricesToFormCurrency(offersData.data);
