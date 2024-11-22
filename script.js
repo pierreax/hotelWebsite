@@ -76,8 +76,6 @@ $(document).ready(function() {
         $('#noResultsMessage').hide();
         $('#submitText').hide();
 
-
-
         // Show the loading icon
         $('.loader').show();
 

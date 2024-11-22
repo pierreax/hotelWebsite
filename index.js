@@ -30,14 +30,17 @@ app.get('/', (req, res) => {
 // API to get Coordinates By Location from Google
 app.get('/api/getCoordinatesByLocation', async (req, res) => {
     const { location } = req.query;
-    console.log('Coordinate API Triggered', location);
+    console.log('Coordinate API Triggered for location:', location);
 
     if (!location) {
         return res.status(400).json({ error: "Please provide a location." });
     }
 
+    if (!GOOGLE_API_KEY) {
+        return res.status(500).json({ error: "API key is not configured." });
+    }
+
     try {
-        // Make sure GOOGLE_API_KEY is stored in an environment variable for security
         const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${GOOGLE_API_KEY}`;
         const response = await fetch(geocodingUrl);
         const data = await response.json();
