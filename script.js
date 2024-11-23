@@ -496,14 +496,10 @@ $(document).ready(function() {
                 // Optional: Handle "No" button in the modal
                 $('.btn-secondary').on('click', function() {
                     console.log("User declined flight tracking.");
-                    // Add any additional logic here if needed
+                    // Reset form
+                    //window.location.reload(); 
                 });
-            
-                // Reset form and hide results after submission
-                window.location.reload(); 
-            
-                // Use or update the form currency as needed here
-                $('#currency').val(formCurrency).trigger('change'); // Update the currency in the form
+
             
                 // Attempt to send email via your backend (index.js)
                 try {
@@ -543,8 +539,6 @@ $(document).ready(function() {
             } finally {
                 // Hide the loading icon after the submission completes
                 $('.loader').hide();
-                // Optionally, you may reload the page if needed
-                // window.location.reload();
             }
         });
         
@@ -554,7 +548,6 @@ $(document).ready(function() {
             checkbox.prop('checked', !checkbox.prop('checked')).trigger('change'); // Toggle checkbox state and trigger change
             handleCheckboxChange();
         }
-        
         
 
         // Attach event listener to the checkbox-container
