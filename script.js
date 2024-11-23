@@ -552,7 +552,7 @@ $(document).ready(function() {
         // Attach event listener to all existing checkboxes
         $('#resultsBox').on('click', '.select-checkbox', toggleCheckbox);
 
-
+        // SEARCH BUTTON FUNCTIONALITY
         try {
             const tokenResponse = await fetch(getAccessTokenUrl);
             const tokenData = await tokenResponse.json();
