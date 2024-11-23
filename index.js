@@ -451,10 +451,10 @@ async function getAccessToken() {
         grant_type: 'client_credentials',
         client_id: EMAIL_CLIENT_ID,
         client_secret: EMAIL_CLIENT_SECRET,
-        scope: 'https://graph.microsoft.com/.default'
+        scope: 'https://graph.microsoft.com/.default'  // scope for sending email
     };
 
-    const response = await fetch(TOKEN_ENDPOINT, {
+    const response = await fetch(`https://login.microsoftonline.com/${EMAIL_TENANT_ID}/oauth2/v2.0/token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams(tokenData).toString()
@@ -467,6 +467,7 @@ async function getAccessToken() {
     const data = await response.json();
     return data.access_token;
 }
+
 
 // Helper function to send email using Microsoft Graph API
 async function sendEmail(subject, body, recipientEmail, token) {
