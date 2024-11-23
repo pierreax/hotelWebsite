@@ -412,11 +412,7 @@ $(document).ready(function() {
                     totalPrice
                 };
             }).get();
-        }
-
-        
-        
-             
+        }           
 
         function formatHotelName(hotelName) {
             if (typeof hotelName !== 'string') return 'N/A';
@@ -430,8 +426,6 @@ $(document).ready(function() {
                 .join(' ');
         }
         
-
-
         function formatRoomType(roomType) {
             if (typeof roomType !== 'string') return 'N/A';
             return roomType
@@ -454,39 +448,6 @@ $(document).ready(function() {
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
             const distance = R * c;
             return distance.toFixed(2); // Distance in km
-        }
-
-        // Function to reset the form and clear all variables
-        function resetForm() {
-            $('#searchForm')[0].reset(); // Reset the form fields
-        
-            // Reset dropdowns explicitly if needed
-            $('#adults').val('2');
-            $('#numberOfRooms').val('1');
-        
-            // Hide the results box and clear the results
-            $('#resultsBox').hide();
-            $('#results tbody').empty();
-        
-            // Hide the submit button as there are no results
-            $('#submitToSheet').hide();
-        
-            // Clear all relevant variables
-            locationCoordinates = null; // Clear location coordinates
-            internalHotelIds = []; // Clear hotel IDs
-            selectedHotels = []; // Clear selected hotels
-        
-            // Optionally reset any other variables that may be in use
-            accessToken = null; // Clear access token
-            isSubmitting = false; // Reset the submission flag
-            datePicker.clear(); // Clear Flatpickr instance if applicable
-
-            // Explicitly set default values
-            $('#adults').val('2'); // Ensure default value is set
-            $('#numberOfRooms').val('1'); // Ensure default value is set
-        
-            // Hide the submittext
-            $('#submitText').hide();
         }
         
 
@@ -539,7 +500,7 @@ $(document).ready(function() {
                 });
             
                 // Reset form and hide results after submission
-                resetForm(); 
+                window.location.reload(); 
             
                 // Use or update the form currency as needed here
                 $('#currency').val(formCurrency).trigger('change'); // Update the currency in the form
