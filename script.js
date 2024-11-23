@@ -302,7 +302,7 @@ $(document).ready(function() {
                     if (originalCurrency !== formCurrency) {
                         const conversionRate = conversionRates[originalCurrency];
                         if (conversionRate) {
-                            const convertedPrice = originalPrice * conversionRate;
+                            const convertedPrice = originalPrice / conversionRate;
                             console.log('Converted Price:', convertedPrice);
                             offer.offers[0].price.total = Math.round(convertedPrice);  // Convert and round the price
                         } else {
