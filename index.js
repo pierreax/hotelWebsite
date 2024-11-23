@@ -418,7 +418,6 @@ app.post('/api/sendDataToSheety', async (req, res) => {
 
 // ------------ EMAIL ---------------
 
-// Define the /api/sendEmail route to handle email sending
 app.post('/api/sendEmail', async (req, res) => {
     try {
         const { subject, body, recipient_email } = req.body;
@@ -430,6 +429,9 @@ app.post('/api/sendEmail', async (req, res) => {
 
         // Get access token for Microsoft Graph API
         const token = await getAccessToken();
+
+        // Log the token to verify it
+        console.log("Access Token:", token);
 
         // Send the email via Microsoft Graph API
         const result = await sendEmail(subject, body, recipient_email, token);
