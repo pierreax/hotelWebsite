@@ -492,22 +492,29 @@ async function sendEmail(subject, body, recipientEmail, token) {
         saveToSentItems: "true"
     };
 
-    const response = await fetch(SENDMAIL_ENDPOINT, {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(message)
-    });
+    try {
+        const response = await fetch(SENDMAIL_ENDPOINT, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(message)
+        });
 
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Failed to send email: ${JSON.stringify(errorData)}`);
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Error response from Microsoft Graph:", errorData);
+            throw new Error(`Failed to send email: ${JSON.stringify(errorData)}`);
+        }
+
+        return response.ok;
+    } catch (error) {
+        console.error("Error in sendEmail function:", error);
+        throw error;
     }
-
-    return response.ok;
 }
+
 
 // Handle errors if needed
 app.use((err, req, res, next) => {
