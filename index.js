@@ -418,13 +418,12 @@ app.post('/api/sendDataToSheety', async (req, res) => {
 
 // ------------ EMAIL ---------------
 
-// API endpoint to send email
+// Define the /api/sendEmail route to handle email sending
 app.post('/api/sendEmail', async (req, res) => {
     try {
-        // Extract parameters from the request body
         const { subject, body, recipient_email } = req.body;
 
-        // Basic validation for required parameters
+        // Validate required parameters
         if (!subject || !body || !recipient_email) {
             return res.status(400).json({ message: "Missing required parameters: subject, body, or recipient_email." });
         }
@@ -435,6 +434,7 @@ app.post('/api/sendEmail', async (req, res) => {
         // Send the email via Microsoft Graph API
         const result = await sendEmail(subject, body, recipient_email, token);
 
+        // Return success or failure response
         return res.status(result ? 200 : 500).json({ message: result ? "Email sent successfully." : "Failed to send email." });
 
     } catch (error) {
@@ -449,7 +449,7 @@ async function getAccessToken() {
         grant_type: 'client_credentials',
         client_id: EMAIL_CLIENT_ID,
         client_secret: EMAIL_CLIENT_SECRET,
-        scope: SCOPE
+        scope: 'https://graph.microsoft.com/.default';
     };
 
     const response = await fetch(TOKEN_ENDPOINT, {
