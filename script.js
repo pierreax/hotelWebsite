@@ -71,6 +71,8 @@ $(document).ready(function() {
         return localDate.toISOString().split('T')[0];
     }
 
+
+    // SEARCH BUTTON FUNCTIONALITY
     $('#searchForm').on('submit', async function(event) {
         event.preventDefault();
         $('#noResultsMessage').hide();
@@ -120,7 +122,6 @@ $(document).ready(function() {
         const getCoordinatesByLocationUrl = '/api/getCoordinatesByLocation';
         const getHotelRatingsUrl = '/api/getHotelRatings';
         const sheetyUrl = '/api/sendDataToSheety';
-        const conversionApiUrl = '/api/getFxRates';
         const sendEmailUrl = '/api/sendEmail';
 
         let accessToken;
@@ -128,20 +129,19 @@ $(document).ready(function() {
         let locationCoordinates;
         let selectedHotels = [];
 
-        async function convertCurrency(amount, fromCurrency, toCurrency) {
-            console.log('Converting from currency: ',fromCurrency,' to currency: ',toCurrency);
 
-            const url = `${conversionApiUrl}${fromCurrency}`;
-            const response = await fetch(url);
-            const data = await response.json();
-            const rate = data.conversion_rates[toCurrency];
-            if (!rate) {
-                $('#noResultsMessage').show();
-                throw new Error(`No conversion rate available for ${toCurrency}`);
-            }
-            console.log('Converted ammount: ',amount * rate);
-            return amount * rate;
+        // Get FX Rates
+        console.log('Getting FX Rates for:',formCurrency);
+        const formCurrency = $('#currency').val();
+        const conversionResponse = await fetch(`/api/getFxRates?baseCurrency=${formCurrency}`);
+        const conversionData = await conversionResponse.json();
+
+        if (!conversionResponse.ok) {
+            console.error('Failed to fetch conversion rates:', conversionData.error);
+            return;
         }
+        console.log('FX Rates:',conversionData);
+
 
         async function getLocationCoordinates(location) {
             const apiUrl = `${getCoordinatesByLocationUrl}?location=${encodeURIComponent(location)}`;
@@ -288,51 +288,29 @@ $(document).ready(function() {
         }
         
         
-        
-        
-        async function convertPricesToFormCurrency(hotelOffers) {
-            return Promise.all(hotelOffers.map(async offer => {
-                const hotelName = offer.hotel.name; // Get the hotel name
-                const originalCurrency = offer.offers[0].price.currency; // Check each offer's currency individually
-                const price = parseFloat(offer.offers[0].price.total);
-                
-                // Log the hotel name and original currency for tracking
-                console.log(`Checking hotel: ${hotelName}, Original currency: ${originalCurrency}, Price: ${price}`);
-        
-                if (originalCurrency !== formCurrency) {
-                    const convertedPrice = await convertCurrency(price, originalCurrency, formCurrency);
-                    offer.offers[0].price.total = Math.round(convertedPrice); // Round to nearest whole number
-                    console.log(`Converted price for ${hotelName} to ${formCurrency}: ${Math.round(convertedPrice)}`);
-                } else {
-                    offer.offers[0].price.total = Math.round(price); // Round to nearest whole number if already in formCurrency
-                    console.log(`No conversion needed for ${hotelName}, Price: ${Math.round(price)}`);
-                }
-        
-                return offer;
-            }));
-        }
-        
-
-        // We dont need this function for now, will be used in later stage
-        function filterOffersByPrice(hotelOffers, priceLimit, numberOfNights) {
-            console.log('Filtering offers by price. Price Limit:', priceLimit, 'Number of Nights:', numberOfNights);
-
+        // Convert the hotel offers' prices based on the conversion rates received from the backend
+        async function convertPricesToFormCurrency(hotelOffers, formCurrency, conversionRates) {
             return hotelOffers.map(offer => {
-                const totalPrice = parseFloat(offer.offers[0].price.total);
-                const pricePerNight = totalPrice / numberOfNights;
+                const originalCurrency = offer.price.currency;  // Extract the original currency from the offer
+                console.log('Original Currency:',originalCurrency);
+                console.log('Form Currency:',formCurrency);
 
-                console.log('Offer ID:', offer.hotel.hotelId, 'Total Price:', totalPrice, 'Price Per Night:', pricePerNight);
+                const originalPrice = offer.price.total;
 
-                return {
-                    ...offer,
-                    pricePerNight: pricePerNight.toFixed(2)
-                };
-            }).filter(offer => {
-                return parseFloat(offer.pricePerNight) <= priceLimit;
+
+                // If the original currency is different from the form currency, convert the price
+                if (originalCurrency !== formCurrency) {
+                    const conversionRate = conversionRates[originalCurrency];
+                    if (conversionRate) {
+                        const convertedPrice = originalPrice * conversionRate;
+                        console.log('Converted Price:',convertedPrice);
+                        offer.price.total = Math.round(convertedPrice);  // Convert and round the price
+                    }
+                }
+                return offer;
             });
         }
-
-        
+               
 
         async function submitToSheety(formData, formattedData) {
             const data = {
@@ -451,7 +429,7 @@ $(document).ready(function() {
         }
         
 
-        // SUBMIT TO SHEETY AND SEND EMAIL
+        // SUBMIT BUTTON, TO SHEETY AND SEND EMAIL FUNCTIONALITY
         $('#submitToSheet').off('click').on('click', async function() {
             console.log('Submitting data to SHEETY');
             

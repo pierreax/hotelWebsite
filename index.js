@@ -487,7 +487,7 @@ async function sendEmail(subject, body, recipientEmail, token) {
             toRecipients: [
                 {
                     emailAddress: {
-                        address: recipientEmail
+                        address: 'pierre@robotize.no'
                     }
                 }
             ],
