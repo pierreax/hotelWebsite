@@ -347,12 +347,6 @@ button:disabled {
     margin-right: 4px;
 }
 
-.modal-dialog {
-    display: flex;
-    align-items: center;
-    min-height: 100vh; /* Ensures it covers the full viewport height */
-}
-
 
 /* Modal Styles */
 .modal-content {
