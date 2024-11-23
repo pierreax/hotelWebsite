@@ -211,7 +211,7 @@ $(document).ready(function () {
             const hotelsParams = new URLSearchParams({
                 lat,
                 lng,
-                radius: 10,
+                radius: 100,
                 radiusUnit: 'KM',
                 hotelSource: 'ALL'
             }).toString();
