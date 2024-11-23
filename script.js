@@ -600,6 +600,7 @@ $(document).ready(function() {
         
                 // Calculate and add distance to each offer
 
+                // Calculate and add distance to each offer
                 const offersWithDistance = convertedOffers.map(offer => {
                     const distance = calculateDistance(
                         coords.lat,
@@ -607,11 +608,14 @@ $(document).ready(function() {
                         offer.hotel.latitude,
                         offer.hotel.longitude
                     );
+                    const numericDistance = parseFloat(distance); // Extract the numeric value for sorting
                     return {
                         ...offer,
-                        distance: distance // Store the formatted distance
+                        distance: numericDistance, // Store the numeric distance for sorting
+                        distanceDisplay: distance // Store the formatted distance (for display purposes)
                     };
-                });                
+                });
+               
                 console.log('Converted Offers with distance:',offersWithDistance);
 
 
@@ -642,8 +646,9 @@ $(document).ready(function() {
                             cardHeader.append(roomType);
                             
                             // Add the distance in a separate container
-                            const distanceContainer = $('<div>').addClass('distance').text(offer.distance);
+                            const distanceContainer = $('<div>').addClass('distance').text(offer.distanceDisplay);
                             card.append(distanceContainer);
+
 
 
                             // Add Rating if available
