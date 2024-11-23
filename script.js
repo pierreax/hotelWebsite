@@ -35,6 +35,7 @@ $(document).ready(function () {
     let selectedHotels = [];
     let locationCoordinates = {};
     let conversionRates = {};
+    let datePicker;
 
     /**
      * Initialize the Flatpickr date range picker.
@@ -540,9 +541,17 @@ $(document).ready(function () {
      * Toggle checkbox state when clicking on the container or checkbox.
      * @param {Event} event 
      */
-    const toggleCheckbox = (event) => {
+    const toggleCheckbox = function (event) { // Changed to regular function
         event.stopPropagation();
         const checkbox = $(this).find('input[type="checkbox"]');
+        if (checkbox.length === 0) {
+            // If the click is on the checkbox itself
+            const directCheckbox = $(event.target).closest('.select-checkbox');
+            if (directCheckbox.length > 0) {
+                handleCheckboxChange();
+                return;
+            }
+        }
         checkbox.prop('checked', !checkbox.prop('checked')).trigger('change');
         handleCheckboxChange();
     };
@@ -715,25 +724,6 @@ $(document).ready(function () {
 
         // Attach event listeners
         attachEventListeners();
-    };
-
-    /**
-     * Submit selected hotels to Sheety and send an email.
-     * @param {Object} formData 
-     * @param {Object} formattedData 
-     */
-    const submitToSheetyAndSendEmail = async (formData, formattedData) => {
-        try {
-            const sheetyResult = await submitToSheety(formData, formattedData);
-            if (sheetyResult && sheetyResult.price && sheetyResult.price.id) {
-                console.log('Data successfully submitted to Sheety:', sheetyResult);
-            } else {
-                console.warn('Data submitted to Sheety but did not receive a success confirmation:', sheetyResult);
-            }
-            await sendEmailNotification(formData, formattedData);
-        } catch (error) {
-            console.error('Error during Sheety or email submission:', error.message);
-        }
     };
 
     // Initialize the script
