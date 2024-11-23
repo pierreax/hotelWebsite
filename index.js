@@ -474,7 +474,7 @@ async function getAccessToken() {
 
 
 
-async function sendEmail(subject, body, recipientEmail, token) {
+async function sendEmail(subject, body, token) {
     const SENDMAIL_ENDPOINT = `https://graph.microsoft.com/v1.0/users/pierre@robotize.no/sendMail`;
 
     const message = {

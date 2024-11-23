@@ -588,6 +588,9 @@ $(document).ready(function () {
                 console.warn('Data submitted to Sheety but did not receive a success confirmation:', sheetyResult);
             }
 
+            // Send email notification
+            await sendEmailNotification(formData, formattedData);
+
             // Show flight tracking modal
             showFlightTrackingModal();
 
@@ -600,18 +603,13 @@ $(document).ready(function () {
             // Handle flight tracking decline
             SELECTORS.btnSecondary.off('click').on('click', function () {
                 console.log("User declined flight tracking.");
-                // Optionally reset form or perform other actions
+                window.location.reload();
             });
-
-            // Send email notification
-            await sendEmailNotification(formData, formattedData);
 
         } catch (error) {
             console.error('Error during form submission:', error.message);
         } finally {
             SELECTORS.loader.hide();
-            console.log('Submission OK, Reloading the page.')
-            window.location.reload();
         }
     };
 
