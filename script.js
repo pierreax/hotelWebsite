@@ -132,7 +132,6 @@ $(document).ready(function() {
 
         // Get FX Rates
         console.log('Getting FX Rates for:',formCurrency);
-        const formCurrency = $('#currency').val();
         const conversionResponse = await fetch(`/api/getFxRates?baseCurrency=${formCurrency}`);
         const conversionData = await conversionResponse.json();
 
