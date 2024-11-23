@@ -431,9 +431,16 @@ $(document).ready(function() {
                       Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
                       Math.sin(dLon / 2) * Math.sin(dLon / 2);
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            const distance = R * c;
-            return distance.toFixed(2); // Distance in km
+            const distanceKm = R * c;
+        
+            // If the distance is less than 1 km, return it in meters, else return it in km
+            if (distanceKm < 1) {
+                return (distanceKm * 1000).toFixed(0) + " m"; // Convert to meters
+            } else {
+                return distanceKm.toFixed(2) + " km"; // Return in km
+            }
         }
+        
         
 
         // SUBMIT BUTTON, TO SHEETY AND SEND EMAIL FUNCTIONALITY
@@ -602,9 +609,9 @@ $(document).ready(function() {
                     );
                     return {
                         ...offer,
-                        distance: parseFloat(distance)
+                        distance: distance // Store the formatted distance
                     };
-                });
+                });                
                 console.log('Converted Offers with distance:',offersWithDistance);
 
 
@@ -633,10 +640,11 @@ $(document).ready(function() {
                             // Add room type below hotel name
                             const roomType = $('<div>').text(offer.offers[0].room ? formatRoomType(offer.offers[0].room.typeEstimated.category) : 'N/A').addClass('room-type');
                             cardHeader.append(roomType);
-
+                            
                             // Add the distance in a separate container
-                            const distanceContainer = $('<div>').addClass('distance').text(`${offer.distance.toFixed(2)} km`);
+                            const distanceContainer = $('<div>').addClass('distance').text(offer.distance);
                             card.append(distanceContainer);
+
 
                             // Add Rating if available
                             //const rating = ratingsMap[offer.hotel.hotelId];
