@@ -531,17 +531,12 @@ $(document).ready(function() {
                     if (!emailResponse.ok) {
                         const errorData = await emailResponse.json();  // Get the error message from the backend
                         console.error('Failed to send email:', errorData.message);
-                
-                        // You can also show the error message on your page
-                        alert(`Error: ${errorData.message}`);
                     } else {
                         console.log('Email sent successfully');
                         // Optionally, notify the user that the email was sent successfully
-                        alert('Email sent successfully!');
                     }
                 } catch (emailError) {
                     console.error('Error during email sending:', emailError.message);
-                    alert(`Error during email sending: ${emailError.message}`);
                 }                
             } catch (error) {
                 console.error('Error during form submission:', error.message);
