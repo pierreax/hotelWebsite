@@ -622,7 +622,8 @@ $(document).ready(function() {
         
                 // Sort offers by distance
                 offersWithDistance.sort((a, b) => a.distance - b.distance);
-        
+                console.log('Sorted and Converted Offers with distance:',offersWithDistance);
+
                 if (offersWithDistance.length > 0) {
                     // Delay between showing cards
                     const delayBetweenCards = 300; // 300 ms delay
