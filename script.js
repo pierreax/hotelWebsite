@@ -571,6 +571,7 @@ $(document).ready(function() {
                 const hotelIds = internalHotelIds.slice(0, limitResults);
         
                 const offersData = await fetchHotelOffers(hotelIds);
+                
                 // const ratingsData = await fetchHotelRatings(hotelIds); - Skip Hotel ratings for now
         
                 // Map ratings data by hotelId for quick lookup
@@ -579,14 +580,15 @@ $(document).ready(function() {
                 //    ratingsMap[rating.hotelId] = rating.overallRating;
                 //});
                 
-                // No need to determine originalCurrency, as the convertPricesToFormCurrency function now handles each offer's currency
-                const convertedOffers = await convertPricesToFormCurrency(offersData.data);
+                const convertedOffers = await convertPricesToFormCurrency(offersData.data, formCurrency, conversionData);
+                console.log('Converted Offers:',convertedOffers);
         
                 // Calculate and add distance to each offer
+
                 const offersWithDistance = convertedOffers.map(offer => {
                     const distance = calculateDistance(
-                        locationCoordinates.latitude,
-                        locationCoordinates.longitude,
+                        coords.lat,
+                        coords.lng,
                         offer.hotel.latitude,
                         offer.hotel.longitude
                     );
@@ -595,6 +597,9 @@ $(document).ready(function() {
                         distance: parseFloat(distance)
                     };
                 });
+                console.log('Converted Offers with distance:',offersWithDistance);
+
+
         
                 // Sort offers by distance
                 offersWithDistance.sort((a, b) => a.distance - b.distance);
