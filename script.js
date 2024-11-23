@@ -610,6 +610,7 @@ $(document).ready(function () {
             console.error('Error during form submission:', error.message);
         } finally {
             SELECTORS.loader.hide();
+            window.top.reload();
         }
     };
 
