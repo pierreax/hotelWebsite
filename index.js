@@ -449,7 +449,7 @@ async function getAccessToken() {
         grant_type: 'client_credentials',
         client_id: EMAIL_CLIENT_ID,
         client_secret: EMAIL_CLIENT_SECRET,
-        scope: 'https://graph.microsoft.com/.default';
+        scope: 'https://graph.microsoft.com/.default'
     };
 
     const response = await fetch(TOKEN_ENDPOINT, {
