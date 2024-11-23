@@ -441,9 +441,12 @@ app.post('/api/sendEmail', async (req, res) => {
 
     } catch (error) {
         console.error('Error during email sending:', error.message);
-        return res.status(500).json({ message: "An error occurred while processing the request." });
+
+        // Send error message back to frontend
+        return res.status(500).json({ message: `Error during email sending: ${error.message}` });
     }
 });
+
 
 async function getAccessToken() {
     const tokenData = {
