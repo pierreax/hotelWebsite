@@ -290,25 +290,33 @@ $(document).ready(function() {
         // Convert the hotel offers' prices based on the conversion rates received from the backend
         async function convertPricesToFormCurrency(hotelOffers, formCurrency, conversionRates) {
             return hotelOffers.map(offer => {
-                const originalCurrency = offer.price.currency;  // Extract the original currency from the offer
-                console.log('Original Currency:',originalCurrency);
-                console.log('Form Currency:',formCurrency);
-
-                const originalPrice = offer.price.total;
-
-
-                // If the original currency is different from the form currency, convert the price
-                if (originalCurrency !== formCurrency) {
-                    const conversionRate = conversionRates[originalCurrency];
-                    if (conversionRate) {
-                        const convertedPrice = originalPrice * conversionRate;
-                        console.log('Converted Price:',convertedPrice);
-                        offer.price.total = Math.round(convertedPrice);  // Convert and round the price
+                // Check if 'offer.offers[0]' and 'offer.offers[0].price' exist before accessing
+                if (offer.offers && offer.offers[0] && offer.offers[0].price) {
+                    const originalCurrency = offer.offers[0].price.currency;  // Extract the original currency from the offer
+                    const originalPrice = offer.offers[0].price.total; // Total price
+        
+                    console.log('Original Currency:', originalCurrency);
+                    console.log('Form Currency:', formCurrency);
+        
+                    // If the original currency is different from the form currency, convert the price
+                    if (originalCurrency !== formCurrency) {
+                        const conversionRate = conversionRates[originalCurrency];
+                        if (conversionRate) {
+                            const convertedPrice = originalPrice * conversionRate;
+                            console.log('Converted Price:', convertedPrice);
+                            offer.offers[0].price.total = Math.round(convertedPrice);  // Convert and round the price
+                        } else {
+                            console.error(`Conversion rate not found for ${originalCurrency}`);
+                        }
                     }
+                } else {
+                    console.error('Missing price data for offer:', offer);
                 }
+        
                 return offer;
             });
         }
+        
                
 
         async function submitToSheety(formData, formattedData) {
