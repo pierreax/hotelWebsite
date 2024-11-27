@@ -596,14 +596,14 @@ $(document).ready(function () {
 
             // Handle flight tracking confirmation
             SELECTORS.confirmFlightTrackerBtn.off('click').on('click', function () {
-                console.log("User opted to track flights.");
-                window.location.href = 'https://www.robotize.no/flights';
+                window.open('https://www.robotize.no/flights', '_blank');    // Navigate to redirect to the other site in a new tab
+                window.location.href = 'https://www.robotize.no/hotels';  // Navigate to the original URL to refresh the form
             });
 
             // Handle flight tracking decline
             SELECTORS.btnSecondary.off('click').on('click', function () {
                 console.log("User declined flight tracking.");
-                window.location.reload();
+                window.location.href = 'https://www.robotize.no/hotels';  // Navigate to the original URL to refresh the form
             });
 
         } catch (error) {
