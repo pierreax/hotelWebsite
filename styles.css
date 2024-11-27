@@ -348,13 +348,35 @@ button:disabled {
 }
 
 
+
+
+
 /* Modal Styles */
+body.modal-open {
+    overflow: hidden; /* Prevent background scroll */
+}
+
+/* Modal Content */
 .modal-content {
     background-color: var(--input-background);
     border-radius: 10px;
     border: 1px solid var(--border-color);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     font-family: 'Avenir Light', sans-serif;
+    width: 100%;  /* Ensure content takes full width */
+    max-width: 500px;  /* Limit the width of the modal */
+    margin: 0 auto;  /* Center content horizontally */
+}
+
+
+/* Center the modal vertically and horizontally */
+.modal-dialog {
+    display: flex;
+    justify-content: center;  /* Center horizontally */
+    align-items: center;  /* Center vertically */
+    height: 100vh;  /* Full viewport height */
+    max-width: 500px;  /* Restrict the modal width */
+    margin: 0 auto;  /* Ensure it's centered horizontally */
 }
 
 /* Modal Header */

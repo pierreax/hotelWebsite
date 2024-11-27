@@ -61,8 +61,13 @@ $(document).ready(function () {
      */
     const showFlightTrackingModal = () => {
         console.log('Displaying flight tracking modal.');
+        
+        // Show the modal
         SELECTORS.flightTrackingModal.modal('show');
-    };
+        
+        // Add modal-open class to body to prevent scrolling
+        document.body.classList.add('modal-open');
+};
 
     /**
      * Parse query parameters from the URL.
@@ -596,14 +601,19 @@ $(document).ready(function () {
 
             // Handle flight tracking confirmation
             SELECTORS.confirmFlightTrackerBtn.off('click').on('click', function () {
-                window.open('https://www.robotize.no/flights', '_blank');    // Navigate to redirect to the other site in a new tab
-                window.location.href = 'https://robotize-hotels.azurewebsites.net/';  // Navigate to the original URL to refresh the form
+                window.open('https://www.robotize.no/flights', '_blank');  // Navigate to the flights page in a new tab
+                window.location.href = 'https://robotize-hotels.azurewebsites.net/';  // Refresh the form page
             });
 
             // Handle flight tracking decline
             SELECTORS.btnSecondary.off('click').on('click', function () {
                 console.log("User declined flight tracking.");
-                window.location.href = 'https://robotize-hotels.azurewebsites.net/';  // Navigate to the original URL to refresh the form
+                window.location.href = 'https://robotize-hotels.azurewebsites.net/';  // Refresh the form page
+            });
+
+            // If the modal is closed, remove the modal-open class from body to restore scrolling
+            SELECTORS.flightTrackingModal.on('hidden.bs.modal', function () {
+                document.body.classList.remove('modal-open');
             });
 
         } catch (error) {
