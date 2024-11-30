@@ -42,9 +42,6 @@ $(document).ready(function () {
         const bodyHeight = document.body.scrollHeight;  // Get the content height
         console.log('Sending iframeHeight:', bodyHeight, 'to parent.');
         window.parent.postMessage({ iframeHeight: bodyHeight }, "https://www.robotize.no");
-        console.log('Bodyheight:', bodyHeight);
-        console.log('Sending a test message: hello');
-        window.parent.postMessage({ test: "hello" }, "https://www.robotize.no");
     };
 
 
