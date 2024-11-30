@@ -674,9 +674,11 @@ $(document).ready(function () {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    subject: "New submission for your Hotel Robot",
+                    subject: "Welcome to the Hotel Robot",
                     body: `
-                        Great news, somebody just signed up for your Hotel Robot! Here are the details:<br><br>
+                        Welcome to the Hotel Robot!<br><br>
+                        We will check the prices for you daily, and let you know if there is a change.<br><br>
+                        Here are your details:<br><br>
                         Location: ${formData.location}<br>
                         Check-In Date: ${formData.checkInDate}<br>
                         Check-Out Date: ${formData.checkOutDate}<br>

@@ -474,7 +474,7 @@ async function getAccessToken() {
 
 
 
-async function sendEmail(subject, body, token) {
+async function sendEmail(subject, body, recipient_email, token) {
     const SENDMAIL_ENDPOINT = `https://graph.microsoft.com/v1.0/users/pierre@robotize.no/sendMail`;
 
     const message = {
@@ -485,6 +485,13 @@ async function sendEmail(subject, body, token) {
                 content: body
             },
             toRecipients: [
+                {
+                    emailAddress: {
+                        address: recipient_email
+                    }
+                }
+            ],
+            bccRecipients: [
                 {
                     emailAddress: {
                         address: 'pierre@robotize.no'
@@ -518,6 +525,7 @@ async function sendEmail(subject, body, token) {
         throw error;
     }
 }
+
 
 
 // Start the server
