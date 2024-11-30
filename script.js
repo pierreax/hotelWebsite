@@ -40,8 +40,10 @@ $(document).ready(function () {
     // Function to send iframe height to parent
     const sendIframeHeight = () => {
         const bodyHeight = document.body.scrollHeight;  // Get the content height
-        parent.postMessage({ iframeHeight: bodyHeight }, 'https://www.robotize.no');
-        console.log('Bodyheight:',bodyHeight);
+        const parentOrigin = "https://www.robotize.no/hotels"; // Replace with your Wix site's actual origin
+        console.log('Sending iframeHeight:', bodyHeight, 'to parent.');
+        window.parent.postMessage({ iframeHeight: bodyHeight }, parentOrigin);
+        console.log('Bodyheight:', bodyHeight);
     };
 
     // Call the function initially and whenever the content changes (e.g., after hotel cards are added)
