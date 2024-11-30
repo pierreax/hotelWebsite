@@ -40,7 +40,7 @@ $(document).ready(function () {
     // Function to send iframe height to parent
     const sendIframeHeight = () => {
         const bodyHeight = document.body.scrollHeight;  // Get the content height
-        const parentOrigin = "https://www.robotize.no/hotels"; // Replace with your Wix site's actual origin
+        const parentOrigin = "https://www.robotize.no"; // Correct origin without path
         console.log('Sending iframeHeight:', bodyHeight, 'to parent.');
         window.parent.postMessage({ iframeHeight: bodyHeight }, parentOrigin);
         console.log('Bodyheight:', bodyHeight);
