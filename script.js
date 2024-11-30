@@ -40,7 +40,7 @@ $(document).ready(function () {
     // Function to send iframe height to parent
     const sendIframeHeight = () => {
         const bodyHeight = document.body.scrollHeight;  // Get the content height
-        parent.postMessage({ iframeHeight: bodyHeight }, '*');  // Send height to parent
+        parent.postMessage({ iframeHeight: bodyHeight }, 'https://www.robotize.no');
         console.log('Bodyheight:',bodyHeight);
     };
 
