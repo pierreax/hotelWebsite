@@ -37,6 +37,15 @@ $(document).ready(function () {
     let conversionRates = {};
     let datePicker;
 
+    // Function to send iframe height to parent
+    const sendIframeHeight = () => {
+        const bodyHeight = document.body.scrollHeight;  // Get the content height
+        parent.postMessage({ iframeHeight: bodyHeight }, '*');  // Send height to parent
+    };
+
+    // Call the function initially and whenever the content changes (e.g., after hotel cards are added)
+    sendIframeHeight();  // Initial height
+
     /**
      * Initialize the Flatpickr date range picker.
      */
@@ -464,6 +473,7 @@ $(document).ready(function () {
 
                 // Append Card to Results
                 SELECTORS.resultsContainer.append(card);
+                sendIframeHeight();  // Send the updated height to the parent after adding hotel cards
             }, delayBetweenCards * index);
         });
 
