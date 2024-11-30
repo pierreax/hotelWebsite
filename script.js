@@ -41,6 +41,7 @@ $(document).ready(function () {
     const sendIframeHeight = () => {
         const bodyHeight = document.body.scrollHeight;  // Get the content height
         parent.postMessage({ iframeHeight: bodyHeight }, '*');  // Send height to parent
+        console.log('Bodyheight:',bodyHeight);
     };
 
     // Call the function initially and whenever the content changes (e.g., after hotel cards are added)
@@ -473,6 +474,7 @@ $(document).ready(function () {
 
                 // Append Card to Results
                 SELECTORS.resultsContainer.append(card);
+                console.log('Sending new frameHeight to Wix.');
                 sendIframeHeight();  // Send the updated height to the parent after adding hotel cards
             }, delayBetweenCards * index);
         });
