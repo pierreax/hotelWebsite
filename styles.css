@@ -24,10 +24,16 @@
     font-style: normal;
 }
 
+html, body {
+    height: 100%;          /* Ensure full height for proper centering */
+    margin: 0;             /* Remove any default margin */
+    padding: 0;            /* Remove any default padding */
+}
+
+
 /* Global styles */
 body {
     font-family: 'Avenir Light', sans-serif;
-    margin: 20px;
     background-color: var(--background-color);
     box-sizing: border-box; /* Ensure box-sizing is applied to the body */
 }
