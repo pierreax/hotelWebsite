@@ -40,9 +40,8 @@ $(document).ready(function () {
     // Function to send iframe height to parent
     const sendIframeHeight = () => {
         const bodyHeight = document.body.scrollHeight;  // Get the content height
-        const parentOrigin = "https://www.robotize.no"; // Correct origin without path
         console.log('Sending iframeHeight:', bodyHeight, 'to parent.');
-        window.parent.postMessage({ iframeHeight: bodyHeight }, parentOrigin);
+        window.parent.postMessage({ iframeHeight: bodyHeight }, "https://www.robotize.no");
         console.log('Bodyheight:', bodyHeight);
         console.log('Sending a test message: hello');
         window.parent.postMessage({ test: "hello" }, "https://www.robotize.no");
@@ -480,7 +479,6 @@ $(document).ready(function () {
 
                 // Append Card to Results
                 SELECTORS.resultsContainer.append(card);
-                console.log('Sending new frameHeight to Wix.');
                 sendIframeHeight();  // Send the updated height to the parent after adding hotel cards
             }, delayBetweenCards * index);
         });
