@@ -26,6 +26,20 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// Set CORS headers
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', 'https://www.robotize.no');
+    res.header('Access-Control-Allow-Methods', 'GET, POST');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    next();
+});
+
+// Set CSP headers
+app.use((req, res, next) => {
+    res.header('Content-Security-Policy', "default-src 'self'; frame-ancestors 'self' https://www.robotize.no;");
+    next();
+});
+
 // ------------ Initialization ---------------
 
 // API to get Coordinates By Location from Google

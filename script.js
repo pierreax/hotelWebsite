@@ -44,7 +44,11 @@ $(document).ready(function () {
         console.log('Sending iframeHeight:', bodyHeight, 'to parent.');
         window.parent.postMessage({ iframeHeight: bodyHeight }, parentOrigin);
         console.log('Bodyheight:', bodyHeight);
+        console.log('Sending a test message: hello');
+        window.parent.postMessage({ test: "hello" }, "https://www.robotize.no");
     };
+
+
 
     // Call the function initially and whenever the content changes (e.g., after hotel cards are added)
     sendIframeHeight();  // Initial height
