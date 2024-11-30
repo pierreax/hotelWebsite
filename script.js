@@ -677,7 +677,7 @@ $(document).ready(function () {
                     subject: "Welcome to the Hotel Robot",
                     body: `
                         Welcome to the Hotel Robot!<br><br>
-                        We will check the prices for you daily, and let you know if there is a change.<br><br>
+                        We will check prices for you daily, and let you know if there is a change.<br><br>
                         Here are your details:<br><br>
                         Location: ${formData.location}<br>
                         Check-In Date: ${formData.checkInDate}<br>
