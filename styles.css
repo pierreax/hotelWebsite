@@ -379,7 +379,7 @@ body.modal-open {
 .modal-dialog {
     display: flex;
     justify-content: center;  /* Center horizontally */
-    align-items: center;  /* Center vertically */
+    align-items: start;  /* Show at the top */
     height: 100vh;  /* Full viewport height */
     max-width: 500px;  /* Restrict the modal width */
     margin: 0 auto;  /* Ensure it's centered horizontally */

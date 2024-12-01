@@ -38,17 +38,15 @@ $(document).ready(function () {
     let datePicker;
 
     // Function to send iframe height to parent
-    const sendIframeHeight = () => {
-        let bodyHeight = document.body.scrollHeight;  // Get the content height
-        bodyHeight = bodyHeight*2;
-        console.log('Sending iframeHeight:', bodyHeight, 'to parent.');
-        window.parent.postMessage({ iframeHeight: bodyHeight }, "https://www.robotize.no");
+    const scrollToTop = () => {
+        // Send a message to request scrolling to top
+        window.parent.postMessage({ action: 'scrollToTop' }, "https://www.robotize.no");
+        console.log('Sending Scroll to Top to Wix');
     };
 
 
 
-    // Call the function initially and whenever the content changes (e.g., after hotel cards are added)
-    sendIframeHeight();  // Initial height
+
 
     /**
      * Initialize the Flatpickr date range picker.
@@ -477,7 +475,6 @@ $(document).ready(function () {
 
                 // Append Card to Results
                 SELECTORS.resultsContainer.append(card);
-                sendIframeHeight();  // Send the updated height to the parent after adding hotel cards
             }, delayBetweenCards * index);
         });
 
@@ -609,6 +606,9 @@ $(document).ready(function () {
 
             // Send email notification
             await sendEmailNotification(formData, formattedData);
+
+            // Scroll to top before showing the modal at the top
+            scrollToTop();  
 
             // Show flight tracking modal
             showFlightTrackingModal();
