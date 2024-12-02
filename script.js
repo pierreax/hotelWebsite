@@ -226,20 +226,31 @@ $(document).ready(function () {
             const tokenData = await fetchJSON(API_ENDPOINTS.getAccessToken);
             accessToken = tokenData.access_token;
 
-            // Get Location Coordinates
+            // Get Location Coordinates and City
             console.log('Getting coordinates for location:', formData.location);
+
+            // Fetch the location data from the API
             const locationData = await fetchJSON(`${API_ENDPOINTS.getCoordinatesByLocation}?location=${encodeURIComponent(formData.location)}`);
             console.log('Location data:', locationData);
+
+            // Extract coordinates from the API response
             const coordinates = locationData.results[0].geometry.location;
             console.log('Coordinates:', coordinates);
 
-            if (!locationCoordinates || !locationCoordinates.lat || !locationCoordinates.lng) {
+            // Extract city from the address components
+            const cityComponent = locationData.results[0].address_components.find(component => component.types.includes('locality'));
+            const city = cityComponent ? cityComponent.long_name : 'City not found';
+            console.log('City:', city);
+
+            // Check if coordinates are valid
+            if (!coordinates || !coordinates.lat || !coordinates.lng) {
                 SELECTORS.noResultsMessage.show();
                 throw new Error('Invalid coordinates received');
             }
 
-            const { lat, lng } = locationCoordinates;
-            console.log(lat, lng);
+            // Store the coordinates and city
+            const { lat, lng } = coordinates;
+            console.log('Latitude:', lat, 'Longitude:', lng);
 
             // Fetch Hotels by Coordinates
             const hotelsParams = new URLSearchParams({
