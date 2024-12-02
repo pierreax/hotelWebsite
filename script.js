@@ -237,16 +237,12 @@ $(document).ready(function () {
             const coordinates = locationData.results[0].geometry.location;
             console.log('Coordinates:', coordinates);
 
-            // Extract city from the address components
-            const cityComponent = locationData.results[0].address_components.find(component => component.types.includes('locality'));
+            // Extract city from the address components (looking for either 'locality' or 'postal_town')
+            const cityComponent = locationData.results[0].address_components.find(component => 
+                component.types.includes('locality') || component.types.includes('postal_town')
+            );
             const city = cityComponent ? cityComponent.long_name : 'City not found';
             console.log('City:', city);
-
-            // Check if coordinates are valid
-            if (!coordinates || !coordinates.lat || !coordinates.lng) {
-                SELECTORS.noResultsMessage.show();
-                throw new Error('Invalid coordinates received');
-            }
 
             // Store the coordinates and city
             const { lat, lng } = coordinates;
