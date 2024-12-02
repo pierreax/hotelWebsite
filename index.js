@@ -65,7 +65,7 @@ app.get('/api/getCoordinatesByLocation', async (req, res) => {
         if (data.status === 'OK' && data.results.length > 0) {
             const coordinates = data.results[0].geometry.location;
             console.log('Coordinates:', coordinates);
-            return res.json(coordinates);  // Send back latitude and longitude
+            return res.json(data);  // Sends the full response from Google API
         } else {
             console.log('No results found for location:', location);
             return res.status(404).json({ error: 'Location not found' });

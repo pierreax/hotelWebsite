@@ -36,6 +36,10 @@ $(document).ready(function () {
     let locationCoordinates = {};
     let conversionRates = {};
     let datePicker;
+    let redirectUrl = '';
+    let redirectEmail = '';
+    let redirectCity = '';
+    let redirectCurrency = '';
 
     // Function to send iframe height to parent
     const scrollToTop = () => {
@@ -43,6 +47,18 @@ $(document).ready(function () {
         window.parent.postMessage({ action: 'scrollToTop' }, "https://www.robotize.no");
         console.log('Sending Scroll to Top to Wix');
     };
+
+
+    /**
+     * Capture redirect parameters after form submission.
+     */
+        const captureRedirectParameters = () => {
+            redirectEmail = encodeURIComponent(SELECTORS.emailInput.val());
+            redirectCurrency = encodeURIComponent(SELECTORS.currencyInput.val());
+            const iataCodeToValue = SELECTORS.iataCodeTo.val();
+            redirectIataCodeTo = iataCodeToValue ? iataCodeToValue.split(' - ')[0] : '';
+            console.log('Redirect City:', redirectIataCodeTo);
+        };
 
 
 
@@ -212,8 +228,10 @@ $(document).ready(function () {
 
             // Get Location Coordinates
             console.log('Getting coordinates for location:', formData.location);
-            locationCoordinates = await fetchJSON(`${API_ENDPOINTS.getCoordinatesByLocation}?location=${encodeURIComponent(formData.location)}`);
-            console.log(locationCoordinates);
+            const locationData = await fetchJSON(`${API_ENDPOINTS.getCoordinatesByLocation}?location=${encodeURIComponent(formData.location)}`);
+            console.log('Location data:', locationData);
+            const coordinates = locationData.results[0].geometry.location;
+            console.log('Coordinates:', coordinates);
 
             if (!locationCoordinates || !locationCoordinates.lat || !locationCoordinates.lng) {
                 SELECTORS.noResultsMessage.show();
@@ -604,6 +622,9 @@ $(document).ready(function () {
                 console.warn('Data submitted to Sheety but did not receive a success confirmation:', sheetyResult);
             }
 
+            // Capture redirect parameters
+            captureRedirectParameters();
+
             // Send email notification
             await sendEmailNotification(formData, formattedData);
 
@@ -615,7 +636,7 @@ $(document).ready(function () {
 
             // Handle flight tracking confirmation
             SELECTORS.confirmFlightTrackerBtn.off('click').on('click', function () {
-                window.open('https://www.robotize.no/flights', '_blank');  // Navigate to the flights page in a new tab
+                window.open(redirectUrl, '_blank');    // Navigate to redirect to the other site in a new tab
                 window.location.href = 'https://robotize-hotels.azurewebsites.net/';  // Refresh the form page
             });
 
