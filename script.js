@@ -40,6 +40,8 @@ $(document).ready(function () {
     let redirectEmail = '';
     let redirectCity = '';
     let redirectCurrency = '';
+    let redirectDateFrom = '';
+    let redirectDateTo = '';
 
     // Function to send iframe height to parent
     const scrollToTop = () => {
@@ -52,16 +54,14 @@ $(document).ready(function () {
     /**
      * Capture redirect parameters after form submission.
      */
-        const captureRedirectParameters = () => {
-            redirectEmail = encodeURIComponent(SELECTORS.emailInput.val());
-            redirectCurrency = encodeURIComponent(SELECTORS.currencyInput.val());
-            const iataCodeToValue = SELECTORS.iataCodeTo.val();
-            redirectIataCodeTo = iataCodeToValue ? iataCodeToValue.split(' - ')[0] : '';
-            console.log('Redirect City:', redirectIataCodeTo);
-        };
-
-
-
+    const captureRedirectParameters = () => {
+        redirectEmail = encodeURIComponent(SELECTORS.emailInput.val());
+        redirectCurrency = encodeURIComponent(SELECTORS.currencyInput.val());
+        redirectDateFrom = formatDateToLocalISOString(datePicker.selectedDates[0]);
+        redirectDateTo = formatDateToLocalISOString(datePicker.selectedDates[1]);
+        redirectUrl = `https://www.robotize.no/flights?email=${redirectEmail}&currency=${redirectCurrency}&city=${redirectCity}&dateFrom=${redirectDateFrom}&dateTo=${redirectDateTo}`;
+        console.log('Redirect URL:', redirectUrl);
+    };
 
 
     /**
@@ -241,8 +241,15 @@ $(document).ready(function () {
             const cityComponent = locationData.results[0].address_components.find(component => 
                 component.types.includes('locality') || component.types.includes('postal_town')
             );
-            const city = cityComponent ? cityComponent.long_name : 'City not found';
-            console.log('City:', city);
+
+            // Check if city was found before assigning it to the global variable
+            if (cityComponent) {
+                redirectCity = cityComponent.long_name;  // Assign city value to global variable
+                console.log('City:', redirectCity);
+            } else {
+                console.log('City not found');
+                redirectCity = '';  // Optional: Set to empty or any default value you want
+            }
 
             // Store the coordinates and city
             const { lat, lng } = coordinates;
@@ -631,6 +638,7 @@ $(document).ready(function () {
 
             // Capture redirect parameters
             captureRedirectParameters();
+
 
             // Send email notification
             await sendEmailNotification(formData, formattedData);
