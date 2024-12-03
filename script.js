@@ -42,6 +42,8 @@ $(document).ready(function () {
     let redirectCurrency = '';
     let redirectDateFrom = '';
     let redirectDateTo = '';
+    let redirected = false;  // Global variable to track if the user has been redirected
+
 
     // Function to send iframe height to parent
     const scrollToTop = () => {
@@ -94,10 +96,10 @@ $(document).ready(function () {
         
         // Add modal-open class to body to prevent scrolling
         document.body.classList.add('modal-open');
-};
+    };
 
     /**
-     * Parse query parameters from the URL.
+     * Parse query parameters from the URL and set the `redirected` flag if parameters exist.
      * @returns {Object} Query parameters as key-value pairs.
      */
     const getQueryParams = () => {
@@ -106,6 +108,13 @@ $(document).ready(function () {
         for (const [key, value] of params.entries()) {
             queryParams[key] = value;
         }
+
+        // Check if the query params contain any relevant redirection data
+        if (Object.keys(queryParams).length > 0) {
+            redirected = true;  // Set redirected to true if any query params exist
+            console.log('User has been redirected');
+        }
+
         return queryParams;
     };
 
@@ -251,7 +260,7 @@ $(document).ready(function () {
                 redirectCity = '';  // Optional: Set to empty or any default value you want
             }
 
-            // Store the coordinates and city
+            // Store the coordinates
             const { lat, lng } = locationCoordinates;
             console.log('Latitude:', lat, 'Longitude:', lng);
 
