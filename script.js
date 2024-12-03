@@ -313,10 +313,9 @@ $(document).ready(function () {
      * @param {Object} formData 
      * @param {string} checkInDate 
      * @param {string} checkOutDate 
-     * @param {number} numberOfNights 
      * @returns {Object|null} Offers data or null if no offers.
      */
-    const fetchHotelOffers = async (hotelIds, formData, checkInDate, checkOutDate, numberOfNights) => {
+    const fetchHotelOffers = async (hotelIds, formData, checkInDate, checkOutDate) => {
         const params = new URLSearchParams({
             hotelIds: hotelIds.join(','),
             adults: formData.adults,
