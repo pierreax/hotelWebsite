@@ -234,8 +234,8 @@ $(document).ready(function () {
             console.log('Location data:', locationData);
 
             // Extract coordinates from the API response
-            const coordinates = locationData.results[0].geometry.location;
-            console.log('Coordinates:', coordinates);
+            locationCoordinates = locationData.results[0].geometry.location;
+            console.log('Coordinates:', locationCoordinates);
 
             // Extract city from the address components (looking for either 'locality' or 'postal_town')
             const cityComponent = locationData.results[0].address_components.find(component => 
