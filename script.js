@@ -14,6 +14,7 @@ $(document).ready(function () {
         datePickerInput: $('.datepicker'),
         confirmFlightTrackerBtn: $('#confirmFlightTracker'),
         btnSecondary: $('.btn-secondary'),
+        thankYouOkBtn: $('#closeThankYouModal'),
     };
 
     // API Endpoints
@@ -680,6 +681,12 @@ $(document).ready(function () {
             // Handle flight tracking decline
             SELECTORS.btnSecondary.off('click').on('click', function () {
                 console.log("User declined flight tracking.");
+                window.location.href = 'https://robotize-hotels.azurewebsites.net/';  // Refresh the form page
+            });
+
+            // Handle OK button in modal
+            SELECTORS.thankYouOkBtn.off('click').on('click', function () {
+                console.log("User clicked OK on thank you modal.");
                 window.location.href = 'https://robotize-hotels.azurewebsites.net/';  // Refresh the form page
             });
 
