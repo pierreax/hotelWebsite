@@ -252,7 +252,7 @@ $(document).ready(function () {
             }
 
             // Store the coordinates and city
-            const { lat, lng } = coordinates;
+            const { lat, lng } = locationCoordinates;
             console.log('Latitude:', lat, 'Longitude:', lng);
 
             // Fetch Hotels by Coordinates
