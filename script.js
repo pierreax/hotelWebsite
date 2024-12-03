@@ -98,6 +98,13 @@ $(document).ready(function () {
         document.body.classList.add('modal-open');
     };
 
+    // Function to show the thank you modal
+    const showThankYouModal = () => {
+        console.log('Displaying thank you modal.');
+        $('#thankYouModal').modal('show');
+    };
+
+
     /**
      * Parse query parameters from the URL and set the `redirected` flag if parameters exist.
      * @returns {Object} Query parameters as key-value pairs.
@@ -654,8 +661,15 @@ $(document).ready(function () {
             // Scroll to top before showing the modal at the top
             scrollToTop();  
 
-            // Show flight tracking modal
-            showFlightTrackingModal();
+            // Initialize the modal based on whether the user has been redirected
+            if (redirected) {
+                // If user was redirected, show the thank you modal
+                showThankYouModal();
+            } else {
+                // Show flight tracking modal
+                showFlightTrackingModal();
+            }
+
 
             // Handle flight tracking confirmation
             SELECTORS.confirmFlightTrackerBtn.off('click').on('click', function () {
