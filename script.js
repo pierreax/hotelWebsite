@@ -407,14 +407,10 @@ $(document).ready(function () {
                 const originalCurrency = priceData.currency;
                 const originalPrice = priceData.total;
 
-                console.log('Original Currency:', originalCurrency);
-                console.log('Form Currency:', formCurrency);
-
                 if (originalCurrency !== formCurrency) {
                     const rate = conversionRates[originalCurrency];
                     if (rate) {
                         const convertedPrice = originalPrice / rate;
-                        console.log('Converted Price:', convertedPrice);
                         offer.offers[0].price.total = Math.round(convertedPrice);
                     } else {
                         console.error(`Conversion rate not found for ${originalCurrency}`);
