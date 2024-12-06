@@ -188,14 +188,21 @@ $(document).ready(function () {
 
     /**
      * Set currency based on IP geolocation.
+     * @returns {Promise} A Promise that resolves when the currency is set.
      */
     const setCurrencyFromIP = () => {
-        $.get(API_ENDPOINTS.ipGeo, function (response) {
-            const currency = response.currency.code;
-            console.log('Setting currency to:', currency);
-            SELECTORS.currencyInput.val(currency).trigger('change');
+        return new Promise((resolve, reject) => {
+            $.get(API_ENDPOINTS.ipGeo, function (response) {
+                const currency = response.currency.code;
+                console.log('Setting currency to:', currency);
+                SELECTORS.currencyInput.val(currency).trigger('change');
+                resolve();  // Resolve the Promise once the currency is set
+            }).fail((error) => {
+                reject(error);  // Reject the Promise if the request fails
+            });
         });
     };
+
 
     /**
      * Handle form submission for searching hotels.
@@ -816,8 +823,8 @@ $(document).ready(function () {
     };
 
     /**
-     * Initialize the application.
-     */
+    * Initialize the application.
+    */
     const init = async () => {
         // Initialize components
         datePicker = initializeDatePicker();
@@ -827,7 +834,7 @@ $(document).ready(function () {
 
         // Only set currency from IP if 'currency' is not present in query params
         if (!queryParams.currency) {
-            await setCurrencyFromIP();  // Await currency setting before continuing
+            await setCurrencyFromIP();  // Wait for currency to be set
         }
 
         // Initialize form fields
@@ -836,7 +843,7 @@ $(document).ready(function () {
         // Attach event listeners
         attachEventListeners();
 
-        // Fetch FX Rates AFTER currency has been set
+        // Fetch FX Rates after currency is set
         const formCurrency = SELECTORS.currencyInput.val(); // Get the currency after it's set
         if (formCurrency) {
             console.log('Getting FX Rates for:', formCurrency);
@@ -846,7 +853,6 @@ $(document).ready(function () {
         // Store the initial currency after setting or reading from queryParams
         initialCurrency = formCurrency;
     };
-
 
     // Initialize the script
     init();
