@@ -244,7 +244,7 @@ $(document).ready(function () {
         });
 
         try {
-            
+
             // Fetch FX Rates only if the currency has changed
             if (formData.formCurrency !== initialCurrency) {
                 console.log('Getting FX Rates for:', formData.formCurrency);
@@ -836,14 +836,17 @@ $(document).ready(function () {
         // Attach event listeners
         attachEventListeners();
 
-        // Fetch FX Rates
-        console.log('Getting FX Rates for:', SELECTORS.currencyInput.val());
-        conversionRates = await fetchJSON(`${API_ENDPOINTS.getFxRates}?baseCurrency=${SELECTORS.currencyInput.val()}`);
-
+        // Fetch FX Rates AFTER currency has been set
+        const formCurrency = SELECTORS.currencyInput.val(); // Get the currency after it's set
+        if (formCurrency) {
+            console.log('Getting FX Rates for:', formCurrency);
+            conversionRates = await fetchJSON(`${API_ENDPOINTS.getFxRates}?baseCurrency=${formCurrency}`);
+        }
 
         // Store the initial currency after setting or reading from queryParams
-        initialCurrency = SELECTORS.currencyInput.val();
+        initialCurrency = formCurrency;
     };
+
 
     // Initialize the script
     init();
