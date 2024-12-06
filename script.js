@@ -44,6 +44,7 @@ $(document).ready(function () {
     let redirectDateFrom = '';
     let redirectDateTo = '';
     let redirected = false;  // Global variable to track if the user has been redirected
+    let initialCurrency = ''; 
 
 
     // Function to send iframe height to parent
@@ -243,11 +244,14 @@ $(document).ready(function () {
         });
 
         try {
-            // Fetch FX Rates
-            console.log('Getting FX Rates for:', formData.formCurrency);
-            const fxRatesData = await fetchJSON(`${API_ENDPOINTS.getFxRates}?baseCurrency=${formData.formCurrency}`);
-            conversionRates = fxRatesData;
-            console.log('FX Rates:', conversionRates);
+            
+            // Fetch FX Rates only if the currency has changed
+            if (formData.formCurrency !== initialCurrency) {
+                console.log('Getting FX Rates for:', formData.formCurrency);
+                const fxRatesData = await fetchJSON(`${API_ENDPOINTS.getFxRates}?baseCurrency=${formData.formCurrency}`);
+                conversionRates = fxRatesData;
+                initialCurrency = formData.formCurrency;  // Update the stored currency after fetching FX rates
+            }
 
             // Fetch Access Token
             const tokenData = await fetchJSON(API_ENDPOINTS.getAccessToken);
@@ -814,17 +818,31 @@ $(document).ready(function () {
     /**
      * Initialize the application.
      */
-    const init = () => {
+    const init = async () => {
         // Initialize components
         datePicker = initializeDatePicker();
-        setCurrencyFromIP();
+
+        // Get query parameters
+        const queryParams = getQueryParams();
+
+        // Only set currency from IP if 'currency' is not present in query params
+        if (!queryParams.currency) {
+            await setCurrencyFromIP();  // Await currency setting before continuing
+        }
 
         // Initialize form fields
-        const queryParams = getQueryParams();
         initializeFormFields(queryParams);
 
         // Attach event listeners
         attachEventListeners();
+
+        // Fetch FX Rates
+        console.log('Getting FX Rates for:', SELECTORS.currencyInput.val());
+        conversionRates = await fetchJSON(`${API_ENDPOINTS.getFxRates}?baseCurrency=${SELECTORS.currencyInput.val()}`);
+
+
+        // Store the initial currency after setting or reading from queryParams
+        initialCurrency = SELECTORS.currencyInput.val();
     };
 
     // Initialize the script
