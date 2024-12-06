@@ -221,7 +221,7 @@ $(document).ready(function () {
             adults: $('#adults').val(),
             numberOfRooms: $('#numberOfRooms').val(),
             email: SELECTORS.emailInput.val(),
-            limitResults: parseInt($('#limitResults').val(), 10),
+            limitResults: parseInt($('#limitResults').val(), 20), // Limit results for Hotel Offers (currently hidden)
             formCurrency: SELECTORS.currencyInput.val(),
         };
 
