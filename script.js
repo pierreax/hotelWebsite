@@ -483,69 +483,67 @@ $(document).ready(function () {
             SELECTORS.resultsContainer.html('<div class="no-results-message">No valid hotel offers found. Please try different search criteria.</div>');
             return;
         }
-
-        const delayBetweenCards = 300; // ms
-        offers.forEach((offer, index) => {
-            setTimeout(() => {
-                const totalPrice = Math.round(parseFloat(offer.offers[0].price.total));
-                const pricePerNight = numberOfNights > 0
-                    ? Math.round((totalPrice / numberOfNights).toFixed(2))
-                    : 'N/A';
-                const currencySymbol = formData.formCurrency;
-
-                const card = $('<div>').addClass('card');
-
-                // Hidden Hotel ID
-                $('<div>')
-                    .addClass('hiddenHotelId')
-                    .text(offer.hotel.hotelId)
-                    .hide()
-                    .appendTo(card);
-
-                // Card Header
-                const cardHeader = $('<div>').addClass('card-header');
-                $('<div>')
-                    .addClass('hotel-name')
-                    .text(formatHotelName(offer.hotel.name))
-                    .appendTo(cardHeader);
-                $('<div>')
-                    .addClass('room-type')
-                    .text(offer.offers[0].room ? formatRoomType(offer.offers[0].room.typeEstimated.category) : 'N/A')
-                    .appendTo(cardHeader);
-                card.append(cardHeader);
-
-                // Distance Display
-                $('<div>')
-                    .addClass('distance')
-                    .text(offer.distanceDisplay)
-                    .appendTo(card);
-
-                // Checkbox Container
-                const checkboxContainer = $('<div>').addClass('checkbox-container');
-                checkboxContainer.append($('<span>').addClass('checkbox-description').text('Add to Robot: '));
-                checkboxContainer.append($('<input>').attr('type', 'checkbox').addClass('select-checkbox'));
-                card.append(checkboxContainer);
-
-                // Card Content
-                const cardContent = $('<div>').addClass('card-content');
-                $('<div>').addClass('price-per-night')
-                    .append($('<span>').addClass('label').text('Per Night: '))
-                    .append($('<span>').addClass('amount').text(`${currencySymbol} ${pricePerNight}`))
-                    .appendTo(cardContent);
-                $('<div>').addClass('total-price')
-                    .append($('<span>').addClass('label').text('Total: '))
-                    .append($('<span>').addClass('amount').text(`${currencySymbol} ${totalPrice}`))
-                    .appendTo(cardContent);
-                card.append(cardContent);
-
-                // Append Card to Results
-                SELECTORS.resultsContainer.append(card);
-            }, delayBetweenCards * index);
+    
+        offers.forEach((offer) => {
+            const totalPrice = Math.round(parseFloat(offer.offers[0].price.total));
+            const pricePerNight = numberOfNights > 0
+                ? Math.round((totalPrice / numberOfNights).toFixed(2))
+                : 'N/A';
+            const currencySymbol = formData.formCurrency;
+    
+            const card = $('<div>').addClass('card');
+    
+            // Hidden Hotel ID
+            $('<div>')
+                .addClass('hiddenHotelId')
+                .text(offer.hotel.hotelId)
+                .hide()
+                .appendTo(card);
+    
+            // Card Header
+            const cardHeader = $('<div>').addClass('card-header');
+            $('<div>')
+                .addClass('hotel-name')
+                .text(formatHotelName(offer.hotel.name))
+                .appendTo(cardHeader);
+            $('<div>')
+                .addClass('room-type')
+                .text(offer.offers[0].room ? formatRoomType(offer.offers[0].room.typeEstimated.category) : 'N/A')
+                .appendTo(cardHeader);
+            card.append(cardHeader);
+    
+            // Distance Display
+            $('<div>')
+                .addClass('distance')
+                .text(offer.distanceDisplay)
+                .appendTo(card);
+    
+            // Checkbox Container
+            const checkboxContainer = $('<div>').addClass('checkbox-container');
+            checkboxContainer.append($('<span>').addClass('checkbox-description').text('Add to Robot: '));
+            checkboxContainer.append($('<input>').attr('type', 'checkbox').addClass('select-checkbox'));
+            card.append(checkboxContainer);
+    
+            // Card Content
+            const cardContent = $('<div>').addClass('card-content');
+            $('<div>').addClass('price-per-night')
+                .append($('<span>').addClass('label').text('Per Night: '))
+                .append($('<span>').addClass('amount').text(`${currencySymbol} ${pricePerNight}`))
+                .appendTo(cardContent);
+            $('<div>').addClass('total-price')
+                .append($('<span>').addClass('label').text('Total: '))
+                .append($('<span>').addClass('amount').text(`${currencySymbol} ${totalPrice}`))
+                .appendTo(cardContent);
+            card.append(cardContent);
+    
+            // Append Card to Results
+            SELECTORS.resultsContainer.append(card);
         });
-
+    
         SELECTORS.resultsContainer.show();
         SELECTORS.submitText.show();
     };
+    
 
     /**
      * Format hotel name for display.
