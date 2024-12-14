@@ -204,6 +204,71 @@ $(document).ready(function () {
     };
 
 
+
+    // Initialize form field listeners
+    const initLocationInputListener = () => {
+        // Listen for the blur event when the user finishes typing and moves focus out of the location input
+        SELECTORS.locationInput.on('blur', async (event) => {
+            const location = event.target.value;
+
+            // Only trigger fetch if the location input is not empty
+            if (location.trim()) {
+                try {
+                    // Fetch Coordinates and City Information as soon as location is entered
+                    console.log('Getting coordinates for location:', location);
+
+                    // Fetch the location data from the API
+                    const locationData = await fetchJSON(`${API_ENDPOINTS.getCoordinatesByLocation}?location=${encodeURIComponent(location)}`);
+                    console.log('Location data:', locationData);
+
+                    if (locationData && locationData.results.length > 0) {
+                        // Extract coordinates from the API response
+                        locationCoordinates = locationData.results[0].geometry.location;
+                        console.log('Coordinates:', locationCoordinates);
+
+                        // Extract city from the address components (looking for either 'locality' or 'postal_town')
+                        const cityComponent = locationData.results[0].address_components.find(component => 
+                            component.types.includes('locality') || component.types.includes('postal_town')
+                        );
+
+                        // Assign city value to global variable
+                        redirectCity = cityComponent ? cityComponent.long_name : '';
+                        console.log('City:', redirectCity);
+
+                        // Fetch Hotels by Coordinates
+                        const { lat, lng } = locationCoordinates;
+                        const hotelsParams = new URLSearchParams({
+                            lat,
+                            lng,
+                            radius: 100,
+                            radiusUnit: 'KM',
+                            hotelSource: 'ALL'
+                        }).toString();
+                        const hotelsUrl = `${API_ENDPOINTS.getHotelsByCoordinates}?${hotelsParams}`;
+                        const hotelsData = await fetchJSON(hotelsUrl, {
+                            headers: { 'Authorization': `Bearer ${accessToken}` }
+                        });
+                        console.log('Hotels in the area:', hotelsData);
+
+                        // Optionally, you could start showing the hotels immediately here instead of waiting for the submit button
+                        // Render hotels as they are available
+                        renderHotelCards(hotelsData.data, formData, numberOfNights);  // Call your render function here
+
+                    } else {
+                        console.log('Location not found');
+                    }
+                } catch (error) {
+                    console.error('Error fetching location data:', error);
+                }
+            }
+        });
+    };
+
+    // Initialize location input listener
+    initLocationInputListener();
+
+
+
     /**
      * Handle form submission for searching hotels.
      * @param {Event} event 
