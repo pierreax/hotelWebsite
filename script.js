@@ -507,16 +507,15 @@ $(document).ready(function () {
                 .text(formatHotelName(offer.hotel.name))
                 .appendTo(cardHeader);
     
-            // Room type, only use formatRoomType if it exists
-            const roomType = offer.offers[0].room && offer.offers[0].room.typeEstimated && offer.offers[0].room.typeEstimated.category
-                ? formatRoomType(offer.offers[0].room.typeEstimated.category)
-                : 'N/A';
-    
-            $('<div>')
-                .addClass('room-type')
-                .text(roomType)
-                .appendTo(cardHeader);
-    
+            // Room type - Only append if available
+            if (offer.offers[0].room && offer.offers[0].room.typeEstimated && offer.offers[0].room.typeEstimated.category) {
+                const roomType = formatRoomType(offer.offers[0].room.typeEstimated.category);
+                $('<div>')
+                    .addClass('room-type')
+                    .text(roomType)
+                    .appendTo(cardHeader);
+            }
+            
             card.append(cardHeader);
     
             // Distance Display
@@ -550,6 +549,7 @@ $(document).ready(function () {
         SELECTORS.resultsContainer.show();
         SELECTORS.submitText.show();
     };
+    
     
     
     
