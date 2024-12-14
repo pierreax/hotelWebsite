@@ -507,9 +507,11 @@ $(document).ready(function () {
                 .text(formatHotelName(offer.hotel.name))
                 .appendTo(cardHeader);
     
-            // Room type, only add if available
-            const roomType = offer.offers[0].room && offer.offers[0].room.typeEstimated ? 
-                offer.offers[0].room.typeEstimated.category : 'N/A';
+            // Room type, only use formatRoomType if it exists
+            const roomType = offer.offers[0].room && offer.offers[0].room.typeEstimated && offer.offers[0].room.typeEstimated.category
+                ? formatRoomType(offer.offers[0].room.typeEstimated.category)
+                : 'N/A';
+    
             $('<div>')
                 .addClass('room-type')
                 .text(roomType)
@@ -548,6 +550,7 @@ $(document).ready(function () {
         SELECTORS.resultsContainer.show();
         SELECTORS.submitText.show();
     };
+    
     
     
 
