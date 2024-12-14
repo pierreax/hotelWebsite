@@ -26,7 +26,6 @@
 
 html, body {
     height: 100%;          /* Ensure full height for proper centering */
-    margin: 0;             /* Remove any default margin */
     padding: 0;            /* Remove any default padding */
 }
 
@@ -36,6 +35,7 @@ body {
     font-family: 'Avenir Light', sans-serif;
     background-color: var(--background-color);
     box-sizing: border-box; /* Ensure box-sizing is applied to the body */
+    margin: 20px;
 }
 
 h1, h2 {
@@ -352,9 +352,6 @@ button:disabled {
     font-weight: bold; /* Optional: Style for label */
     margin-right: 4px;
 }
-
-
-
 
 
 /* Modal Styles */
