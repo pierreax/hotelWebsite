@@ -250,10 +250,6 @@ $(document).ready(function () {
                         });
                         console.log('Hotels in the area:', hotelsData);
 
-                        // Optionally, you could start showing the hotels immediately here instead of waiting for the submit button
-                        // Render hotels as they are available
-                        renderHotelCards(hotelsData.data, formData, numberOfNights);  // Call your render function here
-
                     } else {
                         console.log('Location not found');
                     }
