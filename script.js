@@ -214,9 +214,6 @@ $(document).ready(function () {
             // Only trigger fetch if the location input is not empty
             if (location.trim()) {
                 try {
-                    // Fetch Access Token
-                    const tokenData = await fetchJSON(API_ENDPOINTS.getAccessToken);
-                    accessToken = tokenData.access_token;
                     
                     // Fetch Coordinates and City Information as soon as location is entered
                     console.log('Getting coordinates for location:', location);
@@ -238,6 +235,10 @@ $(document).ready(function () {
                         // Assign city value to global variable
                         redirectCity = cityComponent ? cityComponent.long_name : '';
                         console.log('City:', redirectCity);
+
+                        // Fetch Access Token
+                        const tokenData = await fetchJSON(API_ENDPOINTS.getAccessToken);
+                        accessToken = tokenData.access_token;
 
                         // Fetch Hotels by Coordinates
                         const { lat, lng } = locationCoordinates;
