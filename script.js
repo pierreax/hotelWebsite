@@ -213,6 +213,7 @@ $(document).ready(function () {
         SELECTORS.locationInput.on('blur', async (event) => {
             const location = event.target.value;
             SELECTORS.searchBtn.prop('disabled', true);  // Disable the button
+            SELECTORS.resultsContainer.empty(); // Clear previous results
 
             // Only trigger fetch if the location input is not empty
             if (location.trim()) {
@@ -284,6 +285,7 @@ $(document).ready(function () {
      * @param {Event} event 
      */
     const handleSearchFormSubmit = async (event) => {
+        SELECTORS.resultsContainer.empty();
         event.preventDefault();
         SELECTORS.noResultsMessage.hide();
         SELECTORS.submitText.hide();
@@ -336,8 +338,6 @@ $(document).ready(function () {
             }
 
             // Process Hotels Data
-            SELECTORS.resultsContainer.empty();
-
             if (hotelsData && hotelsData.data && hotelsData.data.length > 0) {
                 internalHotelIds = hotelsData.data.map(hotel => hotel.hotelId);
                 const hotelIds = internalHotelIds.slice(0, formData.limitResults);
