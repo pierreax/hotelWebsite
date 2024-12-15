@@ -6,6 +6,7 @@ $(document).ready(function () {
         currencyInput: $('#currency'),
         emailInput: $('#email'),
         locationInput: $('#location'),
+        searchBtn: $('#searchButton'),
         searchForm: $('#searchForm'),
         loader: $('.loader'),
         noResultsMessage: $('#noResultsMessage'),
@@ -211,6 +212,7 @@ $(document).ready(function () {
         // Listen for the blur event when the user finishes typing and moves focus out of the location input
         SELECTORS.locationInput.on('blur', async (event) => {
             const location = event.target.value;
+            SELECTORS.searchBtn.prop('disabled', true);  // Disable the button
 
             // Only trigger fetch if the location input is not empty
             if (location.trim()) {
@@ -260,6 +262,7 @@ $(document).ready(function () {
                             headers: { 'Authorization': `Bearer ${accessToken}` }
                         });
                         console.log('Hotels in the area:', hotelsData);
+                        SELECTORS.searchBtn.prop('disabled', false);  // Enable the button
 
                     } else {
                         console.log('Location not found');
