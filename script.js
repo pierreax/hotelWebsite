@@ -45,6 +45,7 @@ $(document).ready(function () {
     let redirectDateTo = '';
     let redirected = false;  // Global variable to track if the user has been redirected
     let initialCurrency = ''; 
+    let hotelsData = [];
 
 
     // Function to send iframe height to parent
@@ -232,9 +233,14 @@ $(document).ready(function () {
                             component.types.includes('locality') || component.types.includes('postal_town')
                         );
 
-                        // Assign city value to global variable
-                        redirectCity = cityComponent ? cityComponent.long_name : '';
-                        console.log('City:', redirectCity);
+                        // Check if city was found before assigning it to the global variable
+                        if (cityComponent) {
+                            redirectCity = cityComponent.long_name;  // Assign city value to global variable
+                            console.log('City:', redirectCity);
+                        } else {
+                            console.log('City not found');
+                            redirectCity = '';  // Optional: Set to empty or any default value you want
+                        }
 
                         // Fetch Access Token
                         const tokenData = await fetchJSON(API_ENDPOINTS.getAccessToken);
@@ -250,7 +256,7 @@ $(document).ready(function () {
                             hotelSource: 'ALL'
                         }).toString();
                         const hotelsUrl = `${API_ENDPOINTS.getHotelsByCoordinates}?${hotelsParams}`;
-                        const hotelsData = await fetchJSON(hotelsUrl, {
+                        hotelsData = await fetchJSON(hotelsUrl, {
                             headers: { 'Authorization': `Bearer ${accessToken}` }
                         });
                         console.log('Hotels in the area:', hotelsData);
@@ -325,53 +331,6 @@ $(document).ready(function () {
                 conversionRates = fxRatesData;
                 initialCurrency = formData.formCurrency;  // Update the stored currency after fetching FX rates
             }
-
-            // Fetch Access Token
-            const tokenData = await fetchJSON(API_ENDPOINTS.getAccessToken);
-            accessToken = tokenData.access_token;
-
-            // Get Location Coordinates and City
-            console.log('Getting coordinates for location:', formData.location);
-
-            // Fetch the location data from the API
-            const locationData = await fetchJSON(`${API_ENDPOINTS.getCoordinatesByLocation}?location=${encodeURIComponent(formData.location)}`);
-            console.log('Location data:', locationData);
-
-            // Extract coordinates from the API response
-            locationCoordinates = locationData.results[0].geometry.location;
-            console.log('Coordinates:', locationCoordinates);
-
-            // Extract city from the address components (looking for either 'locality' or 'postal_town')
-            const cityComponent = locationData.results[0].address_components.find(component => 
-                component.types.includes('locality') || component.types.includes('postal_town')
-            );
-
-            // Check if city was found before assigning it to the global variable
-            if (cityComponent) {
-                redirectCity = cityComponent.long_name;  // Assign city value to global variable
-                console.log('City:', redirectCity);
-            } else {
-                console.log('City not found');
-                redirectCity = '';  // Optional: Set to empty or any default value you want
-            }
-
-            // Store the coordinates
-            const { lat, lng } = locationCoordinates;
-            console.log('Latitude:', lat, 'Longitude:', lng);
-
-            // Fetch Hotels by Coordinates
-            const hotelsParams = new URLSearchParams({
-                lat,
-                lng,
-                radius: 100,
-                radiusUnit: 'KM',
-                hotelSource: 'ALL'
-            }).toString();
-            const hotelsUrl = `${API_ENDPOINTS.getHotelsByCoordinates}?${hotelsParams}`;
-            const hotelsData = await fetchJSON(hotelsUrl, {
-                headers: { 'Authorization': `Bearer ${accessToken}` }
-            });
-            console.log('Hotels in the area:', hotelsData);
 
             // Process Hotels Data
             SELECTORS.resultsContainer.empty();
