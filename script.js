@@ -210,7 +210,6 @@ $(document).ready(function () {
 
     /**
      * Initialize location input listener with debouncing to prevent excessive API calls.
-     * Added handling for de-selecting or clearing the location input.
      */
     const initLocationInputListener = () => {
         let debounceTimeout;
@@ -254,13 +253,16 @@ $(document).ready(function () {
                 state.redirectCity = cityComponent ? cityComponent.long_name : '';
                 console.log('City:', state.redirectCity || 'Not found');
 
-                // Fetch Access Token and Hotels concurrently
-                const [tokenData, hotelsData] = await Promise.all([
-                    fetchJSON(API_ENDPOINTS.getAccessToken),
-                    fetchHotels(firstResult.geometry.location)
-                ]);
-
+                // **Fetch Access Token First**
+                const tokenData = await fetchJSON(API_ENDPOINTS.getAccessToken);
+                if (!tokenData || !tokenData.access_token) {
+                    throw new Error('Failed to retrieve access token.');
+                }
                 state.accessToken = tokenData.access_token;
+                console.log('Access Token Retrieved:', state.accessToken);
+
+                // **Then Fetch Hotels**
+                const hotelsData = await fetchHotels(firstResult.geometry.location);
                 state.hotelsData = hotelsData;
                 console.log('Hotels in the area:', state.hotelsData);
 
@@ -281,6 +283,10 @@ $(document).ready(function () {
      * @returns {Object} Hotels data.
      */
     const fetchHotels = async (coordinates) => {
+        if (!state.accessToken) {
+            throw new Error('Access token is not set.');
+        }
+
         const { lat, lng } = coordinates;
         const params = new URLSearchParams({
             lat,
