@@ -229,30 +229,11 @@ $(document).ready(function () {
         const location = event.target.value.trim();
         SELECTORS.searchBtn.prop('disabled', true);
         SELECTORS.resultsContainer.empty();
+        SELECTORS.noResultsMessage.hide(); // Optionally hide no results message when input changes
 
         if (!location) {
-            console.log('Location input is empty. Fetching default or all available hotels.');
-            // Optional: Fetch default hotels when location is cleared
-            try {
-                // Define default coordinates or parameters as needed
-                const defaultCoordinates = { lat: 0, lng: 0 }; // Replace with actual default if necessary
-                state.locationCoordinates = defaultCoordinates;
-
-                // Fetch Access Token and Hotels concurrently
-                const [tokenData, hotelsData] = await Promise.all([
-                    fetchJSON(API_ENDPOINTS.getAccessToken),
-                    fetchHotels(defaultCoordinates)
-                ]);
-
-                state.accessToken = tokenData.access_token;
-                state.hotelsData = hotelsData;
-                console.log('Default Hotels:', state.hotelsData);
-
-                SELECTORS.searchBtn.prop('disabled', false);
-            } catch (error) {
-                console.error('Error fetching default hotels:', error);
-                SELECTORS.noResultsMessage.show().text('Failed to fetch hotels. Please try again later.');
-            }
+            console.log('Location input is empty. Clearing hotels and disabling search button.');
+            // No action needed: search button remains disabled and results are cleared
             return;
         }
 
