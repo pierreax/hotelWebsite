@@ -210,6 +210,7 @@ $(document).ready(function () {
 
     /**
      * Initialize location input listener with debouncing to prevent excessive API calls.
+     * Added handling for de-selecting or clearing the location input.
      */
     const initLocationInputListener = () => {
         let debounceTimeout;
@@ -230,7 +231,28 @@ $(document).ready(function () {
         SELECTORS.resultsContainer.empty();
 
         if (!location) {
-            console.log('Location input is empty.');
+            console.log('Location input is empty. Fetching default or all available hotels.');
+            // Optional: Fetch default hotels when location is cleared
+            try {
+                // Define default coordinates or parameters as needed
+                const defaultCoordinates = { lat: 0, lng: 0 }; // Replace with actual default if necessary
+                state.locationCoordinates = defaultCoordinates;
+
+                // Fetch Access Token and Hotels concurrently
+                const [tokenData, hotelsData] = await Promise.all([
+                    fetchJSON(API_ENDPOINTS.getAccessToken),
+                    fetchHotels(defaultCoordinates)
+                ]);
+
+                state.accessToken = tokenData.access_token;
+                state.hotelsData = hotelsData;
+                console.log('Default Hotels:', state.hotelsData);
+
+                SELECTORS.searchBtn.prop('disabled', false);
+            } catch (error) {
+                console.error('Error fetching default hotels:', error);
+                SELECTORS.noResultsMessage.show().text('Failed to fetch hotels. Please try again later.');
+            }
             return;
         }
 
@@ -865,6 +887,9 @@ $(document).ready(function () {
 
             // Initialize form fields
             initializeFormFields(queryParams);
+
+            // Initialize location input listener
+            initLocationInputListener();
 
             // Attach event listeners
             attachEventListeners();
