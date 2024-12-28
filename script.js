@@ -31,44 +31,51 @@ $(document).ready(function () {
         getFxRates: '/api/getFxRates',
     };
 
-    // Global Variables
-    let accessToken = '';
-    let internalHotelIds = [];
-    let selectedHotels = [];
-    let locationCoordinates = {};
-    let conversionRates = {};
-    let datePicker;
-    let redirectUrl = '';
-    let redirectEmail = '';
-    let redirectCity = '';
-    let redirectCurrency = '';
-    let redirectDateFrom = '';
-    let redirectDateTo = '';
-    let redirected = false;  // Global variable to track if the user has been redirected
-    let initialCurrency = ''; 
-    let hotelsData = [];
-
-
-    // Function to send iframe height to parent
-    const scrollToTop = () => {
-        // Send a message to request scrolling to top
-        window.parent.postMessage({ action: 'scrollToTop' }, "https://www.robotize.no");
-        console.log('Sending Scroll to Top to Wix');
+    // State Management
+    const state = {
+        accessToken: '',
+        internalHotelIds: [],
+        selectedHotels: [],
+        locationCoordinates: {},
+        conversionRates: {},
+        datePicker: null,
+        redirectUrl: '',
+        redirectEmail: '',
+        redirectCity: '',
+        redirectCurrency: '',
+        redirectDateFrom: '',
+        redirectDateTo: '',
+        redirected: false,
+        initialCurrency: '',
+        hotelsData: [],
     };
 
+    /**
+     * Helper function to post messages to the parent window
+     */
+    const postMessageToParent = (action, targetOrigin = "https://www.robotize.no") => {
+        window.parent.postMessage({ action }, targetOrigin);
+        console.log(`Sending ${action} to parent`);
+    };
+
+    /**
+     * Scroll to top by sending a message to the parent
+     */
+    const scrollToTop = () => {
+        postMessageToParent('scrollToTop');
+    };
 
     /**
      * Capture redirect parameters after form submission.
      */
     const captureRedirectParameters = () => {
-        redirectEmail = encodeURIComponent(SELECTORS.emailInput.val());
-        redirectCurrency = encodeURIComponent(SELECTORS.currencyInput.val());
-        redirectDateFrom = formatDateToLocalISOString(datePicker.selectedDates[0]);
-        redirectDateTo = formatDateToLocalISOString(datePicker.selectedDates[1]);
-        redirectUrl = `https://www.robotize.no/flights?email=${redirectEmail}&currency=${redirectCurrency}&city=${redirectCity}&dateFrom=${redirectDateFrom}&dateTo=${redirectDateTo}`;
-        console.log('Redirect URL:', redirectUrl);
+        state.redirectEmail = encodeURIComponent(SELECTORS.emailInput.val());
+        state.redirectCurrency = encodeURIComponent(SELECTORS.currencyInput.val());
+        state.redirectDateFrom = formatDateToLocalISOString(state.datePicker.selectedDates[0]);
+        state.redirectDateTo = formatDateToLocalISOString(state.datePicker.selectedDates[1]);
+        state.redirectUrl = `https://www.robotize.no/flights?email=${state.redirectEmail}&currency=${state.redirectCurrency}&city=${state.redirectCity}&dateFrom=${state.redirectDateFrom}&dateTo=${state.redirectDateTo}`;
+        console.log('Redirect URL:', state.redirectUrl);
     };
-
 
     /**
      * Initialize the Flatpickr date range picker.
@@ -94,20 +101,17 @@ $(document).ready(function () {
      */
     const showFlightTrackingModal = () => {
         console.log('Displaying flight tracking modal.');
-        
-        // Show the modal
         SELECTORS.flightTrackingModal.modal('show');
-        
-        // Add modal-open class to body to prevent scrolling
-        document.body.classList.add('modal-open');
+        $('body').addClass('modal-open'); // Use jQuery for consistency
     };
 
-    // Function to show the thank you modal
+    /**
+     * Show the thank you modal.
+     */
     const showThankYouModal = () => {
         console.log('Displaying thank you modal.');
         $('#thankYouModal').modal('show');
     };
-
 
     /**
      * Parse query parameters from the URL and set the `redirected` flag if parameters exist.
@@ -116,28 +120,25 @@ $(document).ready(function () {
     const getQueryParams = () => {
         const params = new URLSearchParams(window.location.search);
         const queryParams = {};
-        let redirectedFlag = false;  // Initialize the redirected flag
+        let redirectedFlag = false;
 
         for (const [key, value] of params.entries()) {
             queryParams[key] = value;
         }
 
-        // Check if the query params contain any relevant redirection data, excluding 'city'
         if (Object.keys(queryParams).length > 0) {
             if (queryParams.dateFrom || queryParams.dateTo || queryParams.email) {
-                redirectedFlag = true;  // Set redirected to true if any relevant param exists
+                redirectedFlag = true;
                 console.log('User has been redirected');
             }
         }
 
-        // Only set the redirected flag if there's a relevant parameter
         if (redirectedFlag) {
-            redirected = true;
+            state.redirected = true;
         }
 
         return queryParams;
     };
-
 
     /**
      * Format a Date object to a local ISO string (YYYY-MM-DD).
@@ -157,15 +158,16 @@ $(document).ready(function () {
      * @returns {Object} Parsed JSON data.
      */
     const fetchJSON = async (url, options = {}) => {
-        const response = await fetch(url, options);
-        const text = await response.text();
-        if (!response.ok) {
-            throw new Error(`HTTP error ${response.status}: ${text}`);
-        }
         try {
+            const response = await fetch(url, options);
+            const text = await response.text();
+            if (!response.ok) {
+                throw new Error(`HTTP error ${response.status}: ${text}`);
+            }
             return JSON.parse(text);
-        } catch (err) {
-            throw new Error(`Failed to parse JSON response: ${text}`);
+        } catch (error) {
+            console.error(`Error fetching JSON from ${url}:`, error);
+            throw error;
         }
     };
 
@@ -184,7 +186,7 @@ $(document).ready(function () {
             SELECTORS.locationInput.val(queryParams.city);
         }
         if (queryParams.dateFrom && queryParams.dateTo) {
-            datePicker.setDate([queryParams.dateFrom, queryParams.dateTo], true, "d/m/Y");
+            state.datePicker.setDate([queryParams.dateFrom, queryParams.dateTo], true, "d/m/Y");
         }
     };
 
@@ -198,95 +200,105 @@ $(document).ready(function () {
                 const currency = response.currency.code;
                 console.log('Setting currency to:', currency);
                 SELECTORS.currencyInput.val(currency).trigger('change');
-                resolve();  // Resolve the Promise once the currency is set
+                resolve();
             }).fail((error) => {
-                reject(error);  // Reject the Promise if the request fails
+                console.error('Failed to set currency from IP:', error);
+                reject(error);
             });
         });
     };
 
-
-
-    // Initialize form field listeners
+    /**
+     * Initialize location input listener with debouncing to prevent excessive API calls.
+     */
     const initLocationInputListener = () => {
-        // Listen for the blur event when the user finishes typing and moves focus out of the location input
-        SELECTORS.locationInput.on('blur', async (event) => {
-            const location = event.target.value;
-            SELECTORS.searchBtn.prop('disabled', true);  // Disable the button
-            SELECTORS.resultsContainer.empty(); // Clear previous results
+        let debounceTimeout;
+        const debounceDelay = 500; // milliseconds
 
-            // Only trigger fetch if the location input is not empty
-            if (location.trim()) {
-                try {
-                    
-                    // Fetch Coordinates and City Information as soon as location is entered
-                    console.log('Getting coordinates for location:', location);
-
-                    // Fetch the location data from the API
-                    const locationData = await fetchJSON(`${API_ENDPOINTS.getCoordinatesByLocation}?location=${encodeURIComponent(location)}`);
-                    console.log('Location data:', locationData);
-
-                    if (locationData && locationData.results.length > 0) {
-                        // Extract coordinates from the API response
-                        locationCoordinates = locationData.results[0].geometry.location;
-                        console.log('Coordinates:', locationCoordinates);
-
-                        // Extract city from the address components (looking for either 'locality' or 'postal_town')
-                        const cityComponent = locationData.results[0].address_components.find(component => 
-                            component.types.includes('locality') || component.types.includes('postal_town')
-                        );
-
-                        // Check if city was found before assigning it to the global variable
-                        if (cityComponent) {
-                            redirectCity = cityComponent.long_name;  // Assign city value to global variable
-                            console.log('City:', redirectCity);
-                        } else {
-                            console.log('City not found');
-                            redirectCity = '';  // Optional: Set to empty or any default value you want
-                        }
-
-                        // Fetch Access Token
-                        const tokenData = await fetchJSON(API_ENDPOINTS.getAccessToken);
-                        accessToken = tokenData.access_token;
-
-                        // Fetch Hotels by Coordinates
-                        const { lat, lng } = locationCoordinates;
-                        const hotelsParams = new URLSearchParams({
-                            lat,
-                            lng,
-                            radius: 100,
-                            radiusUnit: 'KM',
-                            hotelSource: 'ALL'
-                        }).toString();
-                        const hotelsUrl = `${API_ENDPOINTS.getHotelsByCoordinates}?${hotelsParams}`;
-                        hotelsData = await fetchJSON(hotelsUrl, {
-                            headers: { 'Authorization': `Bearer ${accessToken}` }
-                        });
-                        console.log('Hotels in the area:', hotelsData);
-                        SELECTORS.searchBtn.prop('disabled', false);  // Enable the button
-
-                    } else {
-                        console.log('Location not found');
-                    }
-                } catch (error) {
-                    console.error('Error fetching location data:', error);
-                }
-            }
+        SELECTORS.locationInput.on('blur', function (event) {
+            clearTimeout(debounceTimeout);
+            debounceTimeout = setTimeout(() => handleLocationInput(event), debounceDelay);
         });
     };
 
-    // Initialize location input listener
-    initLocationInputListener();
+    /**
+     * Handle location input after debounce.
+     */
+    const handleLocationInput = async (event) => {
+        const location = event.target.value.trim();
+        SELECTORS.searchBtn.prop('disabled', true);
+        SELECTORS.resultsContainer.empty();
 
+        if (!location) {
+            console.log('Location input is empty.');
+            return;
+        }
 
+        try {
+            console.log('Fetching coordinates for location:', location);
+            const locationData = await fetchJSON(`${API_ENDPOINTS.getCoordinatesByLocation}?location=${encodeURIComponent(location)}`);
+            console.log('Location data:', locationData);
+
+            if (locationData && locationData.results.length > 0) {
+                const firstResult = locationData.results[0];
+                state.locationCoordinates = firstResult.geometry.location;
+                console.log('Coordinates:', state.locationCoordinates);
+
+                const cityComponent = firstResult.address_components.find(component => 
+                    component.types.includes('locality') || component.types.includes('postal_town')
+                );
+
+                state.redirectCity = cityComponent ? cityComponent.long_name : '';
+                console.log('City:', state.redirectCity || 'Not found');
+
+                // Fetch Access Token and Hotels concurrently
+                const [tokenData, hotelsData] = await Promise.all([
+                    fetchJSON(API_ENDPOINTS.getAccessToken),
+                    fetchHotels(firstResult.geometry.location)
+                ]);
+
+                state.accessToken = tokenData.access_token;
+                state.hotelsData = hotelsData;
+                console.log('Hotels in the area:', state.hotelsData);
+
+                SELECTORS.searchBtn.prop('disabled', false);
+            } else {
+                console.log('No location results found.');
+                SELECTORS.noResultsMessage.show().text('Location not found. Please try a different location.');
+            }
+        } catch (error) {
+            console.error('Error handling location input:', error);
+            SELECTORS.noResultsMessage.show().text('Failed to fetch location data. Please try again later.');
+        }
+    };
+
+    /**
+     * Fetch hotels by coordinates.
+     * @param {Object} coordinates 
+     * @returns {Object} Hotels data.
+     */
+    const fetchHotels = async (coordinates) => {
+        const { lat, lng } = coordinates;
+        const params = new URLSearchParams({
+            lat,
+            lng,
+            radius: 100,
+            radiusUnit: 'KM',
+            hotelSource: 'ALL'
+        }).toString();
+        const url = `${API_ENDPOINTS.getHotelsByCoordinates}?${params}`;
+        return await fetchJSON(url, {
+            headers: { 'Authorization': `Bearer ${state.accessToken}` }
+        });
+    };
 
     /**
      * Handle form submission for searching hotels.
      * @param {Event} event 
      */
     const handleSearchFormSubmit = async (event) => {
-        SELECTORS.resultsContainer.empty();
         event.preventDefault();
+        SELECTORS.resultsContainer.empty();
         SELECTORS.noResultsMessage.hide();
         SELECTORS.submitText.hide();
         SELECTORS.loader.show();
@@ -294,22 +306,20 @@ $(document).ready(function () {
         // Retrieve form data
         const formData = {
             location: SELECTORS.locationInput.val(),
-            dateRange: datePicker.selectedDates,
+            dateRange: state.datePicker.selectedDates,
             adults: $('#adults').val(),
             numberOfRooms: $('#numberOfRooms').val(),
             email: SELECTORS.emailInput.val(),
-            limitResults: parseInt($('#limitResults').val(), 20), // Limit results for Hotel Offers (currently hidden)
+            limitResults: parseInt($('#limitResults').val(), 10) || 20,
             formCurrency: SELECTORS.currencyInput.val(),
         };
 
-        // Convert selected dates to local format
-        const checkInDate = formatDateToLocalISOString(formData.dateRange[0]);
-        const checkOutDate = formatDateToLocalISOString(formData.dateRange[1]);
+        // Validate date range
+        const [checkInDate, checkOutDate] = formData.dateRange.map(formatDateToLocalISOString);
         const numberOfNights = formData.dateRange[1] && formData.dateRange[0]
             ? Math.round((formData.dateRange[1] - formData.dateRange[0]) / (1000 * 60 * 60 * 24))
             : 0;
 
-        // Validate date range
         if (!checkInDate || !checkOutDate || numberOfNights <= 0) {
             alert('Please enter valid check-in and check-out dates.');
             SELECTORS.datePickerInput.focus();
@@ -328,46 +338,43 @@ $(document).ready(function () {
         });
 
         try {
-
             // Fetch FX Rates only if the currency has changed
-            if (formData.formCurrency !== initialCurrency) {
-                console.log('Getting FX Rates for:', formData.formCurrency);
+            if (formData.formCurrency !== state.initialCurrency) {
+                console.log('Fetching FX Rates for:', formData.formCurrency);
                 const fxRatesData = await fetchJSON(`${API_ENDPOINTS.getFxRates}?baseCurrency=${formData.formCurrency}`);
-                conversionRates = fxRatesData;
-                initialCurrency = formData.formCurrency;  // Update the stored currency after fetching FX rates
+                state.conversionRates = fxRatesData;
+                state.initialCurrency = formData.formCurrency;
             }
 
             // Process Hotels Data
-            if (hotelsData && hotelsData.data && hotelsData.data.length > 0) {
-                internalHotelIds = hotelsData.data.map(hotel => hotel.hotelId);
-                const hotelIds = internalHotelIds.slice(0, formData.limitResults);
+            if (state.hotelsData && state.hotelsData.data && state.hotelsData.data.length > 0) {
+                state.internalHotelIds = state.hotelsData.data.map(hotel => hotel.hotelId);
+                const hotelIds = state.internalHotelIds.slice(0, formData.limitResults);
 
                 // Fetch Hotel Offers
                 const offersData = await fetchHotelOffers(hotelIds, formData, checkInDate, checkOutDate, numberOfNights);
                 if (!offersData) return; // If no offers, exit early
 
                 // Convert Prices
-                const convertedOffers = await convertPricesToFormCurrency(offersData.data, formData.formCurrency, conversionRates);
+                const convertedOffers = convertPricesToFormCurrency(offersData.data, formData.formCurrency, state.conversionRates);
                 console.log('Converted Offers:', convertedOffers);
 
                 // Calculate Distances
-                const offersWithDistance = calculateDistances(convertedOffers, locationCoordinates);
-                console.log('Converted Offers with distance:', offersWithDistance);
+                const offersWithDistance = calculateDistances(convertedOffers, state.locationCoordinates);
+                console.log('Offers with Distance:', offersWithDistance);
 
                 // Sort Offers by Distance
                 offersWithDistance.sort((a, b) => a.distance - b.distance);
-                console.log('Sorted and Converted Offers with distance:', offersWithDistance);
+                console.log('Sorted Offers:', offersWithDistance);
 
                 // Render Hotel Cards
                 renderHotelCards(offersWithDistance, formData, numberOfNights);
-
             } else {
-                SELECTORS.noResultsMessage.show();
+                SELECTORS.noResultsMessage.show().text('No hotels found for the selected location.');
             }
         } catch (error) {
-            console.error('Error:', error.message);
-            SELECTORS.resultsContainer.show();
-            SELECTORS.noResultsMessage.show();
+            console.error('Error during form submission:', error.message);
+            SELECTORS.noResultsMessage.show().text('An error occurred while fetching hotel data. Please try again.');
         } finally {
             SELECTORS.loader.hide();
         }
@@ -398,7 +405,7 @@ $(document).ready(function () {
 
         try {
             const response = await fetch(url, {
-                headers: { 'Authorization': `Bearer ${accessToken}` }
+                headers: { 'Authorization': `Bearer ${state.accessToken}` }
             });
 
             const responseData = await response.json();
@@ -428,7 +435,7 @@ $(document).ready(function () {
      * @param {Object} conversionRates 
      * @returns {Array} Converted hotel offers.
      */
-    const convertPricesToFormCurrency = async (hotelOffers, formCurrency, conversionRates) => {
+    const convertPricesToFormCurrency = (hotelOffers, formCurrency, conversionRates) => {
         return hotelOffers.map(offer => {
             const priceData = offer.offers?.[0]?.price;
             if (priceData) {
@@ -470,7 +477,7 @@ $(document).ready(function () {
         const distanceKm = R * c;
 
         if (distanceKm < 1) {
-            return { numeric: distanceKm * 1000, display: `${(distanceKm * 1000).toFixed(0)} m` };
+            return { numeric: distanceKm * 1000, display: `${Math.round(distanceKm * 1000)} m` };
         } else {
             return { numeric: distanceKm, display: `${distanceKm.toFixed(2)} km` };
         }
@@ -500,7 +507,7 @@ $(document).ready(function () {
     };
 
     /**
-     * Render hotel offer cards to the results container.
+     * Render hotel offer cards to the results container using Document Fragment for performance.
      * @param {Array} offers 
      * @param {Object} formData 
      * @param {number} numberOfNights 
@@ -511,30 +518,32 @@ $(document).ready(function () {
             SELECTORS.resultsContainer.html('<div class="no-results-message">No valid hotel offers found. Please try different search criteria.</div>');
             return;
         }
-    
+
+        const fragment = $(document.createDocumentFragment());
+
         offers.forEach((offer) => {
             const totalPrice = Math.round(parseFloat(offer.offers[0].price.total));
             const pricePerNight = numberOfNights > 0
                 ? Math.round((totalPrice / numberOfNights).toFixed(2))
                 : 'N/A';
             const currencySymbol = formData.formCurrency;
-    
+
             const card = $('<div>').addClass('card');
-    
+
             // Hidden Hotel ID
             $('<div>')
                 .addClass('hiddenHotelId')
                 .text(offer.hotel.hotelId)
                 .hide()
                 .appendTo(card);
-    
+
             // Card Header
             const cardHeader = $('<div>').addClass('card-header');
             $('<div>')
                 .addClass('hotel-name')
                 .text(formatHotelName(offer.hotel.name))
                 .appendTo(cardHeader);
-    
+
             // Room type - Only append if available
             if (offer.offers[0].room && offer.offers[0].room.typeEstimated && offer.offers[0].room.typeEstimated.category) {
                 const roomType = formatRoomType(offer.offers[0].room.typeEstimated.category);
@@ -543,21 +552,21 @@ $(document).ready(function () {
                     .text(roomType)
                     .appendTo(cardHeader);
             }
-            
+
             card.append(cardHeader);
-    
+
             // Distance Display
             $('<div>')
                 .addClass('distance')
                 .text(offer.distanceDisplay)
                 .appendTo(card);
-    
+
             // Checkbox Container
             const checkboxContainer = $('<div>').addClass('checkbox-container');
             checkboxContainer.append($('<span>').addClass('checkbox-description').text('Add to Robot: '));
             checkboxContainer.append($('<input>').attr('type', 'checkbox').addClass('select-checkbox'));
             card.append(checkboxContainer);
-    
+
             // Card Content
             const cardContent = $('<div>').addClass('card-content');
             $('<div>').addClass('price-per-night')
@@ -569,18 +578,14 @@ $(document).ready(function () {
                 .append($('<span>').addClass('amount').text(`${currencySymbol} ${totalPrice}`))
                 .appendTo(cardContent);
             card.append(cardContent);
-    
-            // Append Card to Results
-            SELECTORS.resultsContainer.append(card);
+
+            fragment.append(card);
         });
-    
+
+        SELECTORS.resultsContainer.append(fragment);
         SELECTORS.resultsContainer.show();
         SELECTORS.submitText.show();
     };
-    
-    
-    
-    
 
     /**
      * Format hotel name for display.
@@ -590,10 +595,8 @@ $(document).ready(function () {
     const formatHotelName = (hotelName) => {
         if (typeof hotelName !== 'string') return 'N/A';
         return hotelName
-            .toUpperCase()
-            .replace(/_/g, ' ')
-            .replace(/,/g, '')
             .toLowerCase()
+            .replace(/[_,-]/g, ' ')
             .split(' ')
             .map(word => word.charAt(0).toUpperCase() + word.slice(1))
             .join(' ');
@@ -607,10 +610,8 @@ $(document).ready(function () {
     const formatRoomType = (roomType) => {
         if (typeof roomType !== 'string') return 'N/A';
         return roomType
-            .toUpperCase()
-            .replace(/_/g, ' ')
-            .replace(/,/g, '')
             .toLowerCase()
+            .replace(/[_,-]/g, ' ')
             .split(' ')
             .map(word => word.charAt(0).toUpperCase() + word.slice(1))
             .join(' ');
@@ -622,16 +623,16 @@ $(document).ready(function () {
     const handleCheckboxChange = () => {
         console.log('Checkbox changed');
 
-        const checkedCheckboxes = SELECTORS.resultsContainer.find('.card input[type="checkbox"]:checked');
+        const checkedCheckboxes = SELECTORS.resultsContainer.find('.select-checkbox:checked');
         console.log('Checked checkboxes:', checkedCheckboxes.length);
 
         SELECTORS.submitToSheetBtn.toggle(checkedCheckboxes.length > 0);
 
-        selectedHotels = checkedCheckboxes.map(function () {
+        state.selectedHotels = checkedCheckboxes.map(function () {
             const card = $(this).closest('.card');
             const hotelId = card.find('.hiddenHotelId').text();
             const hotelName = card.find('.hotel-name').text();
-            const roomType = card.find('.room-type').text();
+            const roomType = card.find('.room-type').text() || 'N/A';
             const pricePerNight = card.find('.price-per-night .amount').text();
             const totalPrice = card.find('.total-price .amount').text();
 
@@ -657,19 +658,14 @@ $(document).ready(function () {
      * Toggle checkbox state when clicking on the container or checkbox.
      * @param {Event} event 
      */
-    const toggleCheckbox = function (event) { // Changed to regular function
+    const toggleCheckbox = function (event) {
         event.stopPropagation();
-        const checkbox = $(this).find('input[type="checkbox"]');
-        if (checkbox.length === 0) {
-            // If the click is on the checkbox itself
-            const directCheckbox = $(event.target).closest('.select-checkbox');
-            if (directCheckbox.length > 0) {
-                handleCheckboxChange();
-                return;
-            }
+        const target = $(event.target);
+        const checkbox = target.hasClass('select-checkbox') ? target : target.find('.select-checkbox');
+
+        if (checkbox.length) {
+            checkbox.prop('checked', !checkbox.prop('checked')).trigger('change');
         }
-        checkbox.prop('checked', !checkbox.prop('checked')).trigger('change');
-        handleCheckboxChange();
     };
 
     /**
@@ -681,8 +677,8 @@ $(document).ready(function () {
 
         const formData = {
             location: SELECTORS.locationInput.val(),
-            checkInDate: formatDateToLocalISOString(datePicker.selectedDates[0]),
-            checkOutDate: formatDateToLocalISOString(datePicker.selectedDates[1]),
+            checkInDate: formatDateToLocalISOString(state.datePicker.selectedDates[0]),
+            checkOutDate: formatDateToLocalISOString(state.datePicker.selectedDates[1]),
             adults: $('#adults').val(),
             numberOfRooms: $('#numberOfRooms').val(),
             email: SELECTORS.emailInput.val(),
@@ -690,7 +686,7 @@ $(document).ready(function () {
         };
 
         const formattedData = {
-            selectedHotels
+            selectedHotels: state.selectedHotels
         };
 
         try {
@@ -707,15 +703,14 @@ $(document).ready(function () {
             // Capture redirect parameters
             captureRedirectParameters();
 
-
             // Send email notification
             await sendEmailNotification(formData, formattedData);
 
             // Scroll to top before showing the modal at the top
-            scrollToTop();  
+            scrollToTop();
 
             // Initialize the modal based on whether the user has been redirected
-            if (redirected) {
+            if (state.redirected) {
                 // If user was redirected, show the thank you modal
                 showThankYouModal();
             } else {
@@ -723,10 +718,9 @@ $(document).ready(function () {
                 showFlightTrackingModal();
             }
 
-
             // Handle flight tracking confirmation
             SELECTORS.confirmFlightTrackerBtn.off('click').on('click', function () {
-                window.open(redirectUrl, '_blank');    // Navigate to redirect to the other site in a new tab
+                window.open(state.redirectUrl, '_blank');    // Navigate to redirect to the other site in a new tab
                 window.location.href = 'https://robotize-hotels.azurewebsites.net/';  // Refresh the form page
             });
 
@@ -744,11 +738,12 @@ $(document).ready(function () {
 
             // If the modal is closed, remove the modal-open class from body to restore scrolling
             SELECTORS.flightTrackingModal.on('hidden.bs.modal', function () {
-                document.body.classList.remove('modal-open');
+                $('body').removeClass('modal-open');
             });
 
         } catch (error) {
             console.error('Error during form submission:', error.message);
+            SELECTORS.noResultsMessage.show().text('An error occurred during submission. Please try again.');
         } finally {
             SELECTORS.loader.hide();
         }
@@ -832,7 +827,6 @@ $(document).ready(function () {
                 console.error('Failed to send email:', errorData.message);
             } else {
                 console.log('Email sent successfully');
-                // Optionally notify the user
             }
         } catch (error) {
             console.error('Error during email sending:', error.message);
@@ -840,13 +834,13 @@ $(document).ready(function () {
     };
 
     /**
-     * Attach event listeners.
+     * Attach event listeners using event delegation where appropriate.
      */
     const attachEventListeners = () => {
         // Handle search form submission
         SELECTORS.searchForm.on('submit', handleSearchFormSubmit);
 
-        // Handle checkbox interactions
+        // Handle checkbox interactions using event delegation
         SELECTORS.resultsContainer.on('click', '.checkbox-container, .select-checkbox', toggleCheckbox);
 
         // Handle submit to Sheety button
@@ -854,35 +848,38 @@ $(document).ready(function () {
     };
 
     /**
-    * Initialize the application.
-    */
+     * Initialize the application.
+     */
     const init = async () => {
-        // Initialize components
-        datePicker = initializeDatePicker();
+        try {
+            // Initialize components
+            state.datePicker = initializeDatePicker();
 
-        // Get query parameters
-        const queryParams = getQueryParams();
+            // Get query parameters
+            const queryParams = getQueryParams();
 
-        // Only set currency from IP if 'currency' is not present in query params
-        if (!queryParams.currency) {
-            await setCurrencyFromIP();  // Wait for currency to be set
+            // Only set currency from IP if 'currency' is not present in query params
+            if (!queryParams.currency) {
+                await setCurrencyFromIP();
+            }
+
+            // Initialize form fields
+            initializeFormFields(queryParams);
+
+            // Attach event listeners
+            attachEventListeners();
+
+            // Fetch FX Rates after currency is set
+            const formCurrency = SELECTORS.currencyInput.val(); // Get the currency after it's set
+            if (formCurrency) {
+                console.log('Fetching FX Rates for:', formCurrency);
+                state.conversionRates = await fetchJSON(`${API_ENDPOINTS.getFxRates}?baseCurrency=${formCurrency}`);
+                state.initialCurrency = formCurrency;
+            }
+        } catch (error) {
+            console.error('Initialization error:', error);
+            SELECTORS.noResultsMessage.show().text('Failed to initialize the page. Please try refreshing.');
         }
-
-        // Initialize form fields
-        initializeFormFields(queryParams);
-
-        // Attach event listeners
-        attachEventListeners();
-
-        // Fetch FX Rates after currency is set
-        const formCurrency = SELECTORS.currencyInput.val(); // Get the currency after it's set
-        if (formCurrency) {
-            console.log('Getting FX Rates for:', formCurrency);
-            conversionRates = await fetchJSON(`${API_ENDPOINTS.getFxRates}?baseCurrency=${formCurrency}`);
-        }
-
-        // Store the initial currency after setting or reading from queryParams
-        initialCurrency = formCurrency;
     };
 
     // Initialize the script
