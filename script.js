@@ -259,7 +259,7 @@ $(document).ready(function () {
                     throw new Error('Failed to retrieve access token.');
                 }
                 state.accessToken = tokenData.access_token;
-                console.log('Access Token Retrieved:', state.accessToken);
+                console.log('Access Token Retrieved');
 
                 // **Then Fetch Hotels**
                 const hotelsData = await fetchHotels(firstResult.geometry.location);
