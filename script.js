@@ -851,9 +851,6 @@ $(document).ready(function () {
     const attachEventListeners = () => {
         // Handle search form submission
         SELECTORS.searchForm.on('submit', handleSearchFormSubmit);
-
-        // Handle checkbox interactions using event delegation
-        SELECTORS.resultsContainer.on('click', '.checkbox-container, .select-checkbox', toggleCheckbox);
         
         // **Add this line to handle the change event**
         SELECTORS.resultsContainer.on('change', '.select-checkbox', handleCheckboxChange);
