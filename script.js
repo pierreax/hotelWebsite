@@ -259,7 +259,7 @@ $(document).ready(function () {
                     throw new Error('Failed to retrieve access token.');
                 }
                 state.accessToken = tokenData.access_token;
-                console.log('Access Token Retrieved');
+                console.log('Access Token Retrieved:', state.accessToken);
 
                 // **Then Fetch Hotels**
                 const hotelsData = await fetchHotels(firstResult.geometry.location);
@@ -635,8 +635,10 @@ $(document).ready(function () {
         const checkedCheckboxes = SELECTORS.resultsContainer.find('.select-checkbox:checked');
         console.log('Checked checkboxes:', checkedCheckboxes.length);
 
+        // Toggle the Submit button based on the number of selected checkboxes
         SELECTORS.submitToSheetBtn.toggle(checkedCheckboxes.length > 0);
 
+        // Update the selectedHotels array in the state
         state.selectedHotels = checkedCheckboxes.map(function () {
             const card = $(this).closest('.card');
             const hotelId = card.find('.hiddenHotelId').text();
@@ -673,6 +675,7 @@ $(document).ready(function () {
         const checkbox = target.hasClass('select-checkbox') ? target : target.find('.select-checkbox');
 
         if (checkbox.length) {
+            // Toggle the checked property and trigger change event
             checkbox.prop('checked', !checkbox.prop('checked')).trigger('change');
         }
     };
@@ -851,6 +854,9 @@ $(document).ready(function () {
 
         // Handle checkbox interactions using event delegation
         SELECTORS.resultsContainer.on('click', '.checkbox-container, .select-checkbox', toggleCheckbox);
+        
+        // **Add this line to handle the change event**
+        SELECTORS.resultsContainer.on('change', '.select-checkbox', handleCheckboxChange);
 
         // Handle submit to Sheety button
         SELECTORS.submitToSheetBtn.on('click', handleSubmitToSheety);
