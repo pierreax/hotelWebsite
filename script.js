@@ -191,22 +191,39 @@ $(document).ready(function () {
     };
 
     /**
-     * Set currency based on IP geolocation.
-     * @returns {Promise} A Promise that resolves when the currency is set.
+     * Set currency based on IP geolocation asynchronously without blocking.
+     * @returns {Promise<void>} A Promise that resolves when the currency is set or a fallback is applied.
      */
-    const setCurrencyFromIP = () => {
-        return new Promise((resolve, reject) => {
-            $.get(API_ENDPOINTS.ipGeo, function (response) {
-                const currency = response.currency.code;
-                console.log('Setting currency to:', currency);
-                SELECTORS.currencyInput.val(currency).trigger('change');
-                resolve();
-            }).fail((error) => {
+    const setCurrencyFromIP = async () => {
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3000); // 3-second timeout
+
+            const response = await fetch(API_ENDPOINTS.ipGeo, { signal: controller.signal });
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error ${response.status}: ${await response.text()}`);
+            }
+
+            const data = await response.json();
+            const currency = data.currency.code;
+
+            console.log('Setting currency to:', currency);
+            SELECTORS.currencyInput.val(currency).trigger('change');
+
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                console.warn('Currency API call timed out. Using default currency.');
+            } else {
                 console.error('Failed to set currency from IP:', error);
-                reject(error);
-            });
-        });
+            }
+            // Fallback to default currency if API call fails or times out
+            const defaultCurrency = 'USD'; // Change as per your preference
+            SELECTORS.currencyInput.val(defaultCurrency).trigger('change');
+        }
     };
+
 
     /**
      * Initialize location input listener with debouncing to prevent excessive API calls.
@@ -857,6 +874,21 @@ $(document).ready(function () {
 
         // Handle submit to Sheety button
         SELECTORS.submitToSheetBtn.on('click', handleSubmitToSheety);
+
+        // Add this inside init or attachEventListeners
+        SELECTORS.currencyInput.on('change', async function() {
+            const selectedCurrency = $(this).val();
+            console.log('Currency changed to:', selectedCurrency);
+            try {
+                console.log('Fetching FX Rates for:', selectedCurrency);
+                state.conversionRates = await fetchJSON(`${API_ENDPOINTS.getFxRates}?baseCurrency=${selectedCurrency}`);
+                state.initialCurrency = selectedCurrency;
+            } catch (error) {
+                console.error('Failed to fetch FX Rates:', error);
+                // Optionally notify the user or set a default rate
+            }
+        });
+
     };
 
     /**
@@ -872,7 +904,7 @@ $(document).ready(function () {
 
             // Only set currency from IP if 'currency' is not present in query params
             if (!queryParams.currency) {
-                await setCurrencyFromIP();
+                setCurrencyFromIP(); // Do not await; let it run in the background
             }
 
             // Initialize form fields
