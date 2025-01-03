@@ -869,13 +869,13 @@ $(document).ready(function () {
         // Handle search form submission
         SELECTORS.searchForm.on('submit', handleSearchFormSubmit);
         
-        // **Add this line to handle the change event**
+        // Handle checkbox state changes
         SELECTORS.resultsContainer.on('change', '.select-checkbox', handleCheckboxChange);
 
         // Handle submit to Sheety button
         SELECTORS.submitToSheetBtn.on('click', handleSubmitToSheety);
 
-        // Add this inside init or attachEventListeners
+        // Handle currency change
         SELECTORS.currencyInput.on('change', async function() {
             const selectedCurrency = $(this).val();
             console.log('Currency changed to:', selectedCurrency);
@@ -885,10 +885,8 @@ $(document).ready(function () {
                 state.initialCurrency = selectedCurrency;
             } catch (error) {
                 console.error('Failed to fetch FX Rates:', error);
-                // Optionally notify the user or set a default rate
             }
         });
-
     };
 
     /**
@@ -898,6 +896,7 @@ $(document).ready(function () {
         try {
             // Initialize components
             state.datePicker = initializeDatePicker();
+            console.log('Date Picker initialized:', state.datePicker);
 
             // Get query parameters
             const queryParams = getQueryParams();
@@ -907,14 +906,22 @@ $(document).ready(function () {
                 setCurrencyFromIP(); // Do not await; let it run in the background
             }
 
+            console.log('Query Parameters:', queryParams);
+
             // Initialize form fields
             initializeFormFields(queryParams);
+
+            console.log('Form fields initialized');
 
             // Initialize location input listener
             initLocationInputListener();
 
+            console.log('Location input listener initialized');
+
             // Attach event listeners
             attachEventListeners();
+
+            console.log('Event listeners attached');
 
             // Fetch FX Rates after currency is set
             const formCurrency = SELECTORS.currencyInput.val(); // Get the currency after it's set
@@ -922,7 +929,11 @@ $(document).ready(function () {
                 console.log('Fetching FX Rates for:', formCurrency);
                 state.conversionRates = await fetchJSON(`${API_ENDPOINTS.getFxRates}?baseCurrency=${formCurrency}`);
                 state.initialCurrency = formCurrency;
+                console.log('Conversion Rates:', state.conversionRates);
             }
+
+            console.log('Initialization complete');
+            
         } catch (error) {
             console.error('Initialization error:', error);
             SELECTORS.noResultsMessage.show().text('Failed to initialize the page. Please try refreshing.');
