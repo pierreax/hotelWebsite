@@ -883,6 +883,7 @@ $(document).ready(function () {
                 console.log('Fetching FX Rates for:', selectedCurrency);
                 state.conversionRates = await fetchJSON(`${API_ENDPOINTS.getFxRates}?baseCurrency=${selectedCurrency}`);
                 state.initialCurrency = selectedCurrency;
+                console.log('Conversion Rates:', state.conversionRates);
             } catch (error) {
                 console.error('Failed to fetch FX Rates:', error);
             }
@@ -933,7 +934,7 @@ $(document).ready(function () {
             }
 
             console.log('Initialization complete');
-            
+
         } catch (error) {
             console.error('Initialization error:', error);
             SELECTORS.noResultsMessage.show().text('Failed to initialize the page. Please try refreshing.');
