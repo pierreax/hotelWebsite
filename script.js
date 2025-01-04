@@ -273,11 +273,13 @@ $(document).ready(function () {
                 // **Fetch Access Token First**
                 console.log('Fetching Access Token...');
                 const tokenData = await fetchJSON(API_ENDPOINTS.getAccessToken);
+                console.log('Token Data:', tokenData); // Log the response
                 if (!tokenData || !tokenData.access_token) {
                     throw new Error('Failed to retrieve access token.');
                 }
                 state.accessToken = tokenData.access_token;
                 console.log('Access Token Retrieved:', state.accessToken);
+                
 
                 // **Then Fetch Hotels**
                 const hotelsData = await fetchHotels(firstResult.geometry.location);
