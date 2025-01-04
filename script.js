@@ -334,11 +334,10 @@ $(document).ready(function () {
                 console.log('Conversion Rates:', state.conversionRates);
             }
 
-            // Fetch Hotel Offers
-            console.log('Fetching hotel offers...');
-            const offersData = await getHotelOffersByCoordinates(formData, checkInDate, checkOutDate);
-            console.log('Offers Data:', offersData);
-            if (offersData && offersData.data && offersData.data.length > 0) { 
+                // Fetch Hotel Offers
+                const offersData = await fetchHotelOffers(hotelIds, formData, checkInDate, checkOutDate, numberOfNights);
+                if (!offersData) return; // If no offers, exit early
+
                 // Convert Prices
                 const convertedOffers = convertPricesToFormCurrency(offersData.data, formData.formCurrency, state.conversionRates);
                 console.log('Converted Offers:', convertedOffers);
@@ -371,7 +370,7 @@ $(document).ready(function () {
      * @param {string} checkOutDate 
      * @returns {Object|null} Offers data or null if no offers.
      */
-    const getHotelOffersByCoordinates = async (formData, checkInDate, checkOutDate) => {
+    const fetchHotelOffers = async (hotelIds, formData, checkInDate, checkOutDate) => {
         const params = new URLSearchParams({
             latitude: state.locationCoordinates.lat,
             longitude: state.locationCoordinates.lng,
