@@ -335,7 +335,7 @@ $(document).ready(function () {
 
             // Fetch Hotel Offers
             console.log('Fetching hotel offers...');
-            const offersData = await fetchHotelOffersByCoordinates(formData, checkInDate, checkOutDate);
+            const offersData = await getHotelOffersByCoordinates(formData, checkInDate, checkOutDate);
             console.log('Offers Data:', offersData);
             if (offersData && offersData.data && offersData.data.length > 0) { 
                 // Convert Prices
@@ -370,7 +370,7 @@ $(document).ready(function () {
      * @param {string} checkOutDate 
      * @returns {Object|null} Offers data or null if no offers.
      */
-    const fetchHotelOffersByCoordinates = async (formData, checkInDate, checkOutDate) => {
+    const getHotelOffersByCoordinates = async (formData, checkInDate, checkOutDate) => {
         const params = new URLSearchParams({
             latitude: state.locationCoordinates.lat,
             longitude: state.locationCoordinates.lng,
