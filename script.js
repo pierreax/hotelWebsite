@@ -331,6 +331,7 @@ $(document).ready(function () {
                 const fxRatesData = await fetchFxRates(formData.formCurrency);
                 state.conversionRates = fxRatesData;
                 state.initialCurrency = formData.formCurrency;
+                console.log('Conversion Rates:', state.conversionRates);
             }
 
             // Fetch Hotel Offers
