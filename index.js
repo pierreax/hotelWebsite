@@ -137,7 +137,7 @@ app.get('/api/getHotelOffersByCoordinates', async (req, res) => {
     const url = `https://booking-com15.p.rapidapi.com/api/v1/hotels/searchHotelsByCoordinates?${queryParams}`;
     const headers = {
         'x-rapidapi-ua': 'RapidAPI-Playground',
-        'x-rapidapi-key': process.env.RAPID_API_KEY, // Use the environment variable for the API key
+        'x-rapidapi-key': RAPID_API_KEY,
         'x-rapidapi-host': 'booking-com15.p.rapidapi.com',
         'useQueryString': true
     };
@@ -163,9 +163,6 @@ app.get('/api/getHotelOffersByCoordinates', async (req, res) => {
         res.status(500).send('An error occurred while fetching hotel offers');
     }
 });
-
-
-
 
 // --------- SHEETY ----------------
 
