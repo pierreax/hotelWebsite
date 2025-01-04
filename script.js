@@ -271,6 +271,7 @@ $(document).ready(function () {
                 console.log('City:', state.redirectCity || 'Not found');
 
                 // **Fetch Access Token First**
+                console.log('Fetching Access Token...');
                 const tokenData = await fetchJSON(API_ENDPOINTS.getAccessToken);
                 if (!tokenData || !tokenData.access_token) {
                     throw new Error('Failed to retrieve access token.');
