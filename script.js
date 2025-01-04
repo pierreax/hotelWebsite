@@ -336,7 +336,7 @@ $(document).ready(function () {
             // Fetch Hotel Offers
             console.log('Fetching hotel offers...');
             const offersData = await getHotelOffersByCoordinates(formData, checkInDate, checkOutDate);
-            console.log('Offers Data:', offersData);
+            console.log('Offers Data:', offersData.data.result);
             if (offersData && offersData.data && offersData.data.length > 0) { 
                 // Convert Prices
                 const convertedOffers = convertPricesToFormCurrency(offersData.data, formData.formCurrency, state.conversionRates);

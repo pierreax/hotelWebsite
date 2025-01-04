@@ -155,7 +155,7 @@ app.get('/api/getHotelOffersByCoordinates', async (req, res) => {
 
         // Parse and send the response data
         const data = await response.json();
-        res.json(data.results);
+        res.json(data);
 
     } catch (error) {
         // Catch and log any errors during the fetch operation
