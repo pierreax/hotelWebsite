@@ -883,7 +883,7 @@ $(document).ready(function () {
                 console.log('Fetching FX Rates for:', selectedCurrency);
                 state.conversionRates = await fetchJSON(`${API_ENDPOINTS.getFxRates}?baseCurrency=${selectedCurrency}`);
                 state.initialCurrency = selectedCurrency;
-                console.log('Conversion Rates:', state.conversionRates);
+                console
             } catch (error) {
                 console.error('Failed to fetch FX Rates:', error);
             }
