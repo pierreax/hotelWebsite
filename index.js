@@ -6,14 +6,14 @@ const app = express();
 const port = process.env.PORT || 8080;
 
 // Access environment variables directly from process.env
-const AMADEUS_API_KEY = process.env.AMADEUS_API_KEY;
-const AMADEUS_API_SECRET = process.env.AMADEUS_API_SECRET;
+// Removed Amadeus API keys
 const EMAIL_CLIENT_ID = process.env.EMAIL_CLIENT_ID;
 const EMAIL_CLIENT_SECRET = process.env.EMAIL_CLIENT_SECRET;
 const EMAIL_TENANT_ID = process.env.EMAIL_TENANT_ID;
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
 const EXCHANGE_RATE_API_KEY = process.env.EXCHANGE_RATE_API_KEY;
 const SHEETY_API_URL = process.env.SHEETY_API_URL;
+const RAPID_API_KEY = process.env.RAPID_API_KEY;
 
 // Middleware to parse JSON requests
 app.use(express.json());
@@ -76,6 +76,7 @@ app.get('/api/getCoordinatesByLocation', async (req, res) => {
     }
 });
 
+// Removed Amadeus API-related endpoints
 
 app.get('/api/getFxRates', async (req, res) => {
     const { baseCurrency } = req.query;
@@ -111,238 +112,40 @@ app.get('/api/getFxRates', async (req, res) => {
 
 
 
-// ------------ AMADEUS ---------------
+// ------------ RAPID API ---------------
 
-// API to get the Amadeus access token
-app.get('/api/getAccessToken', async (req, res) => {
-    try {
-        const response = await fetch('https://api.amadeus.com/v1/security/oauth2/token', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({
-                grant_type: 'client_credentials',
-                client_id: AMADEUS_API_KEY,
-                client_secret: AMADEUS_API_SECRET
-            })
-        });
+// API to get hotel offers by coordinates from RAPID API
+app.get('/api/getHotelOffersByCoordinates', async (req, res) => {
+    const { latitude, longitude, arrival_date, departure_date, adults, room_qty, currency_code } = req.query;
 
-        const data = await response.json();
-        const accessToken = data.access_token;
-        const expiresIn = data.expires_in;
-
-        // Send the access token and expiration to the frontend
-        res.json({ access_token: accessToken, expires_in: expiresIn });
-    } catch (error) {
-        console.error('Error fetching access token:', error.message);
-        res.status(500).json({ error: 'Failed to fetch access token' });
-    }
-});
-
-// API to get hotels by coordinates from Amadeus
-app.get('/api/getHotelsByCoordinates', async (req, res) => {
-    const accessToken = req.headers['authorization'] ? req.headers['authorization'].split(' ')[1] : null;
-    const { lat, lng, radius = 10, radiusUnit = 'KM', hotelSource = 'ALL' } = req.query;
-
-    // Unauthorized if accessToken is missing
-    if (!accessToken) {
-        return res.status(401).json({
-            message: 'Unauthorized: Access token missing'
-        });
-    }
-
-    // Latitude and longitude are required
-    if (!lat || !lng) {
-        return res.status(400).json({
-            message: 'Latitude and longitude are required'
-        });
-    }
-
-    try {
-        // Fetch hotels data from Amadeus API
-        const hotelsResponse = await fetch(`https://api.amadeus.com/v1/reference-data/locations/hotels/by-geocode?latitude=${lat}&longitude=${lng}&radius=${radius}&radiusUnit=${radiusUnit}&hotelSource=${hotelSource}`, {
-            headers: {
-                'Authorization': `Bearer ${accessToken}`
-            }
-        });
-
-        // If the response is not OK, handle the error
-        if (!hotelsResponse.ok) {
-            const errorText = await hotelsResponse.text();
-            let errorMessage;
-
-            try {
-                // Try to parse the error text as JSON
-                const errorJson = JSON.parse(errorText);
-                errorMessage = errorJson.errors?.[0]?.detail || 'Unknown error occurred';
-            } catch (parseError) {
-                // If parsing fails, use the raw error text
-                errorMessage = errorText || 'Unknown error occurred';
-            }
-
-            return res.status(hotelsResponse.status).json({
-                message: `Error fetching hotels: ${errorMessage}`
-            });
-        }
-
-        // Parse the JSON response from Amadeus
-        const hotelsData = await hotelsResponse.json();
-
-        // Check if there are no hotels in the response
-        if (!hotelsData.data || hotelsData.data.length === 0) {
-            return res.status(200).json({
-                message: 'There are no available hotels in the area'
-            });
-        }
-
-        // Return the hotels data if successful
-        return res.status(200).json(hotelsData);
-
-    } catch (error) {
-        // Catch any errors and return a server error
-        console.error('Error fetching hotels:', error.message);
-        return res.status(500).json({
-            message: `Error fetching hotels: ${error.message}`
-        });
-    }
-});
-
-app.get('/api/getHotelOffers', async (req, res) => {
-    // Extract parameters from query
-    const { hotelIds, adults, checkInDate, checkOutDate, roomQuantity } = req.query;
-    const accessToken = req.headers['authorization'] ? req.headers['authorization'].split(' ')[1] : null;
-
-    // Check if access token is provided
-    if (!accessToken) {
-        return res.status(401).json({ message: 'Unauthorized: Access token missing' });
-    }
-
-    // Validate required query parameters
-    if (!hotelIds || !checkInDate || !checkOutDate || !adults || !roomQuantity) {
-        return res.status(400).json({ message: 'Missing required query parameters' });
-    }
-
-    try {
-        // Construct the Amadeus API URL with query parameters
-        const amadeusUrl = new URL('https://api.amadeus.com/v3/shopping/hotel-offers');
-        amadeusUrl.search = new URLSearchParams({
-            hotelIds,
+    const options = {
+        method: 'GET',
+        url: 'https://booking-com15.p.rapidapi.com/api/v1/hotels/searchHotelsByCoordinates',
+        params: {
+            latitude,
+            longitude,
+            arrival_date,
+            departure_date,
+            radius: '10',
             adults,
-            checkInDate,
-            checkOutDate,
-            roomQuantity,
-            paymentPolicy: 'NONE',  // Set default payment policy
-            bestRateOnly: true,    // Filter for best rates
-            includeClosed: false   // Exclude closed hotels
-        }).toString();
-
-        // Log the URL for debugging
-        console.log('Fetching hotel offers with URL:', amadeusUrl.toString());
-
-        // Make the request to Amadeus API with the Authorization header
-        const response = await fetch(amadeusUrl.toString(), {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${accessToken}`
-            }
-        });
-
-        // If the response is not OK, handle the error
-        if (!response.ok) {
-            const errorText = await response.text();
-            let errorMessage;
-
-            try {
-                // Attempt to parse the error response as JSON
-                const errorJson = JSON.parse(errorText);
-                errorMessage = errorJson.errors?.[0]?.detail || 'Unknown error occurred';
-            } catch (parseError) {
-                // If parsing fails, fallback to raw error text
-                errorMessage = errorText || 'Unknown error occurred';
-            }
-
-            return res.status(response.status).json({ message: `Error fetching hotel offers: ${errorMessage}` });
+            room_qty,
+            currency_code
+        },
+        headers: {
+            'x-rapidapi-ua': 'RapidAPI-Playground',
+            'x-rapidapi-key': RAPID_API_KEY,
+            'x-rapidapi-host': 'booking-com15.p.rapidapi.com'
         }
-
-        // Parse the response data as JSON
-        const data = await response.json();
-
-        // Check if no valid hotel offers are found
-        if (!data || !data.data || data.data.length === 0) {
-            return res.status(200).json({
-                message: 'No valid hotel offers available for the selected criteria.'
-            });
-        }
-
-        // Return the hotel offers data
-        res.status(200).json(data);
-
-    } catch (error) {
-        // Catch any unexpected errors and send an appropriate message
-        console.error('Error fetching hotel offers:', error.message);
-        res.status(500).json({ message: `Error fetching hotel offers: ${error.message}` });
-    }
-});
-
-
-
-// Route to fetch hotel ratings from Amadeus
-app.post('/api/getHotelRatings', async (req, res) => {
-    try {
-        const { hotelIds } = req.body;
-        const accessToken = req.headers['authorization'] ? req.headers['authorization'].split(' ')[1] : null;
-
-        if (!accessToken) {
-            return res.status(401).json({ message: 'Unauthorized: Access token missing' });
-        }
-
-        if (!hotelIds || hotelIds.length === 0) {
-            return res.status(400).json({ error: 'No hotel IDs provided.' });
-        }
-
-        // Fetch ratings for the provided hotel IDs
-        const ratings = await fetchRatingsForChunk(hotelIds, accessToken);
-        return res.status(200).json(ratings); // Return ratings directly
-    } catch (error) {
-        console.error('Error in /api/getHotelRatings:', error);
-        return res.status(500).json({ error: 'Error processing hotel ratings request.' });
-    }
-});
-
-// Fetch ratings for a chunk of hotels from Amadeus API
-async function fetchRatingsForChunk(hotelIds, accessToken) {
-    const hotelIdsString = hotelIds.join(',');
+    };
 
     try {
-        // Construct the URL with query parameters
-        const amadeusUrl = `https://api.amadeus.com/v2/e-reputation/hotel-sentiments?hotelIds=${hotelIdsString}`;
-        console.log('Amadeus API URL:', amadeusUrl);
-        console.log('Authorization token:', accessToken);
-
-        // Make the request to the Amadeus API
-        const response = await fetch(amadeusUrl, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        // Check if the response is OK
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Error response from Amadeus API:', errorText);
-            throw new Error(`Error fetching hotel ratings: ${errorText}`);
-        }
-
-        // Parse and return the response data
-        const data = await response.json();
-        console.log('Amadeus API Response:', data);
-        return data.data; // Return the ratings array from the response
+        const response = await axios.request(options);
+        res.json(response.data);
     } catch (error) {
-        console.error('Error fetching hotel ratings for IDs:', hotelIdsString, error);
-        throw error;
+        console.error(error);
+        res.status(500).send('An error occurred while fetching hotel offers');
     }
-}
+}); 
 
 // --------- SHEETY ----------------
 

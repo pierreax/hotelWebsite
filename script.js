@@ -22,13 +22,11 @@ $(document).ready(function () {
     const API_ENDPOINTS = {
         ipGeo: 'https://api.ipgeolocation.io/ipgeo?apiKey=420e90eecc6c4bb285f238f38aea898f',
         getAccessToken: '/api/getAccessToken',
-        getHotelsByCoordinates: '/api/getHotelsByCoordinates',
-        getHotelOffers: '/api/getHotelOffers',
-        getCoordinatesByLocation: '/api/getCoordinatesByLocation',
-        getHotelRatings: '/api/getHotelRatings',
+        getHotelOffersByCoordinates: '/api/getHotelOffersByCoordinates', // Updated to backend endpoint
         sheety: '/api/sendDataToSheety',
         sendEmail: '/api/sendEmail',
-        getFxRates: '/api/getFxRates',
+        getFxRates: '/api/getFxRates', // Assuming you have a backend endpoint for FX rates
+        getCoordinatesByLocation: '/api/getCoordinatesByLocation', // Ensure this endpoint exists
     };
 
     // State Management
@@ -270,22 +268,6 @@ $(document).ready(function () {
                 state.redirectCity = cityComponent ? cityComponent.long_name : '';
                 console.log('City:', state.redirectCity || 'Not found');
 
-                // **Fetch Access Token First**
-                console.log('Fetching Access Token...');
-                const tokenData = await fetchJSON(API_ENDPOINTS.getAccessToken);
-                console.log('Token Data:', tokenData); // Log the response
-                if (!tokenData || !tokenData.access_token) {
-                    throw new Error('Failed to retrieve access token.');
-                }
-                state.accessToken = tokenData.access_token;
-                console.log('Access Token Retrieved:', state.accessToken);
-                
-
-                // **Then Fetch Hotels**
-                const hotelsData = await fetchHotels(firstResult.geometry.location);
-                state.hotelsData = hotelsData;
-                console.log('Hotels in the area:', state.hotelsData);
-
                 SELECTORS.searchBtn.prop('disabled', false);
             } else {
                 console.log('No location results found.');
@@ -295,30 +277,6 @@ $(document).ready(function () {
             console.error('Error handling location input:', error);
             SELECTORS.noResultsMessage.show().text('Failed to fetch location data. Please try again later.');
         }
-    };
-
-    /**
-     * Fetch hotels by coordinates.
-     * @param {Object} coordinates 
-     * @returns {Object} Hotels data.
-     */
-    const fetchHotels = async (coordinates) => {
-        if (!state.accessToken) {
-            throw new Error('Access token is not set.');
-        }
-
-        const { lat, lng } = coordinates;
-        const params = new URLSearchParams({
-            lat,
-            lng,
-            radius: 100,
-            radiusUnit: 'KM',
-            hotelSource: 'ALL'
-        }).toString();
-        const url = `${API_ENDPOINTS.getHotelsByCoordinates}?${params}`;
-        return await fetchJSON(url, {
-            headers: { 'Authorization': `Bearer ${state.accessToken}` }
-        });
     };
 
     /**
@@ -370,20 +328,16 @@ $(document).ready(function () {
             // Fetch FX Rates only if the currency has changed
             if (formData.formCurrency !== state.initialCurrency) {
                 console.log('Fetching FX Rates for:', formData.formCurrency);
-                const fxRatesData = await fetchJSON(`${API_ENDPOINTS.getFxRates}?baseCurrency=${formData.formCurrency}`);
+                const fxRatesData = await fetchFxRates(formData.formCurrency);
                 state.conversionRates = fxRatesData;
                 state.initialCurrency = formData.formCurrency;
             }
 
-            // Process Hotels Data
-            if (state.hotelsData && state.hotelsData.data && state.hotelsData.data.length > 0) {
-                state.internalHotelIds = state.hotelsData.data.map(hotel => hotel.hotelId);
-                const hotelIds = state.internalHotelIds.slice(0, formData.limitResults);
-
-                // Fetch Hotel Offers
-                const offersData = await fetchHotelOffers(hotelIds, formData, checkInDate, checkOutDate, numberOfNights);
-                if (!offersData) return; // If no offers, exit early
-
+            // Fetch Hotel Offers
+            console.log('Fetching hotel offers...');
+            const offersData = await fetchHotelOffersByCoordinates(formData, checkInDate, checkOutDate);
+            console.log('Offers Data:', offersData);
+            if (offersData && offersData.data && offersData.data.length > 0) { 
                 // Convert Prices
                 const convertedOffers = convertPricesToFormCurrency(offersData.data, formData.formCurrency, state.conversionRates);
                 console.log('Converted Offers:', convertedOffers);
@@ -410,32 +364,38 @@ $(document).ready(function () {
     };
 
     /**
-     * Fetch hotel offers based on hotel IDs and form data.
-     * @param {Array} hotelIds 
+     * Fetch hotel offers based on coordinates and form data.
      * @param {Object} formData 
      * @param {string} checkInDate 
      * @param {string} checkOutDate 
      * @returns {Object|null} Offers data or null if no offers.
      */
-    const fetchHotelOffers = async (hotelIds, formData, checkInDate, checkOutDate) => {
+    const fetchHotelOffersByCoordinates = async (formData, checkInDate, checkOutDate) => {
         const params = new URLSearchParams({
-            hotelIds: hotelIds.join(','),
+            latitude: state.locationCoordinates.lat,
+            longitude: state.locationCoordinates.lng,
+            arrival_date: checkInDate, // Updated parameter name
+            departure_date: checkOutDate, // Updated parameter name
             adults: formData.adults,
-            checkInDate,
-            checkOutDate,
-            roomQuantity: formData.numberOfRooms,
-            paymentPolicy: 'NONE',
-            bestRateOnly: 'true',
-            includeClosed: 'false'
+            room_qty: formData.numberOfRooms, // Updated parameter name
+            currency_code: formData.formCurrency, // Added parameter
         }).toString();
 
-        const url = `${API_ENDPOINTS.getHotelOffers}?${params}`;
+        const url = `${API_ENDPOINTS.getHotelOffersByCoordinates}?${params}`;
         console.log('Fetching hotel offers with params:', params);
 
         try {
             const response = await fetch(url, {
-                headers: { 'Authorization': `Bearer ${state.accessToken}` }
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json', // Optional: Set if needed
+                }
             });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Server error: ${response.status} - ${errorText}`);
+            }
 
             const responseData = await response.json();
             console.log('Hotel offers response:', responseData);
@@ -453,7 +413,24 @@ $(document).ready(function () {
             return responseData;
         } catch (err) {
             console.error(`Failed to fetch hotel offers: ${err.message}`);
-            throw err;
+            SELECTORS.noResultsMessage.show().text(`Error: ${err.message}`);
+            return null;
+        }
+    };
+
+    /**
+     * Fetch FX Rates from backend.
+     * @param {string} baseCurrency 
+     * @returns {Object} FX Rates data.
+     */
+    const fetchFxRates = async (baseCurrency) => {
+        const url = `${API_ENDPOINTS.getFxRates}?baseCurrency=${encodeURIComponent(baseCurrency)}`;
+        try {
+            const fxRatesData = await fetchJSON(url);
+            return fxRatesData;
+        } catch (error) {
+            console.error('Error fetching FX Rates:', error);
+            throw error;
         }
     };
 
@@ -476,6 +453,7 @@ $(document).ready(function () {
                     if (rate) {
                         const convertedPrice = originalPrice / rate;
                         offer.offers[0].price.total = Math.round(convertedPrice);
+                        offer.offers[0].price.currency = formCurrency; // Update currency code
                     } else {
                         console.error(`Conversion rate not found for ${originalCurrency}`);
                     }
@@ -536,7 +514,7 @@ $(document).ready(function () {
     };
 
     /**
-     * Render hotel offer cards to the results container using Document Fragment for performance.
+     * Render hotel offer cards to the results container using jQuery for performance.
      * @param {Array} offers 
      * @param {Object} formData 
      * @param {number} numberOfNights 
@@ -555,9 +533,16 @@ $(document).ready(function () {
             const pricePerNight = numberOfNights > 0
                 ? Math.round((totalPrice / numberOfNights).toFixed(2))
                 : 'N/A';
-            const currencySymbol = formData.formCurrency;
+            const currencySymbol = offer.offers[0].price.currency; // Updated to reflect converted currency
 
-            const card = $('<div>').addClass('card');
+            const card = $('<div>').addClass('card').css({
+                'cursor': 'pointer',
+                'border': '1px solid #ccc',
+                'padding': '16px',
+                'margin-bottom': '16px',
+                'border-radius': '8px',
+                'box-shadow': '0 2px 5px rgba(0,0,0,0.1)'
+            });
 
             // Hidden Hotel ID
             $('<div>')
@@ -567,10 +552,16 @@ $(document).ready(function () {
                 .appendTo(card);
 
             // Card Header
-            const cardHeader = $('<div>').addClass('card-header');
+            const cardHeader = $('<div>').addClass('card-header').css({
+                'margin-bottom': '8px'
+            });
             $('<div>')
                 .addClass('hotel-name')
                 .text(formatHotelName(offer.hotel.name))
+                .css({
+                    'font-weight': 'bold',
+                    'font-size': '1.2em'
+                })
                 .appendTo(cardHeader);
 
             // Room type - Only append if available
@@ -579,6 +570,10 @@ $(document).ready(function () {
                 $('<div>')
                     .addClass('room-type')
                     .text(roomType)
+                    .css({
+                        'font-size': '0.9em',
+                        'color': '#555'
+                    })
                     .appendTo(cardHeader);
             }
 
@@ -587,24 +582,37 @@ $(document).ready(function () {
             // Distance Display
             $('<div>')
                 .addClass('distance')
-                .text(offer.distanceDisplay)
+                .text(`Distance: ${offer.distanceDisplay}`)
+                .css({
+                    'font-size': '0.9em',
+                    'color': '#777',
+                    'margin-bottom': '8px'
+                })
                 .appendTo(card);
 
             // Checkbox Container
-            const checkboxContainer = $('<div>').addClass('checkbox-container');
-            checkboxContainer.append($('<span>').addClass('checkbox-description').text('Add to Robot: '));
-            checkboxContainer.append($('<input>').attr('type', 'checkbox').addClass('select-checkbox'));
+            const checkboxContainer = $('<div>').addClass('checkbox-container').css({
+                'margin-bottom': '8px'
+            });
+            checkboxContainer.append($('<label>').css('cursor', 'pointer').append(
+                $('<input>').attr('type', 'checkbox').addClass('select-checkbox').css('margin-right', '8px'),
+                'Add to Robot'
+            ));
             card.append(checkboxContainer);
 
             // Card Content
-            const cardContent = $('<div>').addClass('card-content');
+            const cardContent = $('<div>').addClass('card-content').css({
+                'display': 'flex',
+                'justify-content': 'space-between',
+                'align-items': 'center'
+            });
             $('<div>').addClass('price-per-night')
-                .append($('<span>').addClass('label').text('Per Night: '))
-                .append($('<span>').addClass('amount').text(`${currencySymbol} ${pricePerNight}`))
+                .append($('<span>').addClass('label').text('Per Night: ').css('font-weight', 'bold'))
+                .append($('<span>').addClass('amount').text(`${currencySymbol} ${pricePerNight}`).css('color', '#28a745'))
                 .appendTo(cardContent);
             $('<div>').addClass('total-price')
-                .append($('<span>').addClass('label').text('Total: '))
-                .append($('<span>').addClass('amount').text(`${currencySymbol} ${totalPrice}`))
+                .append($('<span>').addClass('label').text('Total: ').css('font-weight', 'bold'))
+                .append($('<span>').addClass('amount').text(`${currencySymbol} ${totalPrice}`).css('color', '#007bff'))
                 .appendTo(cardContent);
             card.append(cardContent);
 
@@ -875,6 +883,9 @@ $(document).ready(function () {
         // Handle checkbox state changes
         SELECTORS.resultsContainer.on('change', '.select-checkbox', handleCheckboxChange);
 
+        // Handle checkbox toggle on card click
+        SELECTORS.resultsContainer.on('click', '.card', toggleCheckbox);
+
         // Handle submit to Sheety button
         SELECTORS.submitToSheetBtn.on('click', handleSubmitToSheety);
 
@@ -884,9 +895,8 @@ $(document).ready(function () {
             console.log('Currency changed to:', selectedCurrency);
             try {
                 console.log('Fetching FX Rates for:', selectedCurrency);
-                state.conversionRates = await fetchJSON(`${API_ENDPOINTS.getFxRates}?baseCurrency=${selectedCurrency}`);
+                state.conversionRates = await fetchFxRates(selectedCurrency);
                 state.initialCurrency = selectedCurrency;
-                console
             } catch (error) {
                 console.error('Failed to fetch FX Rates:', error);
             }
@@ -931,7 +941,7 @@ $(document).ready(function () {
             const formCurrency = SELECTORS.currencyInput.val(); // Get the currency after it's set
             if (formCurrency) {
                 console.log('Fetching FX Rates for:', formCurrency);
-                state.conversionRates = await fetchJSON(`${API_ENDPOINTS.getFxRates}?baseCurrency=${formCurrency}`);
+                state.conversionRates = await fetchFxRates(formCurrency);
                 state.initialCurrency = formCurrency;
                 console.log('Conversion Rates:', state.conversionRates);
             }
