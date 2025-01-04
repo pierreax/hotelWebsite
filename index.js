@@ -111,7 +111,6 @@ app.get('/api/getFxRates', async (req, res) => {
 
 
 // ------------ RAPID API ---------------
-// API to get hotel offers by coordinates from RAPID API
 app.get('/api/getHotelOffersByCoordinates', async (req, res) => {
     const { latitude, longitude, arrival_date, departure_date, adults, room_qty, currency_code, page_number = 1 } = req.query;
 
@@ -153,9 +152,14 @@ app.get('/api/getHotelOffersByCoordinates', async (req, res) => {
             return res.status(response.status).send(`Error: ${errorText}`);
         }
 
-        // Parse and send the response data
+        // Parse the response JSON
         const data = await response.json();
-        res.json(data);
+
+        // Log the results from the response data
+        console.log('Hotel offers results:', data.data.result);  // Log only the result array
+
+        // Return the result array to the client
+        res.json(data.data.result);
 
     } catch (error) {
         // Catch and log any errors during the fetch operation
@@ -163,6 +167,7 @@ app.get('/api/getHotelOffersByCoordinates', async (req, res) => {
         res.status(500).send('An error occurred while fetching hotel offers');
     }
 });
+
 
 
 // --------- SHEETY ----------------
