@@ -5,7 +5,6 @@ const { v4: uuidv4 } = require('uuid'); // Import UUID library
 const app = express();
 
 // Access environment variables directly from process.env
-// Removed Amadeus API keys
 const EMAIL_CLIENT_ID = process.env.EMAIL_CLIENT_ID;
 const EMAIL_CLIENT_SECRET = process.env.EMAIL_CLIENT_SECRET;
 const EMAIL_TENANT_ID = process.env.EMAIL_TENANT_ID;
