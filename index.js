@@ -116,36 +116,37 @@ app.get('/api/getFxRates', async (req, res) => {
 
 // API to get hotel offers by coordinates from RAPID API
 app.get('/api/getHotelOffersByCoordinates', async (req, res) => {
-    const { latitude, longitude, arrival_date, departure_date, adults, room_qty, currency_code } = req.query;
+    const { latitude, longitude, arrival_date, departure_date, adults, room_qty, currency_code, page_number = 1 } = req.query;
 
-    const options = {
-        method: 'GET',
-        url: 'https://booking-com15.p.rapidapi.com/api/v1/hotels/searchHotelsByCoordinates',
-        params: {
-            latitude,
-            longitude,
-            arrival_date,
-            departure_date,
-            radius: '10',
-            adults,
-            room_qty,
-            currency_code
-        },
-        headers: {
-            'x-rapidapi-ua': 'RapidAPI-Playground',
-            'x-rapidapi-key': RAPID_API_KEY,
-            'x-rapidapi-host': 'booking-com15.p.rapidapi.com'
-        }
+    if (!latitude || !longitude || !arrival_date || !departure_date || !adults || !room_qty || !currency_code) {
+        return res.status(400).json({ error: 'Missing required query parameters.' });
+    }
+
+    const queryParams = new URLSearchParams({ latitude, longitude, arrival_date, departure_date, radius: '10', adults, room_qty, currency_code, page_number });
+    const url = `https://booking-com15.p.rapidapi.com/api/v1/hotels/searchHotelsByCoordinates?${queryParams}`;
+
+    const headers = {
+        'x-rapidapi-ua': 'RapidAPI-Playground',
+        'x-rapidapi-key': RAPID_API_KEY,
+        'x-rapidapi-host': 'booking-com15.p.rapidapi.com',
+        'useQueryString': true
     };
 
     try {
-        const response = await axios.request(options);
-        res.json(response.data);
+        const response = await fetch(url, { method: 'GET', headers });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            return res.status(response.status).send(`Error: ${errorText}`);
+        }
+
+        const data = await response.json();
+        res.json(data);
     } catch (error) {
-        console.error(error);
+        console.error('Error fetching hotel offers:', error);
         res.status(500).send('An error occurred while fetching hotel offers');
     }
-}); 
+});
 
 // --------- SHEETY ----------------
 
