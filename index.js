@@ -3,7 +3,6 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid'); // Import UUID library
 
 const app = express();
-const port = process.env.PORT || 8080;
 
 // Access environment variables directly from process.env
 // Removed Amadeus API keys
@@ -344,9 +343,8 @@ async function sendEmail(subject, body, recipient_email, token) {
     }
 }
 
-
-
 // Start the server
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+app.listen(8080, () => {
+    console.log(`Server is running on port 8080`);
 });
+  
