@@ -347,6 +347,7 @@ $(document).ready(function () {
             }).toString();
             const url = `${API_ENDPOINTS.getHotelOffersByCoordinates}?${params}`;
             const offersData = await fetchJSON(url);
+            offersData = offersData.data.result; // Extract the result from the response
             console.log('Hotel Offers Data:', offersData);
 
             if (offersData && offersData.data) {
