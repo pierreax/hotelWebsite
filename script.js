@@ -374,53 +374,8 @@ $(document).ready(function () {
         }
     };
 
-    /**
-     * Fetch hotel offers based on hotel IDs and form data.
-     * @param {Array} hotelIds 
-     * @param {Object} formData 
-     * @param {string} checkInDate 
-     * @param {string} checkOutDate 
-     * @returns {Object|null} Offers data or null if no offers.
-     */
-    const fetchHotelOffers = async (hotelIds, formData, checkInDate, checkOutDate) => {
-        const params = new URLSearchParams({
-            hotelIds: hotelIds.join(','),
-            adults: formData.adults,
-            checkInDate,
-            checkOutDate,
-            roomQuantity: formData.numberOfRooms,
-            paymentPolicy: 'NONE',
-            bestRateOnly: 'true',
-            includeClosed: 'false'
-        }).toString();
 
-        const url = `${API_ENDPOINTS.getHotelOffers}?${params}`;
-        console.log('Fetching hotel offers with params:', params);
-
-        try {
-            const response = await fetch(url, {
-                headers: { 'Authorization': `Bearer ${state.accessToken}` }
-            });
-
-            const responseData = await response.json();
-            console.log('Hotel offers response:', responseData);
-
-            if (responseData.message) {
-                SELECTORS.resultsContainer.html(`<div class="no-results-message">${responseData.message}</div>`);
-                return null;
-            }
-
-            if (responseData.errors) {
-                const errorDetails = responseData.errors.map(err => `Code: ${err.code}, Detail: ${err.detail}`).join('; ');
-                throw new Error(`Failed to fetch hotel offers: ${errorDetails}`);
-            }
-
-            return responseData;
-        } catch (err) {
-            console.error(`Failed to fetch hotel offers: ${err.message}`);
-            throw err;
-        }
-    };
+    //  --------- HELPER FUNCTIONS HERE ---------- //
 
     /**
      * Convert hotel offer prices to the form's currency using conversion rates.
