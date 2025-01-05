@@ -451,7 +451,7 @@ $(document).ready(function () {
             // Hidden Hotel ID
             $('<div>')
                 .addClass('hiddenHotelId')
-                .text(offer.hotel_hotelId)
+                .text(offer.hotel_id)
                 .hide()
                 .appendTo(card);
 
