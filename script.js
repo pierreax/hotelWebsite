@@ -279,7 +279,7 @@ $(document).ready(function () {
         }
     };
 
-       /**
+    /**
      * Handle form submission for searching hotels.
      * @param {Event} event 
      */
@@ -350,13 +350,9 @@ $(document).ready(function () {
             offersData = offersData.data.result; // Extract the result from the response
             console.log('Hotel Offers Data:', offersData);
 
-            if (offersData && offersData.data) {
-                // Convert Prices
-                const convertedOffers = convertPricesToFormCurrency(offersData.data, formData.formCurrency, state.conversionRates);
-                console.log('Converted Offers:', convertedOffers);
-
+            if (offersData.length > 0) {
                 // Calculate Distances
-                const offersWithDistance = calculateDistances(convertedOffers, state.locationCoordinates);
+                const offersWithDistance = calculateDistances(offersData, state.locationCoordinates);
                 console.log('Offers with Distance:', offersWithDistance);
 
                 // Sort Offers by Distance
@@ -378,36 +374,6 @@ $(document).ready(function () {
 
 
     //  --------- HELPER FUNCTIONS HERE ---------- //
-
-    /**
-     * Convert hotel offer prices to the form's currency using conversion rates.
-     * @param {Array} hotelOffers 
-     * @param {string} formCurrency 
-     * @param {Object} conversionRates 
-     * @returns {Array} Converted hotel offers.
-     */
-    const convertPricesToFormCurrency = (hotelOffers, formCurrency, conversionRates) => {
-        return hotelOffers.map(offer => {
-            const priceData = offer.offers?.[0]?.price;
-            if (priceData) {
-                const originalCurrency = priceData.currency;
-                const originalPrice = priceData.total;
-
-                if (originalCurrency !== formCurrency) {
-                    const rate = conversionRates[originalCurrency];
-                    if (rate) {
-                        const convertedPrice = originalPrice / rate;
-                        offer.offers[0].price.total = Math.round(convertedPrice);
-                    } else {
-                        console.error(`Conversion rate not found for ${originalCurrency}`);
-                    }
-                }
-            } else {
-                console.error('Missing price data for offer:', offer);
-            }
-            return offer;
-        });
-    };
 
     /**
      * Calculate the distance between two geographic coordinates.
@@ -442,7 +408,10 @@ $(document).ready(function () {
      */
     const calculateDistances = (offers, userCoords) => {
         return offers.map(offer => {
-            const hotelCoords = offer.hotel;
+            const hotelCoords = {
+                latitude: offer.latitude,
+                longitude: offer.longitude
+            };
             const distanceInfo = calculateDistance(
                 userCoords.lat,
                 userCoords.lng,
