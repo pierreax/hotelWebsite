@@ -270,12 +270,9 @@ button:disabled {
 
 .hotel-name {
     margin-right: 60px;
+    padding-bottom: 10px;
 }
 
-.room-type {
-    color: #666; /* Optional: lighter color for smaller text */
-    margin-bottom: 5px;
-}
 
 .distance {
     position: absolute;
