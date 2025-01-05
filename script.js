@@ -21,7 +21,6 @@ $(document).ready(function () {
     // API Endpoints
     const API_ENDPOINTS = {
         ipGeo: 'https://api.ipgeolocation.io/ipgeo?apiKey=420e90eecc6c4bb285f238f38aea898f',
-        getAccessToken: '/api/getAccessToken',
         getHotelOffersByCoordinates: '/api/getHotelOffersByCoordinates', // Updated to backend endpoint
         sheety: '/api/sendDataToSheety',
         sendEmail: '/api/sendEmail',
@@ -31,7 +30,6 @@ $(document).ready(function () {
 
     // State Management
     const state = {
-        accessToken: '',
         internalHotelIds: [],
         selectedHotels: [],
         locationCoordinates: {},
