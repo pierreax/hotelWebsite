@@ -140,7 +140,7 @@ app.get('/api/getHotelOffersByCoordinates', async (req, res) => {
         res.json(response.data);
     } catch (error) {
         console.error('Error fetching hotel offers:', error.response ? error.response.data : error.message);
-        res.status(500).send('An error occurred while fetching hotel offers');
+        res.status(500).send('An error occurred while fetching hotel offers',error.response ? error.response.data : error.message);
     }
 });
 
