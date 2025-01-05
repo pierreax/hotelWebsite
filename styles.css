@@ -324,7 +324,6 @@ button:disabled {
     font-weight: bold;
     font-size: 12px;
     margin-right: 10px;
-    max-width: min-content;
 }
 
 .select-checkbox {
