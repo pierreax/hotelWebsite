@@ -304,6 +304,9 @@ button:disabled {
 }
 
 .card-content {
+    display: flex;
+    justify-content: space-between; /* Align items to the left and right */
+    align-items: center; /* Center items vertically */
     font-size: 12px; /* Adjusted font size */
     margin-top: auto; /* Push content to the bottom */
 }
@@ -312,11 +315,8 @@ button:disabled {
 .checkbox-container {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
     padding: 5px;
     border-radius: 5px;
-    background-color: #fff; /* Optional: background for better visibility */
-    margin-top: auto; /* Push the checkbox container to the bottom */
 }
 
 .checkbox-description {
