@@ -363,6 +363,7 @@ button:disabled {
     margin-top: auto; /* Push content to the bottom */
     width: 100%; /* Ensure full width */
     background-color: var(--input-background);
+    padding: none; /* Remove default padding */
 }
 
 
