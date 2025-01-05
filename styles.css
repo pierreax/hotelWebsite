@@ -355,6 +355,13 @@ button:disabled {
     transform: translate(-50%, -50%);
 }
 
+.card-footer {
+    display: flex;
+    justify-content: space-between; /* Align items to the left and right */
+    align-items: center; /* Center items vertically */
+    margin-top: auto; /* Push content to the bottom */
+}
+
 /* Help text styling */
 #submitText {
     font-size: 12px; /* Adjust font size as needed */

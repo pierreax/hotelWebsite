@@ -425,51 +425,47 @@ $(document).ready(function () {
             SELECTORS.resultsContainer.html('<div class="no-results-message">No valid hotel offers found. Please try different search criteria.</div>');
             return;
         }
-
+    
         const fragment = $(document.createDocumentFragment());
-
+    
         offers.forEach((offer) => {
             console.log('Offer:', offer);
             console.log('Price breakdown:', offer.composite_price_breakdown);
             const totalPrice = offer.composite_price_breakdown.gross_amount.amount_rounded;
             const pricePerNight = offer.composite_price_breakdown.gross_amount_per_night.amount_rounded;
-
+    
             const card = $('<div>').addClass('card');
-
+    
             // Hidden Hotel ID
             $('<div>')
                 .addClass('hiddenHotelId')
                 .text(offer.hotel_id)
                 .hide()
                 .appendTo(card);
-
+    
             // Card Header
             const cardHeader = $('<div>').addClass('card-header');
             $('<div>')
                 .addClass('hotel-name')
                 .text(formatHotelName(offer.hotel_name))
                 .appendTo(cardHeader);
-
             card.append(cardHeader);
-
+    
             // Distance Display
             $('<div>')
                 .addClass('distance')
                 .text(offer.distanceDisplay)
                 .appendTo(card);
-
-             // Rating Display
-             $('<div>')
+    
+            // Rating Display
+            $('<div>')
                 .addClass('rating')
                 .text(`Rating: ${offer.review_score}`) // Rating text and value
                 .appendTo(card);
-
-            // Checkbox Container
-            const checkboxContainer = $('<div>').addClass('checkbox-container');
-            checkboxContainer.append($('<span>').addClass('checkbox-description').text('Add to Robot: '));
-            checkboxContainer.append($('<input>').attr('type', 'checkbox').addClass('select-checkbox'));
-            card.append(checkboxContainer);
-
+    
+            // Card Content and Checkbox Container Wrapper
+            const cardFooter = $('<div>').addClass('card-footer');
+    
             // Card Content
             const cardContent = $('<div>').addClass('card-content');
             $('<div>').addClass('price-per-night')
@@ -480,11 +476,19 @@ $(document).ready(function () {
                 .append($('<span>').addClass('label').text('Total: '))
                 .append($('<span>').addClass('amount').text(`${totalPrice}`))
                 .appendTo(cardContent);
-            card.append(cardContent);
-
+            cardFooter.append(cardContent);
+    
+            // Checkbox Container
+            const checkboxContainer = $('<div>').addClass('checkbox-container');
+            checkboxContainer.append($('<span>').addClass('checkbox-description').text('Add to Robot: '));
+            checkboxContainer.append($('<input>').attr('type', 'checkbox').addClass('select-checkbox'));
+            cardFooter.append(checkboxContainer);
+    
+            card.append(cardFooter);
+    
             fragment.append(card);
         });
-
+    
         SELECTORS.resultsContainer.append(fragment);
         SELECTORS.resultsContainer.show();
         SELECTORS.submitText.show();
