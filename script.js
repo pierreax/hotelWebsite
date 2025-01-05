@@ -443,9 +443,8 @@ $(document).ready(function () {
         const fragment = $(document.createDocumentFragment());
 
         offers.forEach((offer) => {
-            const totalPrice = offer.composite_price_breakdown.strikethrough_amount.value;
-            const pricePerNight = offer.composite_price_breakdown.strikethrough_amount_per_night.value;
-            const currencySymbol = formData.formCurrency;
+            const totalPrice = offer.composite_price_breakdown.strikethrough_amount.amount_rounded;
+            const pricePerNight = offer.composite_price_breakdown.strikethrough_amount_per_night.amount_rounded;
 
             const card = $('<div>').addClass('card');
 
@@ -481,11 +480,11 @@ $(document).ready(function () {
             const cardContent = $('<div>').addClass('card-content');
             $('<div>').addClass('price-per-night')
                 .append($('<span>').addClass('label').text('Per Night: '))
-                .append($('<span>').addClass('amount').text(`${currencySymbol} ${pricePerNight}`))
+                .append($('<span>').addClass('amount').text(`${pricePerNight}`))
                 .appendTo(cardContent);
             $('<div>').addClass('total-price')
                 .append($('<span>').addClass('label').text('Total: '))
-                .append($('<span>').addClass('amount').text(`${currencySymbol} ${totalPrice}`))
+                .append($('<span>').addClass('amount').text(`${totalPrice}`))
                 .appendTo(cardContent);
             card.append(cardContent);
 
