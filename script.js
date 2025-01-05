@@ -22,7 +22,7 @@ $(document).ready(function () {
     const API_ENDPOINTS = {
         ipGeo: 'https://api.ipgeolocation.io/ipgeo?apiKey=420e90eecc6c4bb285f238f38aea898f',
         getAccessToken: '/api/getAccessToken',
-        getHotelOfferssByCoordinates: '/api/getHotelOffersByCoordinates',
+        getHotelOffersByCoordinates: '/api/getHotelOffersByCoordinates',
         sheety: '/api/sendDataToSheety',
         sendEmail: '/api/sendEmail',
         getFxRates: '/api/getFxRates',
@@ -318,8 +318,6 @@ $(document).ready(function () {
             location: formData.location,
             checkInDate,
             checkOutDate,
-            adults: formData.adults,
-            numberOfRooms: formData.numberOfRooms,
             email: formData.email,
             formCurrency: formData.formCurrency,
         });
@@ -335,17 +333,22 @@ $(document).ready(function () {
                 console.log('Using existing FX Rates for:', formData.formCurrency);
             }
 
+            // CALL THE RAPID API FROM THE BACKEND HERE
+            console.log('Fetching hotel offer for:', formData.location);
+            const params = new URLSearchParams({
+                latitude: state.locationCoordinates.lat,
+                longitude: state.locationCoordinates.lng,
+                arrival_date: checkInDate,
+                departure_date: checkOutDate,
+                adults: formData.adults,
+                room_qty: formData.numberOfRooms,
+                currency_code: formData.formCurrency
+            }).toString();
+            const url = `${API_ENDPOINTS.getHotelOffersByCoordinates}?${params}`;
+            const offersData = await fetchJSON(url);
+            console.log('Hotel Offers Data:', offersData);
 
-
-            // Process Hotels Data
-            if (state.hotelsData && state.hotelsData.data && state.hotelsData.data.length > 0) {
-                state.internalHotelIds = state.hotelsData.data.map(hotel => hotel.hotelId);
-                const hotelIds = state.internalHotelIds.slice(0, formData.limitResults);
-
-                // Fetch Hotel Offers
-                const offersData = await getHotelOfferssByCoordinates(hotelIds, formData, checkInDate, checkOutDate, numberOfNights);
-                if (!offersData) return; // If no offers, exit early
-
+            if (offersData && offersData.data) {
                 // Convert Prices
                 const convertedOffers = convertPricesToFormCurrency(offersData.data, formData.formCurrency, state.conversionRates);
                 console.log('Converted Offers:', convertedOffers);
