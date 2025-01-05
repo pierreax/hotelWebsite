@@ -444,7 +444,7 @@ $(document).ready(function () {
             console.log('Offer:', offer);
             console.log('Price breakdown:', offer.composite_price_breakdown);
             const totalPrice = offer.composite_price_breakdown.gross_amount.amount_rounded;
-            const pricePerNight = offer.composite_price_breakdown.gross_amount.amount_rounded;
+            const pricePerNight = offer.composite_price_breakdown.gross_amount_per_night.amount_rounded;
 
             const card = $('<div>').addClass('card');
 
@@ -468,6 +468,12 @@ $(document).ready(function () {
             $('<div>')
                 .addClass('distance')
                 .text(offer.distanceDisplay)
+                .appendTo(card);
+
+             // Distance Display
+             $('<div>')
+                .addClass('rating')
+                .text(offer.review_score)
                 .appendTo(card);
 
             // Checkbox Container
