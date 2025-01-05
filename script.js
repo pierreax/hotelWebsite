@@ -430,10 +430,8 @@ $(document).ready(function () {
     /**
      * Render hotel offer cards to the results container using Document Fragment for performance.
      * @param {Array} offers 
-     * @param {Object} formData 
-     * @param {number} numberOfNights 
      */
-    const renderHotelCards = (offers, formData) => {
+    const renderHotelCards = (offers) => {
         if (offers.length === 0) {
             console.log('No offers found, showing message to the user.');
             SELECTORS.resultsContainer.html('<div class="no-results-message">No valid hotel offers found. Please try different search criteria.</div>');
@@ -447,6 +445,7 @@ $(document).ready(function () {
             const pricePerNight = offer.composite_price_breakdown.strikethrough_amount_per_night.amount_rounded;
 
             const card = $('<div>').addClass('card');
+            console.log('Added a card for hotel:', offer.hotel_name);
 
             // Hidden Hotel ID
             $('<div>')
