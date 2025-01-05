@@ -470,7 +470,7 @@ $(document).ready(function () {
                 .text(offer.distanceDisplay)
                 .appendTo(card);
 
-             // Distance Display
+             // Rating Display
              $('<div>')
                 .addClass('rating')
                 .text(offer.review_score)
