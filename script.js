@@ -441,11 +441,12 @@ $(document).ready(function () {
         const fragment = $(document.createDocumentFragment());
 
         offers.forEach((offer) => {
+            console.log('Offer:', offer);
+            console.log('Price breakdown:', offer.composite_price_breakdown);
             const totalPrice = offer.composite_price_breakdown.strikethrough_amount.amount_rounded;
             const pricePerNight = offer.composite_price_breakdown.strikethrough_amount_per_night.amount_rounded;
 
             const card = $('<div>').addClass('card');
-            console.log('Added a card for hotel:', offer.hotel_name);
 
             // Hidden Hotel ID
             $('<div>')
