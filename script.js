@@ -360,7 +360,8 @@ $(document).ready(function () {
                 console.log('Sorted Offers:', offersWithDistance);
 
                 // Render Hotel Cards
-                renderHotelCards(offersWithDistance, formData, numberOfNights);
+                console.log('Rendering hotel cards...');
+                renderHotelCards(offersWithDistance, formData);
             } else {
                 SELECTORS.noResultsMessage.show().text('No hotels found for the selected location.');
             }
@@ -432,7 +433,7 @@ $(document).ready(function () {
      * @param {Object} formData 
      * @param {number} numberOfNights 
      */
-    const renderHotelCards = (offers, formData, numberOfNights) => {
+    const renderHotelCards = (offers, formData) => {
         if (offers.length === 0) {
             console.log('No offers found, showing message to the user.');
             SELECTORS.resultsContainer.html('<div class="no-results-message">No valid hotel offers found. Please try different search criteria.</div>');
@@ -461,15 +462,6 @@ $(document).ready(function () {
                 .addClass('hotel-name')
                 .text(formatHotelName(offer.hotel_name))
                 .appendTo(cardHeader);
-
-            // Room type - Only append if available
-            if (offer.offers[0].room && offer.offers[0].room.typeEstimated && offer.offers[0].room.typeEstimated.category) {
-                const roomType = formatRoomType(offer.offers[0].room.typeEstimated.category);
-                $('<div>')
-                    .addClass('room-type')
-                    .text(roomType)
-                    .appendTo(cardHeader);
-            }
 
             card.append(cardHeader);
 
