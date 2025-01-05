@@ -25,7 +25,6 @@ $(document).ready(function () {
         getHotelOffersByCoordinates: '/api/getHotelOffersByCoordinates',
         sheety: '/api/sendDataToSheety',
         sendEmail: '/api/sendEmail',
-        getFxRates: '/api/getFxRates',
         getCoordinatesByLocation: '/api/getCoordinatesByLocation',
     };
 
@@ -35,7 +34,6 @@ $(document).ready(function () {
         internalHotelIds: [],
         selectedHotels: [],
         locationCoordinates: {},
-        conversionRates: {},
         datePicker: null,
         redirectUrl: '',
         redirectEmail: '',

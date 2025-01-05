@@ -9,7 +9,6 @@ const EMAIL_CLIENT_ID = process.env.EMAIL_CLIENT_ID;
 const EMAIL_CLIENT_SECRET = process.env.EMAIL_CLIENT_SECRET;
 const EMAIL_TENANT_ID = process.env.EMAIL_TENANT_ID;
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
-const EXCHANGE_RATE_API_KEY = process.env.EXCHANGE_RATE_API_KEY;
 const SHEETY_API_URL = process.env.SHEETY_API_URL;
 const RAPID_API_KEY = process.env.RAPID_API_KEY;
 
@@ -71,39 +70,6 @@ app.get('/api/getCoordinatesByLocation', async (req, res) => {
     } catch (error) {
         console.error('Error fetching coordinates:', error.message);
         return res.status(500).json({ error: 'Failed to fetch coordinates' });
-    }
-});
-
-// API to get FX Rates from ExchangeRate-API
-app.get('/api/getFxRates', async (req, res) => {
-    const { baseCurrency } = req.query;
-
-    if (!baseCurrency) {
-        return res.status(400).json({ error: 'Base currency is required.' });
-    }
-
-    try {
-        // Construct the Exchange Rate API URL using the API key and base currency
-        const apiUrl = `https://v6.exchangerate-api.com/v6/${EXCHANGE_RATE_API_KEY}/latest/${baseCurrency}`;
-        
-        // Fetch FX rates from the API
-        const response = await fetch(apiUrl);
-        if (!response.ok) {
-            throw new Error(`Failed to fetch FX rates: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-
-        // Ensure conversion rates exist in the response
-        if (!data.conversion_rates) {
-            throw new Error('Conversion rates not found in API response');
-        }
-
-        // Return the conversion rates to the client
-        res.json(data.conversion_rates);
-    } catch (error) {
-        console.error('Error fetching FX rates:', error.message);
-        res.status(500).json({ error: 'Failed to fetch FX rates.' });
     }
 });
 
