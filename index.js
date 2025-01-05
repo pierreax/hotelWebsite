@@ -172,7 +172,6 @@ app.post('/api/sendDataToSheety', async (req, res) => {
     // Extract and format data
     const hotelNames = formData.selectedHotels.map(hotel => hotel.hotelName).join(', ');
     const hotelIds = formData.selectedHotels.map(hotel => hotel.hotelId).join(', ');
-    const roomTypes = formData.selectedHotels.map(hotel => hotel.roomType).join(', ');
     const totalPrices = formData.selectedHotels.map(hotel => hotel.totalPrice).join(', ');
 
     // Format data to match Sheety's schema
@@ -182,7 +181,6 @@ app.post('/api/sendDataToSheety', async (req, res) => {
             hotelName: hotelNames, // Use hotel names from the form data
             adults: formData.adults,
             rooms: formData.numberOfRooms,
-            roomtype: roomTypes, // Use room types from the form data
             checkin: formData.checkInDate,
             checkout: formData.checkOutDate,
             latestPrice: totalPrices, // Prices from the form data, currency symbols removed

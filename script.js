@@ -323,17 +323,7 @@ $(document).ready(function () {
         });
 
         try {
-            // Fetch FX Rates only if the currency has changed
-            if (formData.formCurrency !== state.initialCurrency) {
-                console.log('Fetching FX Rates for:', formData.formCurrency);
-                const fxRatesData = await fetchJSON(`${API_ENDPOINTS.getFxRates}?baseCurrency=${formData.formCurrency}`);
-                console.log('FX Rates:', fxRatesData);
-                state.conversionRates = fxRatesData;
-                state.initialCurrency = formData.formCurrency;
-            } else {
-                console.log('Using existing FX Rates for:', formData.formCurrency);
-            }
-
+            
             // CALL THE RAPID API FROM THE BACKEND HERE
             console.log('Fetching hotel offer for:', formData.location);
             const params = new URLSearchParams({
@@ -517,21 +507,7 @@ $(document).ready(function () {
             .join(' ');
     };
 
-    /**
-     * Format room type for display.
-     * @param {string} roomType 
-     * @returns {string} Formatted room type.
-     */
-    const formatRoomType = (roomType) => {
-        if (typeof roomType !== 'string') return 'N/A';
-        return roomType
-            .toLowerCase()
-            .replace(/[_,-]/g, ' ')
-            .split(' ')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ');
-    };
-
+  
     /**
      * Handle checkbox state changes and update selected hotels.
      */
@@ -549,20 +525,17 @@ $(document).ready(function () {
             const card = $(this).closest('.card');
             const hotelId = card.find('.hiddenHotelId').text();
             const hotelName = card.find('.hotel-name').text();
-            const roomType = card.find('.room-type').text() || 'N/A';
             const totalPrice = card.find('.total-price .amount').text().replace(/[^\d.-]/g, ''); // Remove currency text
 
             console.log('Selected Hotel Info:', {
                 hotelId,
                 hotelName,
-                roomType,
                 totalPrice
             });
 
             return {
                 hotelId,
                 hotelName,
-                roomType,
                 totalPrice
             };
         }).get();
@@ -760,18 +733,6 @@ $(document).ready(function () {
 
         // Handle submit to Sheety button
         SELECTORS.submitToSheetBtn.on('click', handleSubmitToSheety);
-
-        // Handle currency change
-        SELECTORS.currencyInput.on('change', async function() {
-            const selectedCurrency = $(this).val();
-            console.log('Currency changed to:', selectedCurrency);
-            try {
-                state.conversionRates = await fetchJSON(`${API_ENDPOINTS.getFxRates}?baseCurrency=${selectedCurrency}`);
-                state.initialCurrency = selectedCurrency;
-            } catch (error) {
-                console.error('Failed to fetch FX Rates:', error);
-            }
-        });
     };
 
     /**
@@ -807,13 +768,6 @@ $(document).ready(function () {
             attachEventListeners();
 
             console.log('Event listeners attached');
-
-            // Fetch FX Rates after currency is set
-            const formCurrency = SELECTORS.currencyInput.val(); // Get the currency after it's set
-            if (formCurrency) {
-                state.conversionRates = await fetchJSON(`${API_ENDPOINTS.getFxRates}?baseCurrency=${formCurrency}`);
-                state.initialCurrency = formCurrency;
-            }
 
             console.log('Initialization complete');
 
