@@ -442,10 +442,8 @@ $(document).ready(function () {
         const fragment = $(document.createDocumentFragment());
 
         offers.forEach((offer) => {
-            const totalPrice = Math.round(parseFloat(offer.offers[0].price.total));
-            const pricePerNight = numberOfNights > 0
-                ? Math.round((totalPrice / numberOfNights).toFixed(2))
-                : 'N/A';
+            const totalPrice = offer.composite_price_breakdown.strikethrough_amount.value;
+            const pricePerNight = offer.composite_price_breakdown.strikethrough_amount_per_night.value;
             const currencySymbol = formData.formCurrency;
 
             const card = $('<div>').addClass('card');
@@ -453,7 +451,7 @@ $(document).ready(function () {
             // Hidden Hotel ID
             $('<div>')
                 .addClass('hiddenHotelId')
-                .text(offer.hotel.hotelId)
+                .text(offer.hotel_hotelId)
                 .hide()
                 .appendTo(card);
 
@@ -461,7 +459,7 @@ $(document).ready(function () {
             const cardHeader = $('<div>').addClass('card-header');
             $('<div>')
                 .addClass('hotel-name')
-                .text(formatHotelName(offer.hotel.name))
+                .text(formatHotelName(offer.hotel_name))
                 .appendTo(cardHeader);
 
             // Room type - Only append if available
