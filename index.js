@@ -113,6 +113,8 @@ app.get('/api/getFxRates', async (req, res) => {
 app.get('/api/getHotelOffersByCoordinates', async (req, res) => {
     const { latitude, longitude, arrival_date, departure_date, adults, room_qty, currency_code } = req.query;
 
+    console.log('Request parameters:', req.query);
+
     const options = {
         method: 'GET',
         url: 'https://booking-com15.p.rapidapi.com/api/v1/hotels/searchHotelsByCoordinates',
@@ -137,8 +139,8 @@ app.get('/api/getHotelOffersByCoordinates', async (req, res) => {
         const response = await axios.request(options);
         res.json(response.data);
     } catch (error) {
-        console.error(error);
-        res.status(500).send('An error occurred while fetching hotel offers', error, error.message);
+        console.error('Error fetching hotel offers:', error.response ? error.response.data : error.message);
+        res.status(500).send('An error occurred while fetching hotel offers');
     }
 });
 
