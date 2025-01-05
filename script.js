@@ -327,6 +327,7 @@ $(document).ready(function () {
             if (formData.formCurrency !== state.initialCurrency) {
                 console.log('Fetching FX Rates for:', formData.formCurrency);
                 const fxRatesData = await fetchJSON(`${API_ENDPOINTS.getFxRates}?baseCurrency=${formData.formCurrency}`);
+                console.log('FX Rates:', fxRatesData);
                 state.conversionRates = fxRatesData;
                 state.initialCurrency = formData.formCurrency;
             } else {
@@ -850,10 +851,8 @@ $(document).ready(function () {
             // Fetch FX Rates after currency is set
             const formCurrency = SELECTORS.currencyInput.val(); // Get the currency after it's set
             if (formCurrency) {
-                console.log('Fetching FX Rates for:', formCurrency);
                 state.conversionRates = await fetchJSON(`${API_ENDPOINTS.getFxRates}?baseCurrency=${formCurrency}`);
                 state.initialCurrency = formCurrency;
-                console.log('Conversion Rates:', state.conversionRates);
             }
 
             console.log('Initialization complete');
