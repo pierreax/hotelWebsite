@@ -360,7 +360,9 @@ button:disabled {
     justify-content: space-between; /* Align items to the left and right */
     align-items: center; /* Center items vertically */
     margin-top: auto; /* Push content to the bottom */
+    width: 100%; /* Ensure full width */
 }
+
 
 /* Help text styling */
 #submitText {
@@ -372,9 +374,18 @@ button:disabled {
 }
 
 /* Align label and amount */
+.card-content {
+    display: flex;
+    flex-direction: column; /* Stack items vertically */
+    align-items: flex-start; /* Align items to the left */
+}
+
 .card-content .price-per-night,
 .card-content .total-price {
     display: flex;
+    justify-content: space-between; /* Align label and amount */
+    width: 100%; /* Ensure full width */
+    margin-bottom: 8px; /* Space between items */
 }
 
 .card-content .price-per-night .label,
