@@ -331,7 +331,11 @@ $(document).ready(function () {
                 const fxRatesData = await fetchJSON(`${API_ENDPOINTS.getFxRates}?baseCurrency=${formData.formCurrency}`);
                 state.conversionRates = fxRatesData;
                 state.initialCurrency = formData.formCurrency;
+            } else {
+                console.log('Using existing FX Rates for:', formData.formCurrency);
             }
+
+
 
             // Process Hotels Data
             if (state.hotelsData && state.hotelsData.data && state.hotelsData.data.length > 0) {
@@ -339,7 +343,7 @@ $(document).ready(function () {
                 const hotelIds = state.internalHotelIds.slice(0, formData.limitResults);
 
                 // Fetch Hotel Offers
-                const offersData = await fetchHotelOffers(hotelIds, formData, checkInDate, checkOutDate, numberOfNights);
+                const offersData = await getHotelOfferssByCoordinates(hotelIds, formData, checkInDate, checkOutDate, numberOfNights);
                 if (!offersData) return; // If no offers, exit early
 
                 // Convert Prices

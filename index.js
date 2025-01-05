@@ -110,6 +110,37 @@ app.get('/api/getFxRates', async (req, res) => {
 
 
 // ------------ RAPID API ---------------
+app.get('/api/getHotelOffersByCoordinates', async (req, res) => {
+    const { latitude, longitude, arrival_date, departure_date, adults, room_qty, currency_code } = req.query;
+
+    const options = {
+        method: 'GET',
+        url: 'https://booking-com15.p.rapidapi.com/api/v1/hotels/searchHotelsByCoordinates',
+        params: {
+            latitude,
+            longitude,
+            arrival_date,
+            departure_date,
+            radius: '10', // Static radius
+            adults,
+            room_qty,
+            currency_code
+        },
+        headers: {
+            'x-rapidapi-ua': 'RapidAPI-Playground',
+            'x-rapidapi-key': RAPID_API_KEY,
+            'x-rapidapi-host': 'booking-com15.p.rapidapi.com'
+        }
+    };
+
+    try {
+        const response = await axios.request(options);
+        res.json(response.data);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('An error occurred while fetching hotel offers');
+    }
+});
 
 
 // --------- SHEETY ----------------
