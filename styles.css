@@ -294,7 +294,7 @@ button:disabled {
 
 .rating {
     position: absolute;
-    top: 40px; /* Position the rating container below the distance */
+    top: 50px; /* Position the rating container below the distance */
     right: 10px; /* Align it to the right edge of the card */
     background: var(--button-bg); /* Optional: background for better visibility */
     padding: 5px;
