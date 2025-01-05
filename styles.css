@@ -325,7 +325,7 @@ button:disabled {
     font-weight: bold;
     font-size: 12px;
     margin-right: 10px;
-    max-width: fit-content;
+    max-width: min-content;
 }
 
 .select-checkbox {
@@ -363,6 +363,7 @@ button:disabled {
     align-items: center; /* Center items vertically */
     margin-top: auto; /* Push content to the bottom */
     width: 100%; /* Ensure full width */
+    background-color: var(--background-color);
 }
 
 
