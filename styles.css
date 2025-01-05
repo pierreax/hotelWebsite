@@ -259,7 +259,7 @@ button:disabled {
     position: relative; /* Allow for absolute positioning of child elements */
     box-sizing: border-box; /* Ensure box-sizing is applied to the card */
     --bs-card-border-color: var(--input-background);
-    min-height: 200px; /* Set a minimum height for the card */
+    height: 150px; /* Set a static height for the card */
     transition: transform 0.3s, box-shadow 0.3s;
 }
 
