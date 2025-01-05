@@ -278,8 +278,7 @@ button:disabled {
 }
 
 .hotel-name {
-    margin-right: 60px;
-    padding-bottom: 20px;
+    margin-right: 80px;
 }
 
 .distance {
@@ -363,7 +362,7 @@ button:disabled {
     align-items: center; /* Center items vertically */
     margin-top: auto; /* Push content to the bottom */
     width: 100%; /* Ensure full width */
-    background-color: var(--background-color);
+    background-color: var(--input-background);
 }
 
 
