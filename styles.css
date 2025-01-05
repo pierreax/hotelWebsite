@@ -267,7 +267,6 @@ button:disabled {
 }
 
 
-
 .hotel-name {
     margin-right: 60px;
     padding-bottom: 20px;
@@ -314,14 +313,14 @@ button:disabled {
 .checkbox-description {
     color: #333;
     font-weight: bold;
-    font-size: 10px;
+    font-size: 12px;
     margin-right: 10px;
 }
 
 .select-checkbox {
     appearance: none;
-    width: 16px;
-    height: 16px;
+    width: 12px;
+    height: 12px;
     border: 2px solid #ccc;
     border-radius: 12px;
     position: relative;
