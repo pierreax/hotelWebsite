@@ -246,7 +246,9 @@ button:disabled {
 
 /* Card styles for results */
 .card {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     margin: 10px auto;
     padding: 15px;
     border-radius: 10px;
@@ -257,22 +259,27 @@ button:disabled {
     position: relative; /* Allow for absolute positioning of child elements */
     box-sizing: border-box; /* Ensure box-sizing is applied to the card */
     --bs-card-border-color: var(--input-background);
-    min-height: 120px; /* Set a minimum height for the card */
+    min-height: 200px; /* Set a minimum height for the card */
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
 .card-header {
     padding: 0;
     background-color: var(--input-background);
     font-weight: bold;
-    font-size: 12px; /* Increased font size for prominence */
+    font-size: 14px; /* Increased font size for prominence */
+    margin-bottom: 10px;
 }
-
 
 .hotel-name {
     margin-right: 60px;
     padding-bottom: 20px;
 }
-
 
 .distance {
     position: absolute;
@@ -281,47 +288,48 @@ button:disabled {
     background: var(--accent-color); /* Optional: background for better visibility */
     padding: 5px;
     border-radius: 5px;
-        font-size: 0.5em; /* Smaller text for distance */
+    font-size: 0.8em; /* Smaller text for distance */
     color: var(--text-color);
 }
 
 .rating {
     position: absolute;
-    top: 40px; /* Position the distance container at the top */
+    top: 40px; /* Position the rating container below the distance */
     right: 10px; /* Align it to the right edge of the card */
     background: var(--button-bg); /* Optional: background for better visibility */
     padding: 5px;
     border-radius: 5px;
-        font-size: 0.5em; /* Smaller text for rating */
+    font-size: 0.8em; /* Smaller text for rating */
     color: var(--text-color);
 }
 
 .card-content {
-    font-size: 10px; /* Adjusted font size */
+    font-size: 12px; /* Adjusted font size */
+    margin-top: auto; /* Push content to the bottom */
 }
 
 /* Modern iOS-like checkbox styles */
 .checkbox-container {
     display: flex;
     align-items: center;
-    position: absolute;
-    bottom: 10px;
-    right:10px;
+    justify-content: flex-end;
     padding: 5px;
     border-radius: 5px;
+    background-color: #fff; /* Optional: background for better visibility */
+    margin-top: auto; /* Push the checkbox container to the bottom */
 }
 
 .checkbox-description {
     color: #333;
     font-weight: bold;
-    font-size: 12px;
+    font-size: 14px;
     margin-right: 10px;
 }
 
 .select-checkbox {
     appearance: none;
-    width: 12px;
-    height: 12px;
+    width: 24px;
+    height: 24px;
     border: 2px solid #ccc;
     border-radius: 12px;
     position: relative;
@@ -368,7 +376,6 @@ button:disabled {
     margin-right: 4px;
 }
 
-
 /* Modal Styles */
 body.modal-open {
     overflow: hidden; /* Prevent background scroll */
@@ -385,7 +392,6 @@ body.modal-open {
     max-width: 500px;  /* Limit the width of the modal */
     margin: 0 auto;  /* Center content horizontally */
 }
-
 
 /* Center the modal vertically and horizontally */
 .modal-dialog {
