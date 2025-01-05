@@ -22,10 +22,11 @@ $(document).ready(function () {
     const API_ENDPOINTS = {
         ipGeo: 'https://api.ipgeolocation.io/ipgeo?apiKey=420e90eecc6c4bb285f238f38aea898f',
         getAccessToken: '/api/getAccessToken',
-        getHotelOffersByCoordinates: '/api/getHotelOffersByCoordinates',
+        getHotelOfferssByCoordinates: '/api/getHotelOffersByCoordinates',
         sheety: '/api/sendDataToSheety',
         sendEmail: '/api/sendEmail',
         getFxRates: '/api/getFxRates',
+        getCoordinatesByLocation: '/api/getCoordinatesByLocation',
     };
 
     // State Management
