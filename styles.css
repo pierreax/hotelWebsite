@@ -304,7 +304,9 @@ button:disabled {
 .checkbox-container {
     display: flex;
     align-items: center;
-    margin-top: 16px;
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
     padding: 5px;
     border-radius: 5px;
 }
