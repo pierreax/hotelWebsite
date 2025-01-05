@@ -173,8 +173,7 @@ app.post('/api/sendDataToSheety', async (req, res) => {
     const hotelNames = formData.selectedHotels.map(hotel => hotel.hotelName).join(', ');
     const hotelIds = formData.selectedHotels.map(hotel => hotel.hotelId).join(', ');
     const roomTypes = formData.selectedHotels.map(hotel => hotel.roomType).join(', ');
-    const prices = formData.selectedHotels.map(hotel => hotel.pricePerNight.replace(/[^\d.,]/g, '')).join(', '); // Remove currency symbols
-    const totalPrices = formData.selectedHotels.map(hotel => hotel.totalPrice.replace(/[^\d.,]/g, '')).join(', '); // Remove currency symbols
+    const totalPrices = formData.selectedHotels.map(hotel => hotel.totalPrice).join(', ');
 
     // Format data to match Sheety's schema
     const sheetyData = {
