@@ -270,7 +270,7 @@ button:disabled {
 
 .hotel-name {
     margin-right: 60px;
-    padding-bottom: 10px;
+    padding-bottom: 20px;
 }
 
 
@@ -300,34 +300,50 @@ button:disabled {
     font-size: 10px; /* Adjusted font size */
 }
 
-
+/* Modern iOS-like checkbox styles */
 .checkbox-container {
-    position: absolute;
-    top: 65px; /* Position the checkbox container */
-    right: 10px; /* Align it to the right edge of the card */
-    padding: 5px;
-    border-radius: 5px;
-    font-size: 0.6em; /* Smaller text for distance */
-    color: var(--text-color);
     display: flex;
     align-items: center;
+    margin-top: 16px;
+    padding: 5px;
+    border-radius: 5px;
 }
 
-/* Adjusted to move the description up */
 .checkbox-description {
-    color: green;
-    margin-bottom: 0; /* Reset margin */
-    position: relative; /* Relative positioning to move up */
-    top: -2px; /* Adjust as needed to move the description up */
-    font-weight: bold; /* Optional: Style for label */
-    font-size: 10px; /* Adjust font size as needed */
+    color: #333;
+    font-weight: bold;
+    font-size: 14px;
+    margin-right: 10px;
 }
 
 .select-checkbox {
-    width: auto;
-    margin-top: 0; /* Adjust spacing if necessary */
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border: 2px solid #ccc;
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.3s, background-color 0.3s;
 }
 
+.select-checkbox:checked {
+    border-color: #007aff;
+    background-color: #007aff;
+}
+
+.select-checkbox:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 12px;
+    height: 12px;
+    background-color: #fff;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+}
 
 /* Help text styling */
 #submitText {
@@ -440,5 +456,3 @@ body.modal-open {
 .modal-footer .btn-secondary:hover {
     background-color: var(--input-background);
 }
-
-
