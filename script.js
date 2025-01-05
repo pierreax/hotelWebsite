@@ -804,10 +804,8 @@ $(document).ready(function () {
             const selectedCurrency = $(this).val();
             console.log('Currency changed to:', selectedCurrency);
             try {
-                console.log('Fetching FX Rates for:', selectedCurrency);
                 state.conversionRates = await fetchJSON(`${API_ENDPOINTS.getFxRates}?baseCurrency=${selectedCurrency}`);
                 state.initialCurrency = selectedCurrency;
-                console
             } catch (error) {
                 console.error('Failed to fetch FX Rates:', error);
             }
