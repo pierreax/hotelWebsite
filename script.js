@@ -473,7 +473,7 @@ $(document).ready(function () {
              // Rating Display
              $('<div>')
                 .addClass('rating')
-                .text(offer.review_score)
+                .text(`Rating: ${offer.review_score}`) // Rating text and value
                 .appendTo(card);
 
             // Checkbox Container
@@ -550,14 +550,12 @@ $(document).ready(function () {
             const hotelId = card.find('.hiddenHotelId').text();
             const hotelName = card.find('.hotel-name').text();
             const roomType = card.find('.room-type').text() || 'N/A';
-            const pricePerNight = card.find('.price-per-night .amount').text();
-            const totalPrice = card.find('.total-price .amount').text();
+            const totalPrice = card.find('.total-price .amount').text().replace(/[^\d.-]/g, ''); // Remove currency text
 
             console.log('Selected Hotel Info:', {
                 hotelId,
                 hotelName,
                 roomType,
-                pricePerNight,
                 totalPrice
             });
 
@@ -565,7 +563,6 @@ $(document).ready(function () {
                 hotelId,
                 hotelName,
                 roomType,
-                pricePerNight,
                 totalPrice
             };
         }).get();
