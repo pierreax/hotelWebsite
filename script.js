@@ -344,7 +344,11 @@ $(document).ready(function () {
                 console.log('Offers with Distance:', offersWithDistance);
 
                 // Sort Offers by Distance
-                offersWithDistance.sort((a, b) => a.distance - b.distance);
+                offersWithDistance.sort((a, b) => {
+                    const distanceA = convertToMeters(a.distanceDisplay);
+                    const distanceB = convertToMeters(b.distanceDisplay);
+                    return distanceA - distanceB;
+                });
                 console.log('Sorted Offers:', offersWithDistance);
 
                 // Render Hotel Cards
@@ -363,6 +367,20 @@ $(document).ready(function () {
 
 
     //  --------- HELPER FUNCTIONS HERE ---------- //
+
+    /**
+     * Convert distance display string to meters.
+     * @param {string} distanceDisplay 
+     * @returns {number} Distance in meters.
+     */
+    const convertToMeters = (distanceDisplay) => {
+        const [value, unit] = distanceDisplay.split(' ');
+        const numericValue = parseFloat(value);
+        if (unit === 'km') {
+            return numericValue * 1000;
+        }
+        return numericValue; // Assume the unit is meters if not specified
+    };
 
     /**
      * Calculate the distance between two geographic coordinates.
