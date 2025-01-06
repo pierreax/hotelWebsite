@@ -1,24 +1,42 @@
-/* Existing Root Variables */
+/* Define Modern Color Variables */
 :root {
-    --background-color: #ffcc66; /* Light beige background */
-    --text-color: black;
-    --input-background: #FFDD95;
-    --button-bg: #4CAF50;
-    --button-hover-bg: #45a049;
-    --accent-color: #ffcc66;
-    --border-color: #ddd;
-    --loader-border: #f3f3f3;
-    --loader-bg: #3498db;
-    --slider-bg: #ccc;
-    --slider-active-bg: #4CAF50;
-    --tableheader-color: #4CAF50;
-    --no-results-bg: #f8d7da;
-    --no-results-text: #721c24;
-    
-    /* Additional Variables for Cards */
+    /* Base Colors */
+    --background-color: #F8F9FA; /* Light Gray background */
+    --surface-color: #FFFFFF; /* White surfaces */
+    --text-color: #343A40; /* Dark Slate text */
+    --border-color: #CED4DA; /* Light Gray borders */
+
+    /* Primary Palette */
+    --primary-color: #1E90FF; /* Vibrant Blue */
+    --primary-hover: #1C86EE; /* Slightly darker Vibrant Blue for hover */
+    --secondary-color: #20C997; /* Soft Teal */
+    --secondary-hover: #17A589; /* Slightly darker Soft Teal for hover */
+
+    /* Accent Colors */
+    --accent-color: #FF5722; /* Bright Orange */
+    --error-color: #FF6B6B; /* Coral Red */
+
+    /* Loader Colors */
+    --loader-border: #E9ECEF; /* Very Light Gray */
+    --loader-bg: var(--primary-color); /* Vibrant Blue */
+
+    /* Slider Colors */
+    --slider-bg: #ADB5BD; /* Medium Gray */
+    --slider-active-bg: var(--secondary-color); /* Soft Teal */
+
+    /* Table Header */
+    --tableheader-color: var(--secondary-color); /* Soft Teal */
+
+    /* No Results Message */
+    --no-results-bg: #F8D7DA; /* Light Coral */
+    --no-results-text: #721C24; /* Dark Coral */
+
+    /* Checkbox */
+    --checkbox-primary: var(--primary-color); /* Vibrant Blue */
+
+    /* Additional Variables */
     --card-shadow: rgba(0, 0, 0, 0.1);
     --card-hover-shadow: rgba(0, 0, 0, 0.2);
-    --primary-color: #007aff; /* For checkbox and other primary elements */
     --checkbox-size: 20px;
     --transition-duration: 0.3s;
     --border-radius: 8px;
@@ -39,7 +57,6 @@ html, body {
     padding: 0;            /* Remove any default padding */
 }
 
-
 /* Global styles */
 body {
     font-family: 'Avenir Light', sans-serif;
@@ -56,11 +73,11 @@ h1, h2 {
     background-color: var(--accent-color);
     font-weight: normal;
 }
-  
+
 h1 {
     font-size: 1.2em;
 }
-  
+
 h2 {
     font-size: 1.0em;
 }
@@ -73,7 +90,7 @@ form {
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    background: var(--input-background);
+    background: var(--surface-color);
     display: flex;
     flex-direction: column; /* Ensure form elements stack vertically */
     box-sizing: border-box; /* Ensure box-sizing is applied to the form */
@@ -93,7 +110,7 @@ input, select {
     border-radius: 5px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     border: 1px solid var(--border-color);
-    background: var(--background-color);
+    background: var(--surface-color);
     font-family: 'Avenir Light', sans-serif;
     font-size: 14px; /* Adjust font size */
     color: var(--text-color);
@@ -101,7 +118,9 @@ input, select {
 }
 
 .form-control, .form-control:focus {
-background: var(--background-color);
+    background: var(--surface-color);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.2);
 }
 
 /* Ensure consistent width for dropdowns within .input-group */
@@ -123,23 +142,23 @@ background: var(--background-color);
 /* Floating label styles */
 .input-wrapper label {
     position: absolute;
-    top: -12px; /* Position inside the input field */
+    top: -12px; /* Position above the input field */
     left: 8px;
     font-size: 12px;
     color: var(--text-color);
     pointer-events: none;
     transition: all 0.2s ease-out;
-    background: var(--input-background);
+    background: var(--surface-color);
     padding: 0 4px;
 }
 
 /* Floating label transitions */
 input:not(:placeholder-shown) + label,
 input:focus + label {
-    top: -12px; /* Move above the input field */
+    top: -20px; /* Move above the input field */
     left: 8px;
     font-size: 12px;
-    color: var(--text-color);
+    color: var(--primary-color);
 }
 
 /* Styles for the clickable link */
@@ -149,18 +168,18 @@ input:focus + label {
     margin: auto;
     padding: 10px;
     max-width: 300px;
-    background-color: var(--accent-color);
-    color: black;
+    background-color: var(--secondary-color);
+    color: var(--surface-color);
     text-decoration: none;
     font-family: 'Avenir Light', sans-serif;
-    font-size: 12px;
+    font-size: 14px;
     border-radius: 5px;
-    transition: background-color 0.3s, transform 0.2s;
+    transition: background-color var(--transition-duration), transform 0.2s;
 }
-  
+
 .flights-link:hover,
 .flights-link:active {
-    background-color: var(--input-background);
+    background-color: var(--secondary-hover);
     transform: translateY(-2px);
 }
 
@@ -176,13 +195,13 @@ input:focus + label {
 
 /* Button styles */
 button {
-    background-color: var(--button-bg);
-    color: white;
+    background-color: var(--primary-color);
+    color: var(--surface-color);
     padding: 10px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s, transform 0.2s;
+    transition: background-color var(--transition-duration), transform 0.2s;
     text-align: center;
     font-family: 'Avenir Light', sans-serif;
     width: 100%; /* Make the button span the full width of its container */
@@ -192,14 +211,14 @@ button {
 
 button:hover,
 button:active {
-    background-color: var(--button-hover-bg);
+    background-color: var(--primary-hover);
     transform: translateY(-2px);
 }
 
 /* Disabled button styles */
 button:disabled {
-    background-color: #ccc;
-    color: #666;
+    background-color: #CED4DA; /* Light Gray */
+    color: #6C757D; /* Darker Gray */
     cursor: not-allowed;
 }
 
@@ -208,7 +227,7 @@ button:disabled {
     display: none; /* Hide loader initially */
     position: absolute; /* Position absolute relative to the form */
     top: 50%; /* Center vertically in the form */
-    left: calc(50% - 15px); /* Adjust left position with calc, considering loader width */
+    left: 50%; /* Center horizontally in the form */
     transform: translate(-50%, -50%); /* Adjust the positioning correctly */
     z-index: 1000; /* Make sure it's above other elements */
     border: 4px solid var(--loader-border);
@@ -249,7 +268,7 @@ button:disabled {
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    background: var(--input-background);
+    background: var(--surface-color);
     display: none; /* Hide the box initially */
     box-sizing: border-box; /* Ensure box-sizing is applied to the results box */
 }
@@ -264,7 +283,7 @@ button:disabled {
     padding: 15px;
     border-radius: var(--border-radius);
     box-shadow: 0 4px 8px var(--card-shadow);
-    background: var(--input-background);
+    background: var(--surface-color);
     width: 100%;
     max-width: 300px;
     position: relative;
@@ -289,7 +308,7 @@ button:disabled {
     font-size: var(--font-size-medium);
     margin-bottom: 10px;
     margin-right: 30%;
-    background-color: var(--input-background); /* Retained for consistency */
+    background-color: var(--surface-color); /* Retained for consistency */
     padding: 0; /* Ensure no extra padding */
 }
 
@@ -300,7 +319,7 @@ button:disabled {
     padding: 5px 8px;
     border-radius: var(--border-radius);
     font-size: 0.8em;
-    color: var(--text-color);
+    color: var(--surface-color);
 }
 
 .badge.distance {
@@ -311,10 +330,11 @@ button:disabled {
 .badge.rating {
     top: 50px;
     right: 10px;
-    background: var(--button-bg);
+    background: var(--secondary-color);
+    color: var(--surface-color);
 }
 
-/* Card Content*/
+/* Card Content */
 .card-content {
     display: flex;
     flex-direction: column;
@@ -325,12 +345,14 @@ button:disabled {
 
 .card-content div {
     display: flex;
+    justify-content: space-between;
     width: 100%;
 }
 
 .card-content .label {
     margin-right: 4px;
     margin-left: 4px;
+    color: var(--text-color);
 }
 
 /* Card Footer */
@@ -339,7 +361,7 @@ button:disabled {
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    background-color: var(--input-background);
+    background-color: var(--surface-color);
     padding: 0;
 }
 
@@ -352,7 +374,7 @@ button:disabled {
 }
 
 .checkbox-description {
-    color: #333;
+    color: var(--text-color);
     font-weight: bold;
     font-size: var(--font-size-small);
     margin-right: 8px;
@@ -372,8 +394,8 @@ button:disabled {
 }
 
 .select-checkbox:checked {
-    border-color: var(--primary-color);
-    background-color: var(--primary-color);
+    border-color: var(--checkbox-primary);
+    background-color: var(--checkbox-primary);
 }
 
 .select-checkbox:checked::after {
@@ -383,7 +405,7 @@ button:disabled {
     left: 50%;
     width: 12px;
     height: 12px;
-    background-color: #fff;
+    background-color: var(--surface-color);
     border-radius: 50%;
     transform: translate(-50%, -50%);
 }
@@ -395,12 +417,10 @@ button:disabled {
     }
 }
 
-/* END OF CARD STYLES */
-
 /* Help text styling */
 #submitText {
     font-size: 12px; /* Adjust font size as needed */
-    color: green; /* Use your text color variable */
+    color: green; /* Consider updating to a modern color if desired */
     margin-top: 10px; /* Space between button and text */
     text-align: center; /* Center the text */
     display: block; /* Ensure it's displayed when shown */
@@ -413,7 +433,7 @@ body.modal-open {
 
 /* Modal Content */
 .modal-content {
-    background-color: var(--input-background);
+    background-color: var(--surface-color);
     border-radius: 10px;
     border: 1px solid var(--border-color);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -427,7 +447,7 @@ body.modal-open {
 .modal-dialog {
     display: flex;
     justify-content: center;  /* Center horizontally */
-    align-items: start;  /* Show at the top */
+    align-items: start;  /* Align to the top */
     height: 100vh;  /* Full viewport height */
     max-width: 500px;  /* Restrict the modal width */
     margin: 0 auto;  /* Ensure it's centered horizontally */
@@ -436,7 +456,7 @@ body.modal-open {
 /* Modal Header */
 .modal-header {
     background-color: var(--accent-color);
-    color: var(--text-color);
+    color: var(--surface-color);
     border-bottom: 1px solid var(--border-color);
     font-size: 1.2em;
     font-weight: normal;
@@ -449,7 +469,7 @@ body.modal-open {
 
 /* Close button in header */
 .modal-header .btn-close {
-    color: var(--text-color);
+    color: var(--surface-color);
     opacity: 1;
     background: transparent;
 }
@@ -471,16 +491,16 @@ body.modal-open {
 
 /* Buttons inside Modal */
 .modal-footer .btn-primary {
-    background-color: var(--button-bg);
+    background-color: var(--primary-color);
     border: none;
-    color: white;
+    color: var(--surface-color);
     font-family: 'Avenir Light', sans-serif;
-    transition: background-color 0.3s;
+    transition: background-color var(--transition-duration);
     width: auto;
 }
 
 .modal-footer .btn-primary:hover {
-    background-color: var(--button-hover-bg);
+    background-color: var(--primary-hover);
 }
 
 .modal-footer .btn-secondary {
@@ -492,5 +512,5 @@ body.modal-open {
 }
 
 .modal-footer .btn-secondary:hover {
-    background-color: var(--input-background);
+    background-color: var(--surface-color);
 }
