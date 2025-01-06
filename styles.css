@@ -259,6 +259,7 @@ button:disabled {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    font-weight: bold;
     margin: 10px auto;
     padding: 15px;
     border-radius: var(--border-radius);
@@ -285,7 +286,6 @@ button:disabled {
 
 /* Card Header */
 .card-header {
-    font-weight: bold;
     font-size: var(--font-size-medium);
     margin-bottom: 10px;
     margin-right: 30%;
