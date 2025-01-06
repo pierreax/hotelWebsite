@@ -330,6 +330,7 @@ button:disabled {
 
 .card-content .label {
     margin-right: 4px;
+    margin-left: 4px;
 }
 
 /* Card Footer */
