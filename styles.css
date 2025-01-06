@@ -288,6 +288,7 @@ button:disabled {
     font-weight: bold;
     font-size: var(--font-size-medium);
     margin-bottom: 10px;
+    margin-right: 30%;
     background-color: var(--input-background); /* Retained for consistency */
     padding: 0; /* Ensure no extra padding */
 }
@@ -324,12 +325,10 @@ button:disabled {
 
 .card-content div {
     display: flex;
-    justify-content: space-between;
     width: 100%;
 }
 
 .card-content .label {
-    font-weight: bold;
     margin-right: 4px;
 }
 
@@ -347,6 +346,7 @@ button:disabled {
 .checkbox-container {
     display: flex;
     align-items: center;
+    margin-left: auto;
 }
 
 .checkbox-description {

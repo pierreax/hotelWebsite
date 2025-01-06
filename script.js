@@ -461,12 +461,12 @@ $(document).ready(function () {
             // Card Content
             const cardContent = $('<div>').addClass('card-content');
             $('<div>').addClass('price-per-night')
-                .append($('<span>').addClass('label').text('Per Night: '))
                 .append($('<span>').addClass('amount').text(`${pricePerNight}`))
+                .append($('<span>').addClass('label').text('per night'))
                 .appendTo(cardContent);
             $('<div>').addClass('total-price')
-                .append($('<span>').addClass('label').text('Total: '))
                 .append($('<span>').addClass('amount').text(`${totalPrice}`))
+                .append($('<span>').addClass('label').text('in total'))
                 .appendTo(cardContent);
             card.append(cardContent);
         
