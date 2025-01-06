@@ -314,7 +314,7 @@ button:disabled {
     background: var(--button-bg);
 }
 
-/* Card Content */
+/* Card Content*/
 .card-content {
     display: flex;
     flex-direction: column;
