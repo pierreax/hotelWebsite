@@ -1,4 +1,4 @@
-/* Define color variables */
+/* Existing Root Variables */
 :root {
     --background-color: #ffcc66; /* Light beige background */
     --text-color: black;
@@ -14,6 +14,16 @@
     --tableheader-color: #4CAF50;
     --no-results-bg: #f8d7da;
     --no-results-text: #721c24;
+    
+    /* Additional Variables for Cards */
+    --card-shadow: rgba(0, 0, 0, 0.1);
+    --card-hover-shadow: rgba(0, 0, 0, 0.2);
+    --primary-color: #007aff; /* For checkbox and other primary elements */
+    --checkbox-size: 20px;
+    --transition-duration: 0.3s;
+    --border-radius: 8px;
+    --font-size-small: 12px;
+    --font-size-medium: 14px;
 }
 
 /* Fonts */
@@ -244,103 +254,124 @@ button:disabled {
     box-sizing: border-box; /* Ensure box-sizing is applied to the results box */
 }
 
-/* Card styles for results */
+/* CARD STYLES */
 .card {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     margin: 10px auto;
     padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 8px var(--card-shadow);
     background: var(--input-background);
-    width: 100%; /* Ensure cards are full-width */
-    max-width: 300px; /* Match the form's max-width */
-    position: relative; /* Allow for absolute positioning of child elements */
-    box-sizing: border-box; /* Ensure box-sizing is applied to the card */
-    --bs-card-border-color: var(--input-background);
-    height: 150px; /* Set a static height for the card */
-    transition: transform 0.3s, box-shadow 0.3s;
+    width: 100%;
+    max-width: 300px;
+    position: relative;
+    box-sizing: border-box;
+    transition: transform var(--transition-duration), box-shadow var(--transition-duration);
+    /* Removed fixed height to allow dynamic sizing */
 }
 
 .card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    min-height: 120px; /* Set a minimum height for the card */
+    box-shadow: 0 8px 16px var(--card-hover-shadow);
+    /* Removed min-height as height is now dynamic */
 }
 
+/* Hidden Elements */
+.hiddenHotelId {
+    display: none;
+}
+
+/* Card Header */
 .card-header {
-    padding: 0;
-    background-color: var(--input-background);
     font-weight: bold;
-    font-size: 14px; /* Increased font size for prominence */
+    font-size: var(--font-size-medium);
+    margin-bottom: 10px;
+    background-color: var(--input-background); /* Retained for consistency */
+    padding: 0; /* Ensure no extra padding */
+}
+
+/* Badges for Distance and Rating */
+.badge {
+    position: absolute;
+    background: var(--accent-color);
+    padding: 5px 8px;
+    border-radius: var(--border-radius);
+    font-size: 0.8em;
+    color: var(--text-color);
+}
+
+.badge.distance {
+    top: 10px;
+    right: 10px;
+}
+
+.badge.rating {
+    top: 50px;
+    right: 10px;
+    background: var(--button-bg);
+}
+
+/* Card Content */
+.card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: var(--font-size-small);
     margin-bottom: 10px;
 }
 
-.hotel-name {
-    margin-right: 80px;
-}
-
-.distance {
-    position: absolute;
-    top: 10px; /* Position the distance container at the top */
-    right: 10px; /* Align it to the right edge of the card */
-    background: var(--accent-color); /* Optional: background for better visibility */
-    padding: 5px;
-    border-radius: 5px;
-    font-size: 0.8em; /* Smaller text for distance */
-    color: var(--text-color);
-}
-
-.rating {
-    position: absolute;
-    top: 50px; /* Position the rating container below the distance */
-    right: 10px; /* Align it to the right edge of the card */
-    background: var(--button-bg); /* Optional: background for better visibility */
-    padding: 5px;
-    border-radius: 5px;
-    font-size: 0.8em; /* Smaller text for rating */
-    color: var(--text-color);
-}
-
-.card-content {
+.card-content div {
     display: flex;
-    justify-content: space-between; /* Align items to the left and right */
-    align-items: center; /* Center items vertically */
-    font-size: 12px; /* Adjusted font size */
-    margin-top: auto; /* Push content to the bottom */
+    justify-content: space-between;
+    width: 100%;
 }
 
-/* Modern iOS-like checkbox styles */
+.card-content .label {
+    font-weight: bold;
+    margin-right: 4px;
+}
+
+/* Card Footer */
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    background-color: var(--input-background);
+    padding: 0;
+}
+
+/* Checkbox Container */
 .checkbox-container {
     display: flex;
     align-items: center;
-    padding: 5px;
-    border-radius: 5px;
 }
 
 .checkbox-description {
     color: #333;
     font-weight: bold;
-    font-size: 12px;
-    margin-right: 10px;
+    font-size: var(--font-size-small);
+    margin-right: 8px;
 }
 
+/* Modern iOS-like checkbox styles */
 .select-checkbox {
     appearance: none;
     width: 24px;
     height: 24px;
     border: 2px solid #ccc;
-    border-radius: 12px;
-    position: relative;
+    border-radius: 50%;
     cursor: pointer;
+    transition: border-color var(--transition-duration), background-color var(--transition-duration);
+    position: relative;
     outline: none;
-    transition: border-color 0.3s, background-color 0.3s;
 }
 
 .select-checkbox:checked {
-    border-color: #007aff;
-    background-color: #007aff;
+    border-color: var(--primary-color);
+    background-color: var(--primary-color);
 }
 
 .select-checkbox:checked::after {
@@ -355,16 +386,14 @@ button:disabled {
     transform: translate(-50%, -50%);
 }
 
-.card-footer {
-    display: flex;
-    justify-content: space-between; /* Align items to the left and right */
-    align-items: center; /* Center items vertically */
-    margin-top: auto; /* Push content to the bottom */
-    width: 100%; /* Ensure full width */
-    background-color: var(--input-background);
-    padding: 0px; /* Remove default padding */
+/* Responsive Adjustments */
+@media (max-width: 600px) {
+    .card {
+        max-width: 100%;
+    }
 }
 
+/* END OF CARD STYLES */
 
 /* Help text styling */
 #submitText {
@@ -373,27 +402,6 @@ button:disabled {
     margin-top: 10px; /* Space between button and text */
     text-align: center; /* Center the text */
     display: block; /* Ensure it's displayed when shown */
-}
-
-/* Align label and amount */
-.card-content {
-    display: flex;
-    flex-direction: column; /* Stack items vertically */
-    align-items: flex-start; /* Align items to the left */
-}
-
-.card-content .price-per-night,
-.card-content .total-price {
-    display: flex;
-    justify-content: space-between; /* Align label and amount */
-    width: 100%; /* Ensure full width */
-    margin-bottom: 8px; /* Space between items */
-}
-
-.card-content .price-per-night .label,
-.card-content .total-price .label {
-    font-weight: bold; /* Optional: Style for label */
-    margin-right: 4px;
 }
 
 /* Modal Styles */
