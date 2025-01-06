@@ -70,7 +70,6 @@ h1, h2 {
     margin: 0;
     text-align: center;
     padding: 10px;
-    background-color: var(--accent-color);
     font-weight: normal;
 }
 
@@ -315,16 +314,16 @@ button:disabled {
 /* Badges for Distance and Rating */
 .badge {
     position: absolute;
-    background: var(--accent-color);
     padding: 5px 8px;
     border-radius: var(--border-radius);
     font-size: 0.8em;
-    color: var(--surface-color);
 }
 
 .badge.distance {
     top: 10px;
     right: 10px;
+    background: var(--primary-color);
+    color: var(--surface-color);
 }
 
 .badge.rating {
@@ -345,7 +344,6 @@ button:disabled {
 
 .card-content div {
     display: flex;
-    justify-content: space-between;
     width: 100%;
 }
 
