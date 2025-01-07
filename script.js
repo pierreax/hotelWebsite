@@ -125,7 +125,8 @@ $(document).ready(function () {
         if (Object.keys(queryParams).length > 0) {
             if (queryParams.dateFrom || queryParams.dateTo || queryParams.email) {
                 redirectedFlag = true;
-                console.log('User has been redirected');
+                console.log('User has been redirected, fetching coordinates for the city:', queryParams.city);
+                getCoordinatesByLocation(queryParams.city); // Fetch coordinates for the redirected city
             }
         }
 
@@ -464,7 +465,7 @@ $(document).ready(function () {
                 .text(formatHotelName(offer.hotel_name))
                 .appendTo(card);
         
-            // Card Content
+            // Card Content With Prices, Distance, and Rating
             const cardContent = $('<div>').addClass('card-content');
             $('<div>').addClass('price-per-night')
                 .append($('<span>').addClass('amount').text(`${pricePerNight}`))
