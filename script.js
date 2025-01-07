@@ -362,7 +362,7 @@ $(document).ready(function () {
 
         try {
             // CALL THE RAPID API FROM THE BACKEND HERE
-            console.log('Fetching hotel offer for:', formData.location);
+            console.log('Fetching hotel offers for:', formData.location,state.locationCoordinates.lat,state.locationCoordinates.lng, checkInDate, checkOutDate, formData.adults, formData.numberOfRooms, formData.formCurrency);
             const params = new URLSearchParams({
                 latitude: state.locationCoordinates.lat,
                 longitude: state.locationCoordinates.lng,
@@ -514,19 +514,22 @@ $(document).ready(function () {
                 .append($('<span>').addClass('amount').text(`${totalPrice}`))
                 .append($('<span>').addClass('label').text('in total'))
                 .appendTo(cardContent);
-            card.append(cardContent);
 
             // Distance Badge
             $('<div>')
                 .addClass('badge distance')
                 .text(offer.distanceDisplay)
-                .appendTo(card);
+                .appendTo(cardContent);
         
             // Rating Badge
             $('<div>')
                 .addClass('badge rating')
                 .text(`Rating: ${offer.review_score}`)
-                .appendTo(card);
+                .appendTo(cardContent);
+
+            // Add Card Content to Card
+            card.append(cardContent);
+
         
             // Card Footer with Checkbox
             const cardFooter = $('<div>').addClass('card-footer');
