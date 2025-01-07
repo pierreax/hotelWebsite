@@ -464,18 +464,6 @@ $(document).ready(function () {
                 .text(formatHotelName(offer.hotel_name))
                 .appendTo(card);
         
-            // Distance Badge
-            $('<div>')
-                .addClass('badge distance')
-                .text(offer.distanceDisplay)
-                .appendTo(card);
-        
-            // Rating Badge
-            $('<div>')
-                .addClass('badge rating')
-                .text(`Rating: ${offer.review_score}`)
-                .appendTo(card);
-        
             // Card Content
             const cardContent = $('<div>').addClass('card-content');
             $('<div>').addClass('price-per-night')
@@ -487,6 +475,18 @@ $(document).ready(function () {
                 .append($('<span>').addClass('label').text('in total'))
                 .appendTo(cardContent);
             card.append(cardContent);
+
+            // Distance Badge
+            $('<div>')
+                .addClass('badge distance')
+                .text(offer.distanceDisplay)
+                .appendTo(card);
+        
+            // Rating Badge
+            $('<div>')
+                .addClass('badge rating')
+                .text(`Rating: ${offer.review_score}`)
+                .appendTo(card);
         
             // Card Footer with Checkbox
             const cardFooter = $('<div>').addClass('card-footer');
