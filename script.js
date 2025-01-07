@@ -116,22 +116,16 @@ $(document).ready(function () {
     const getQueryParams = () => {
         const params = new URLSearchParams(window.location.search);
         const queryParams = {};
-        let redirectedFlag = false;
 
         for (const [key, value] of params.entries()) {
             queryParams[key] = value;
         }
 
         if (Object.keys(queryParams).length > 0) {
-            if (queryParams.dateFrom || queryParams.dateTo || queryParams.email) {
-                redirectedFlag = true;
-                console.log('User has been redirected, fetching coordinates for the city:', queryParams.city);
-                handleLocationInput(); // Fetch coordinates for the redirected city
+            if (queryParams.dateFrom || queryParams.dateTo || queryParams.email || queryParams.city) {
+                state.redirected = true;
+                console.log('User has been redirected with parameters:', queryParams);
             }
-        }
-
-        if (redirectedFlag) {
-            state.redirected = true;
         }
 
         return queryParams;
@@ -169,6 +163,44 @@ $(document).ready(function () {
     };
 
     /**
+     * Fetch coordinates based on a location name.
+     * @param {string} location - The name of the location (e.g., "New York").
+     * @returns {Promise<Object>} - A promise that resolves to the coordinates object { lat: number, lng: number }.
+     */
+    const fetchCoordinates = async (location) => {
+        try {
+            if (!location) {
+                throw new Error('Location is required to fetch coordinates.');
+            }
+
+            const response = await fetch(`${API_ENDPOINTS.getCoordinatesByLocation}?location=${encodeURIComponent(location)}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Failed to fetch coordinates: ${errorText}`);
+            }
+
+            const data = await response.json();
+
+            if (data && data.results && data.results.length > 0) {
+                const firstResult = data.results[0];
+                const coordinates = firstResult.geometry.location;
+                return coordinates; // { lat: number, lng: number }
+            } else {
+                throw new Error('No coordinates found for the provided location.');
+            }
+        } catch (error) {
+            console.error('Error in fetchCoordinates:', error);
+            throw error; // Rethrow to handle it in the calling function
+        }
+    };
+
+    /**
      * Initialize form fields with query parameters.
      * @param {Object} queryParams 
      */
@@ -184,6 +216,11 @@ $(document).ready(function () {
         }
         if (queryParams.dateFrom && queryParams.dateTo) {
             state.datePicker.setDate([queryParams.dateFrom, queryParams.dateTo], true, "d/m/Y");
+        }
+
+        // If coordinates are already fetched (from redirection), enable the search button
+        if (state.locationCoordinates && Object.keys(state.locationCoordinates).length > 0) {
+            SELECTORS.searchBtn.prop('disabled', false);
         }
     };
 
@@ -252,29 +289,23 @@ $(document).ready(function () {
 
         try {
             console.log('Fetching coordinates for location:', location);
+            const coordinates = await fetchCoordinates(location);
+            state.locationCoordinates = coordinates;
+            console.log('Coordinates:', state.locationCoordinates);
+
+            // Optionally, you can extract the city name from coordinates if needed
             const locationData = await fetchJSON(`${API_ENDPOINTS.getCoordinatesByLocation}?location=${encodeURIComponent(location)}`);
-            console.log('Location data:', locationData);
+            const cityComponent = locationData.results[0].address_components.find(component => 
+                component.types.includes('locality') || component.types.includes('postal_town')
+            );
 
-            if (locationData && locationData.results.length > 0) {
-                const firstResult = locationData.results[0];
-                state.locationCoordinates = firstResult.geometry.location;
-                console.log('Coordinates:', state.locationCoordinates);
+            state.redirectCity = cityComponent ? cityComponent.long_name : '';
+            console.log('City:', state.redirectCity || 'Not found');
 
-                const cityComponent = firstResult.address_components.find(component => 
-                    component.types.includes('locality') || component.types.includes('postal_town')
-                );
-
-                state.redirectCity = cityComponent ? cityComponent.long_name : '';
-                console.log('City:', state.redirectCity || 'Not found');
-
-                SELECTORS.searchBtn.prop('disabled', false);
-            } else {
-                console.log('No location results found.');
-                SELECTORS.noResultsMessage.show().text('Location not found. Please try a different location.');
-            }
+            SELECTORS.searchBtn.prop('disabled', false);
         } catch (error) {
             console.error('Error handling location input:', error);
-            SELECTORS.noResultsMessage.show().text('Failed to fetch location data. Please try again later.');
+            SELECTORS.noResultsMessage.show().text('Failed to fetch location data. Please try again.');
         }
     };
 
@@ -313,6 +344,14 @@ $(document).ready(function () {
             return;
         }
 
+        // Ensure that coordinates are available
+        if (!state.locationCoordinates || Object.keys(state.locationCoordinates).length === 0) {
+            alert('Please enter a valid location to fetch coordinates.');
+            SELECTORS.locationInput.focus();
+            SELECTORS.loader.hide();
+            return;
+        }
+
         console.log('Form Data:', {
             location: formData.location,
             checkInDate,
@@ -322,7 +361,6 @@ $(document).ready(function () {
         });
 
         try {
-            
             // CALL THE RAPID API FROM THE BACKEND HERE
             console.log('Fetching hotel offer for:', formData.location);
             const params = new URLSearchParams({
@@ -437,8 +475,9 @@ $(document).ready(function () {
     /**
      * Render hotel offer cards to the results container using Document Fragment for performance.
      * @param {Array} offers 
+     * @param {Object} formData
      */
-    const renderHotelCards = (offers) => {
+    const renderHotelCards = (offers, formData) => {
         if (offers.length === 0) {
             console.log('No offers found, showing message to the user.');
             SELECTORS.resultsContainer.html('<div class="no-results-message">No valid hotel offers found. Please try different search criteria.</div>');
@@ -517,7 +556,7 @@ $(document).ready(function () {
             fragment.append(card);
         });
         
-    
+
         SELECTORS.resultsContainer.append(fragment);
         SELECTORS.resultsContainer.show();
         SELECTORS.submitText.show();
@@ -555,7 +594,7 @@ $(document).ready(function () {
         state.selectedHotels = checkedCheckboxes.map(function () {
             const card = $(this).closest('.card');
             const hotelId = card.find('.hiddenHotelId').text();
-            const hotelName = card.find('.hotel-name').text();
+            const hotelName = card.find('.card-header').text(); // Updated to find 'card-header'
             const totalPrice = card.find('.total-price .amount').text().replace(/[^\d.-]/g, ''); // Remove currency text
 
             console.log('Selected Hotel Info:', {
@@ -784,6 +823,19 @@ $(document).ready(function () {
             }
 
             console.log('Query Parameters:', queryParams);
+
+            // If redirected and city is present, fetch coordinates
+            if (state.redirected && queryParams.city) {
+                try {
+                    const coordinates = await fetchCoordinates(queryParams.city);
+                    state.locationCoordinates = coordinates;
+                    console.log(`Fetched coordinates for ${queryParams.city}:`, coordinates);
+                } catch (error) {
+                    console.error(`Failed to fetch coordinates for ${queryParams.city}:`, error);
+                    SELECTORS.noResultsMessage.show().text('Failed to fetch location data. Please try again.');
+                    return; // Exit initialization if coordinates cannot be fetched
+                }
+            }
 
             // Initialize form fields
             initializeFormFields(queryParams);
