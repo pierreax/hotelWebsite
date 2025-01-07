@@ -483,9 +483,9 @@ $(document).ready(function () {
             SELECTORS.resultsContainer.html('<div class="no-results-message">No valid hotel offers found. Please try different search criteria.</div>');
             return;
         }
-    
+
         const fragment = $(document.createDocumentFragment());
-    
+
         offers.forEach((offer) => {
             const totalPrice = offer.composite_price_breakdown.gross_amount.amount_rounded;
             const pricePerNight = offer.composite_price_breakdown.gross_amount_per_night.amount_rounded;
@@ -504,32 +504,32 @@ $(document).ready(function () {
                 .text(formatHotelName(offer.hotel_name))
                 .appendTo(card);
         
-            // Card Content With Prices, Distance, and Rating
+            // Card Content with Prices and Badges
             const cardContent = $('<div>').addClass('card-content');
+
+            // Prices Section
+            const pricesDiv = $('<div>').addClass('prices');
             $('<div>').addClass('price-per-night')
                 .append($('<span>').addClass('amount').text(`${pricePerNight}`))
                 .append($('<span>').addClass('label').text('per night'))
-                .appendTo(cardContent);
+                .appendTo(pricesDiv);
             $('<div>').addClass('total-price')
                 .append($('<span>').addClass('amount').text(`${totalPrice}`))
                 .append($('<span>').addClass('label').text('in total'))
-                .appendTo(cardContent);
+                .appendTo(pricesDiv);
+            cardContent.append(pricesDiv);
 
-            // Distance Badge
-            $('<div>')
-                .addClass('badge distance')
+            // Badges Section
+            const badgesDiv = $('<div>').addClass('badges');
+            $('<div>').addClass('badge distance')
                 .text(offer.distanceDisplay)
-                .appendTo(cardContent);
-        
-            // Rating Badge
-            $('<div>')
-                .addClass('badge rating')
+                .appendTo(badgesDiv);
+            $('<div>').addClass('badge rating')
                 .text(`Rating: ${offer.review_score}`)
-                .appendTo(cardContent);
+                .appendTo(badgesDiv);
+            cardContent.append(badgesDiv);
 
-            // Add Card Content to Card
             card.append(cardContent);
-
         
             // Card Footer with Checkbox
             const cardFooter = $('<div>').addClass('card-footer');
@@ -559,11 +559,11 @@ $(document).ready(function () {
             fragment.append(card);
         });
         
-
         SELECTORS.resultsContainer.append(fragment);
         SELECTORS.resultsContainer.show();
         SELECTORS.submitText.show();
     };
+
 
     /**
      * Format hotel name for display.

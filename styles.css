@@ -289,7 +289,6 @@ button:disabled {
     position: relative;
     box-sizing: border-box;
     transition: transform var(--transition-duration), box-shadow var(--transition-duration);
-    /* Removed fixed height to allow dynamic sizing */
 }
 
 .card:hover {
@@ -311,41 +310,41 @@ button:disabled {
     padding: 0; /* Ensure no extra padding */
 }
 
-
-/* Card Content with Prices, Rating and Distance */
+/* Card Content with Prices and Badges */
 .card-content {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    justify-content: space-between;
+    align-items: flex-start; /* Align items to the top */
     font-size: var(--font-size-small);
     margin-bottom: 10px;
 }
 
-.card-content div {
+.prices {
     display: flex;
-    width: 100%;
+    flex-direction: column;
+    gap: 4px;
 }
 
-/* Badges for Distance and Rating */
+.badges {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-items: flex-end; /* Align badges to the right */
+}
+
 .badge {
-    position: absolute;
     padding: 5px 8px;
     border-radius: var(--border-radius);
     font-size: 0.8em;
+    color: var(--surface-color);
 }
 
 .badge.distance {
-    top: 10px;
-    right: 10px;
     background: var(--primary-color);
-    color: var(--surface-color);
 }
 
 .badge.rating {
-    top: 50px;
-    right: 10px;
     background: var(--secondary-color);
-    color: var(--surface-color);
 }
 
 .card-content .label {
@@ -413,6 +412,24 @@ button:disabled {
 @media (max-width: 600px) {
     .card {
         max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .card-content {
+        flex-direction: column;
+        align-items: flex-start; /* Align items to the start */
+    }
+
+    .badges {
+        flex-direction: row; /* Align badges horizontally */
+        align-items: center; /* Center badges vertically */
+        margin-top: 5px; /* Add some space above badges */
+    }
+
+    .badge {
+        padding: 4px 6px;
+        font-size: 0.7em;
     }
 }
 
