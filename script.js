@@ -126,7 +126,7 @@ $(document).ready(function () {
             if (queryParams.dateFrom || queryParams.dateTo || queryParams.email) {
                 redirectedFlag = true;
                 console.log('User has been redirected, fetching coordinates for the city:', queryParams.city);
-                getCoordinatesByLocation(queryParams.city); // Fetch coordinates for the redirected city
+                handleLocationInput(); // Fetch coordinates for the redirected city
             }
         }
 
