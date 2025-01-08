@@ -152,15 +152,6 @@ input, select {
     padding: 0 4px;
 }
 
-/* Floating label transitions */
-input:not(:placeholder-shown) + label,
-input:focus + label {
-    top: -20px; /* Move above the input field */
-    left: 8px;
-    font-size: 12px;
-    color: var(--primary-color);
-}
-
 /* Styles for the clickable link */
 .flights-link {
     display: block;
