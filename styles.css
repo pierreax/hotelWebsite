@@ -421,12 +421,6 @@ button:disabled {
         align-items: flex-start; /* Align items to the start */
     }
 
-    .badges {
-        flex-direction: row; /* Align badges horizontally */
-        align-items: center; /* Center badges vertically */
-        margin-top: 5px; /* Add some space above badges */
-    }
-
     .badge {
         padding: 4px 6px;
         font-size: 0.7em;
