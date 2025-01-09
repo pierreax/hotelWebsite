@@ -635,8 +635,11 @@ $(document).ready(function () {
      * Submit selected hotels to Sheety and send email.
      */
     const handleSubmitToSheety = async () => {
-        console.log('Submitting data to SHEETY');
-        SELECTORS.loader.show();
+        if (SELECTORS.emailInput.val() === '') {
+            alert('Please enter your email address.');
+            SELECTORS.emailInput.focus();
+            return;
+        }
 
         const formData = {
             location: SELECTORS.locationInput.val(),
