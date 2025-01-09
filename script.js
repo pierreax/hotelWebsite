@@ -188,7 +188,7 @@ $(document).ready(function () {
             const data = await response.json();
 
             if (data && data.results && data.results.length > 0) {
-                SELECTORS.emailInput.style.display = 'block'; // Show email input after fetching coordinates
+                SELECTORS.emailInput.show(); // Show email input after fetching coordinates
                 const firstResult = data.results[0];
                 const coordinates = firstResult.geometry.location;
                 return coordinates; // { lat: number, lng: number }
@@ -196,7 +196,7 @@ $(document).ready(function () {
                 throw new Error('No coordinates found for the provided location.');
             }
         } catch (error) {
-            SELECTORS.emailInput.style.display = 'none'; // Hide email input if coordinates cannot be fetched
+            SELECTORS.emailInput.hide(); // Hide email input if coordinates cannot be fetched
             console.error('Error in fetchCoordinates:', error);
             throw error; // Rethrow to handle it in the calling function
         }
