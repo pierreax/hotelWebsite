@@ -189,7 +189,7 @@ input, select {
     text-transform: uppercase; /* Display text in uppercase */
 }
 
-/* Button styles */
+/* Button and Submit styles */
 button {
     background-color: var(--primary-color);
     color: var(--surface-color);

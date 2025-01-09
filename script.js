@@ -188,7 +188,6 @@ $(document).ready(function () {
             const data = await response.json();
 
             if (data && data.results && data.results.length > 0) {
-                SELECTORS.emailInput.show(); // Show email input after fetching coordinates
                 const firstResult = data.results[0];
                 const coordinates = firstResult.geometry.location;
                 return coordinates; // { lat: number, lng: number }
@@ -196,7 +195,6 @@ $(document).ready(function () {
                 throw new Error('No coordinates found for the provided location.');
             }
         } catch (error) {
-            SELECTORS.emailInput.hide(); // Hide email input if coordinates cannot be fetched
             console.error('Error in fetchCoordinates:', error);
             throw error; // Rethrow to handle it in the calling function
         }
@@ -328,7 +326,6 @@ $(document).ready(function () {
             dateRange: state.datePicker.selectedDates,
             adults: $('#adults').val(),
             numberOfRooms: $('#numberOfRooms').val(),
-            email: SELECTORS.emailInput.val(),
             limitResults: parseInt($('#limitResults').val(), 10) || 20,
             formCurrency: SELECTORS.currencyInput.val(),
         };
@@ -358,7 +355,6 @@ $(document).ready(function () {
             location: formData.location,
             checkInDate,
             checkOutDate,
-            email: formData.email,
             formCurrency: formData.formCurrency,
         });
 
@@ -395,12 +391,16 @@ $(document).ready(function () {
                 // Render Hotel Cards
                 console.log('Rendering hotel cards...');
                 renderHotelCards(offersWithDistance, formData);
+                SELECTORS.emailInput.show(); // Show email input after showing results
             } else {
                 SELECTORS.noResultsMessage.show().text('No hotels found for the selected location.');
+                SELECTORS.emailInput.hide(); // Hide email input if no results are found
+
             }
         } catch (error) {
             console.error('Error during form submission:', error.message);
             SELECTORS.noResultsMessage.show().text('An error occurred while fetching hotel data. Please try again.');
+            SELECTORS.emailInput.hide(); // Hide email input if no results are found
         } finally {
             SELECTORS.loader.hide();
         }
