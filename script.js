@@ -640,6 +640,8 @@ $(document).ready(function () {
             return;
         }
 
+        SELECTORS.loader.show();
+
         const formData = {
             location: SELECTORS.locationInput.val(),
             checkInDate: formatDateToLocalISOString(state.datePicker.selectedDates[0]),
