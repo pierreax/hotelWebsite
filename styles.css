@@ -102,6 +102,7 @@ form {
     margin-bottom: 20px; /* Space between fields */
 }
 
+
 /* Input and select fields */
 input, select {
     width: 100%;
@@ -115,6 +116,10 @@ input, select {
     font-size: 14px; /* Adjust font size */
     color: var(--text-color);
     text-align: center;
+}
+
+#email {
+    margin-bottom: 20px;
 }
 
 .form-control, .form-control:focus {
