@@ -189,7 +189,7 @@ input, select {
     text-transform: uppercase; /* Display text in uppercase */
 }
 
-/* Button and Submit styles */
+/* Button styles */
 button {
     background-color: var(--primary-color);
     color: var(--surface-color);
@@ -200,6 +200,7 @@ button {
     transition: background-color var(--transition-duration), transform 0.2s;
     text-align: center;
     font-family: 'Avenir Light', sans-serif;
+    font-weight: bold; /* Ensure both buttons have bold text */
     width: 100%; /* Make the button span the full width of its container */
     box-sizing: border-box; /* Ensure padding and border are included in the width */
     margin-bottom: 12px; /* Space below each button */
