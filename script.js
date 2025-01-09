@@ -636,7 +636,6 @@ $(document).ready(function () {
      */
     const handleSubmitToSheety = async () => {
         if (SELECTORS.emailInput.val() === '') {
-            alert('Please enter your email address.');
             SELECTORS.emailInput.focus();
             return;
         }
