@@ -52,10 +52,6 @@
     font-style: normal;
 }
 
-html, body {
-    height: 100%;          /* Ensure full height for proper centering */
-    padding: 0;            /* Remove any default padding */
-}
 
 /* Global styles */
 body {
