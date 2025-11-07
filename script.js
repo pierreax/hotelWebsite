@@ -20,7 +20,7 @@ $(document).ready(function () {
 
     // API Endpoints
     const API_ENDPOINTS = {
-        ipGeo: 'https://api.ipgeolocation.io/ipgeo?apiKey=420e90eecc6c4bb285f238f38aea898f',
+        geolocation: '/api/geolocation',
         getAccessToken: '/api/getAccessToken',
         getHotelOffersByCoordinates: '/api/getHotelOffersByCoordinates',
         sheety: '/api/sendDataToSheety',
@@ -233,27 +233,36 @@ $(document).ready(function () {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 3000); // 3-second timeout
 
-            const response = await fetch(API_ENDPOINTS.ipGeo, { signal: controller.signal });
+            const response = await fetch(API_ENDPOINTS.geolocation, { signal: controller.signal });
             clearTimeout(timeoutId);
 
             if (!response.ok) {
-                throw new Error(`HTTP error ${response.status}: ${await response.text()}`);
+                // Geolocation is optional - fail silently
+                console.log('Geolocation service unavailable. Using default currency.');
+                const defaultCurrency = 'USD';
+                SELECTORS.currencyInput.val(defaultCurrency).trigger('change');
+                return;
             }
 
             const data = await response.json();
-            const currency = data.currency.code;
+            const currency = data.currency?.code;
 
-            console.log('Setting currency to:', currency);
-            SELECTORS.currencyInput.val(currency).trigger('change');
+            if (currency) {
+                console.log('Setting currency to:', currency);
+                SELECTORS.currencyInput.val(currency).trigger('change');
+            } else {
+                const defaultCurrency = 'USD';
+                SELECTORS.currencyInput.val(defaultCurrency).trigger('change');
+            }
 
         } catch (error) {
+            // Geolocation is optional - fail silently
             if (error.name === 'AbortError') {
-                console.warn('Currency API call timed out. Using default currency.');
+                console.log('Currency API call timed out. Using default currency.');
             } else {
-                console.error('Failed to set currency from IP:', error);
+                console.log('Geolocation not available:', error.message);
             }
-            // Fallback to default currency if API call fails or times out
-            const defaultCurrency = 'USD'; // Change as per your preference
+            const defaultCurrency = 'USD';
             SELECTORS.currencyInput.val(defaultCurrency).trigger('change');
         }
     };

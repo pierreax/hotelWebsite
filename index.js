@@ -3,6 +3,30 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid'); // Import UUID library
 
 const app = express();
+const port = process.env.PORT || 8080;
+
+// Validate required environment variables at startup
+const requiredEnvVars = [
+    'EMAIL_CLIENT_ID',
+    'EMAIL_CLIENT_SECRET',
+    'EMAIL_TENANT_ID',
+    'GOOGLE_API_KEY',
+    'SHEETY_API_URL',
+    'RAPID_API_KEY'
+];
+
+const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+if (missingVars.length > 0) {
+    console.error(`Missing required environment variables: ${missingVars.join(', ')}`);
+    process.exit(1);
+}
+
+// Optional environment variables
+const optionalEnvVars = ['IPGEOLOCATION_API_KEY'];
+const missingOptional = optionalEnvVars.filter(varName => !process.env[varName]);
+if (missingOptional.length > 0) {
+    console.warn(`Optional environment variables not set (features will be disabled): ${missingOptional.join(', ')}`);
+}
 
 // Access environment variables directly from process.env
 const EMAIL_CLIENT_ID = process.env.EMAIL_CLIENT_ID;
@@ -15,19 +39,14 @@ const RAPID_API_KEY = process.env.RAPID_API_KEY;
 // Middleware to parse JSON requests
 app.use(express.json());
 
-// Serve static files from the root directory (e.g., for your HTML, CSS, JS)
-app.use(express.static(path.join(__dirname)));
-
-// Send index.html file for the root path
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-// Set CORS headers
+// Set CORS headers - MUST come before static files
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', 'https://www.robotize.no');
-    res.header('Access-Control-Allow-Methods', 'GET, POST');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
     next();
 });
 
@@ -37,34 +56,114 @@ app.use((req, res, next) => {
     next();
 });
 
+// Serve static files from the root directory (e.g., for your HTML, CSS, JS)
+app.use(express.static(path.join(__dirname)));
+
+// Send index.html file for the root path
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Helper function for fetch with timeout
+async function fetchWithTimeout(url, options = {}, timeout = 30000) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    try {
+        const response = await fetch(url, {
+            ...options,
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        return response;
+    } catch (error) {
+        clearTimeout(timeoutId);
+        if (error.name === 'AbortError') {
+            throw new Error('Request timeout');
+        }
+        throw error;
+    }
+}
+
 // ------------ Initialization ---------------
+
+// Route to get user geolocation and currency based on IP
+app.get('/api/geolocation', async (req, res) => {
+    try {
+        const apiKey = process.env.IPGEOLOCATION_API_KEY;
+
+        if (!apiKey) {
+            console.warn('IPGeolocation API key is not set. Geolocation feature disabled.');
+            return res.status(503).json({
+                error: 'Geolocation service unavailable',
+                message: 'API key not configured'
+            });
+        }
+
+        const cleanedApiKey = apiKey.trim();
+        const url = `https://api.ipgeolocation.io/ipgeo?apiKey=${cleanedApiKey}`;
+
+        const response = await fetchWithTimeout(url);
+
+        if (!response.ok) {
+            const status = response.status;
+            const responseText = await response.text();
+
+            if (status === 401) {
+                console.error('IPGeolocation API: Invalid or expired API key (401)');
+                return res.status(503).json({
+                    error: 'Geolocation service unavailable',
+                    message: 'Invalid API credentials'
+                });
+            }
+
+            console.error(`IPGeolocation API error ${status}: ${responseText}`);
+            throw new Error(`IPGeolocation API error: ${status}`);
+        }
+
+        const data = await response.json();
+
+        // Only send back what's needed to reduce exposure
+        res.json({
+            currency: data.currency,
+            latitude: parseFloat(data.latitude),
+            longitude: parseFloat(data.longitude)
+        });
+    } catch (error) {
+        console.error('Geolocation error:', error);
+        res.status(503).json({
+            error: 'Geolocation service unavailable',
+            message: error.message
+        });
+    }
+});
 
 // API to get Coordinates By Location from Google
 app.get('/api/getCoordinatesByLocation', async (req, res) => {
     const { location } = req.query;
-    console.log('Coordinate API Triggered for location:', location);
 
-    if (!location) {
-        return res.status(400).json({ error: "Please provide a location." });
+    // Validate input
+    if (!location || typeof location !== 'string' || location.trim().length === 0) {
+        return res.status(400).json({ error: "Please provide a valid location." });
     }
 
-    if (!GOOGLE_API_KEY) {
-        return res.status(500).json({ error: "API key is not configured." });
+    if (location.length > 200) {
+        return res.status(400).json({ error: "Location query too long. Maximum 200 characters." });
     }
 
     try {
         const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${GOOGLE_API_KEY}`;
-        const response = await fetch(geocodingUrl);
+        const response = await fetchWithTimeout(geocodingUrl);
+
+        if (!response.ok) {
+            throw new Error(`Google Geocoding API error: ${response.status}`);
+        }
+
         const data = await response.json();
 
-        console.log('Google API response:', data);  // Log the entire response from Google API
-
         if (data.status === 'OK' && data.results.length > 0) {
-            const coordinates = data.results[0].geometry.location;
-            console.log('Coordinates:', coordinates);
             return res.json(data);  // Sends the full response from Google API
         } else {
-            console.log('No results found for location:', location);
             return res.status(404).json({ error: 'Location not found' });
         }
     } catch (error) {
@@ -79,7 +178,26 @@ app.get('/api/getCoordinatesByLocation', async (req, res) => {
 app.get('/api/getHotelOffersByCoordinates', async (req, res) => {
     const { latitude, longitude, arrival_date, departure_date, adults, room_qty, currency_code } = req.query;
 
-    console.log('Request parameters:', req.query);
+    // Validate required parameters
+    if (!latitude || !longitude || !arrival_date || !departure_date || !adults || !room_qty || !currency_code) {
+        return res.status(400).json({ error: 'Missing required parameters' });
+    }
+
+    // Validate coordinates
+    const lat = parseFloat(latitude);
+    const lon = parseFloat(longitude);
+    if (isNaN(lat) || lat < -90 || lat > 90) {
+        return res.status(400).json({ error: 'Invalid latitude. Must be between -90 and 90.' });
+    }
+    if (isNaN(lon) || lon < -180 || lon > 180) {
+        return res.status(400).json({ error: 'Invalid longitude. Must be between -180 and 180.' });
+    }
+
+    // Validate date format (YYYY-MM-DD)
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(arrival_date) || !dateRegex.test(departure_date)) {
+        return res.status(400).json({ error: 'Invalid date format. Use YYYY-MM-DD.' });
+    }
 
     const url = new URL('https://booking-com15.p.rapidapi.com/api/v1/hotels/searchHotelsByCoordinates');
     url.search = new URLSearchParams({
@@ -103,15 +221,15 @@ app.get('/api/getHotelOffersByCoordinates', async (req, res) => {
     };
 
     try {
-        const response = await fetch(url, options);
+        const response = await fetchWithTimeout(url, options);
         if (!response.ok) {
-            throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
+            throw new Error(`RapidAPI error: ${response.status}`);
         }
         const data = await response.json();
         res.json(data);
     } catch (error) {
         console.error('Error fetching hotel offers:', error.message);
-        res.status(500).send('An error occurred while fetching hotel offers');
+        res.status(500).json({ error: 'Failed to fetch hotel offers' });
     }
 });
 
@@ -121,15 +239,20 @@ app.get('/api/getHotelOffersByCoordinates', async (req, res) => {
 app.post('/api/sendDataToSheety', async (req, res) => {
     // Get data from the request body
     const formData = req.body;
-    console.log('Incoming request body:', JSON.stringify(formData, null, 2));
 
     // Check if the required fields are present
-    if (!formData.location || !formData.checkInDate || !formData.checkOutDate || 
+    if (!formData.location || !formData.checkInDate || !formData.checkOutDate ||
         !formData.adults || !formData.numberOfRooms || !formData.email ||
         !formData.selectedHotels || formData.selectedHotels.length === 0) {
         return res.status(400).json({
             error: "Missing required fields in the request body."
         });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+        return res.status(400).json({ error: 'Invalid email format' });
     }
 
     // Generate a unique token for this submission
@@ -157,14 +280,9 @@ app.post('/api/sendDataToSheety', async (req, res) => {
         }
     };
 
-    console.log('Formatted data to be sent to Sheety:', JSON.stringify(sheetyData, null, 2));
-
-    // Sheety URL (change this to the correct Sheety endpoint for your sheet)
-    const sheetyUrl = SHEETY_API_URL;
-
     try {
         // Send data to Sheety
-        const response = await fetch(sheetyUrl, {
+        const response = await fetchWithTimeout(SHEETY_API_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -172,24 +290,17 @@ app.post('/api/sendDataToSheety', async (req, res) => {
             body: JSON.stringify(sheetyData)
         });
 
-        // Log the response status
-        console.log('Sheety response status:', response.status);
-
         // Check if the response is successful
         if (!response.ok) {
-            const responseBody = await response.text(); // Get the raw response body for debugging
-            console.error(`Error sending data to Sheety: ${responseBody}`);
+            const responseBody = await response.text();
+            console.error(`Error sending data to Sheety: ${response.status} - ${responseBody}`);
             return res.status(response.status).json({
-                error: `Error sending data to Sheety: ${responseBody}`
+                error: `Error sending data to Sheety`
             });
         }
 
         const result = await response.json();
-
-        // Log the successful response
-        console.log('Successful response from Sheety:', JSON.stringify(result, null, 2));
-
-        res.status(200).json(result); // Return the successful response from Sheety
+        res.status(200).json(result);
 
     } catch (error) {
         console.error('Error sending data to Sheety:', error.message);
@@ -210,11 +321,14 @@ app.post('/api/sendEmail', async (req, res) => {
             return res.status(400).json({ message: "Missing required parameters: subject, body, or recipient_email." });
         }
 
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(recipient_email)) {
+            return res.status(400).json({ message: 'Invalid email format' });
+        }
+
         // Get access token for Microsoft Graph API
         const token = await getAccessToken();
-
-        // Log the token to verify it
-        console.log("Access Token:", token);
 
         // Send the email via Microsoft Graph API
         const result = await sendEmail(subject, body, recipient_email, token);
@@ -236,10 +350,10 @@ async function getAccessToken() {
         grant_type: 'client_credentials',
         client_id: EMAIL_CLIENT_ID,
         client_secret: EMAIL_CLIENT_SECRET,
-        scope: 'https://graph.microsoft.com/.default'  // Make sure this scope is correct
+        scope: 'https://graph.microsoft.com/.default'
     };
 
-    const response = await fetch(`https://login.microsoftonline.com/${EMAIL_TENANT_ID}/oauth2/v2.0/token`, {
+    const response = await fetchWithTimeout(`https://login.microsoftonline.com/${EMAIL_TENANT_ID}/oauth2/v2.0/token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams(tokenData).toString()
@@ -251,7 +365,6 @@ async function getAccessToken() {
     }
 
     const data = await response.json();
-    console.log('Access Token:', data.access_token); // Log to verify the token
     return data.access_token;
 }
 
@@ -281,13 +394,13 @@ async function sendEmail(subject, body, recipient_email, token) {
                     }
                 }
             ],
-            attachments: []  // No image attachment
+            attachments: []
         },
         saveToSentItems: "true"
     };
 
     try {
-        const response = await fetch(SENDMAIL_ENDPOINT, {
+        const response = await fetchWithTimeout(SENDMAIL_ENDPOINT, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -310,7 +423,8 @@ async function sendEmail(subject, body, recipient_email, token) {
 }
 
 // Start the server
-app.listen(8080, () => {
-    console.log(`Server is running on port 8080`);
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });
   
