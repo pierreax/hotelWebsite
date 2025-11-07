@@ -50,9 +50,15 @@ app.use((req, res, next) => {
     next();
 });
 
-// Set CSP headers
+// Set CSP headers - Allow CDN resources for Bootstrap, jQuery, Flatpickr
 app.use((req, res, next) => {
-    res.header('Content-Security-Policy', "default-src 'self'; frame-ancestors 'self' https://www.robotize.no;");
+    res.header('Content-Security-Policy',
+        "default-src 'self'; " +
+        "script-src 'self' 'unsafe-inline' https://code.jquery.com https://cdn.jsdelivr.net; " +
+        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " +
+        "font-src 'self' https://cdn.jsdelivr.net; " +
+        "frame-ancestors 'self' https://www.robotize.no;"
+    );
     next();
 });
 
