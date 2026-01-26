@@ -403,13 +403,35 @@ button:disabled::before {
 .prices {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 8px;
+}
+
+.price-per-night,
+.total-price {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.price-per-night .amount {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.total-price .amount {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-color);
 }
 
 .prices .label {
-    color: var(--text-secondary);
+    color: var(--text-muted);
     font-size: var(--font-size-xs);
-    margin-left: 4px;
+    font-weight: 500;
 }
 
 .badges {
