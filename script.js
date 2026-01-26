@@ -542,29 +542,28 @@ $(document).ready(function () {
 
             card.append(cardContent);
         
-            // Card Footer with Checkbox
+            // Card Footer with Track Button
             const cardFooter = $('<div>').addClass('card-footer');
-            const checkboxContainer = $('<div>').addClass('checkbox-container');
-        
+
             // Create a unique ID for the checkbox
             const checkboxId = `checkbox-${offer.hotel_id}`;
-        
-            // Label for the checkbox
-            const checkboxLabel = $('<label>')
-                .attr('for', checkboxId)
-                .addClass('checkbox-description')
-                .text('Add to Robot:');
-        
-            // Checkbox input
+
+            // Hidden checkbox for form functionality
             const checkboxInput = $('<input>')
                 .attr({
                     type: 'checkbox',
                     id: checkboxId
                 })
                 .addClass('select-checkbox');
-        
-            checkboxContainer.append(checkboxLabel, checkboxInput);
-            cardFooter.append(checkboxContainer);
+
+            // Button-style label
+            const trackButton = $('<label>')
+                .attr('for', checkboxId)
+                .addClass('track-button')
+                .append($('<span>').addClass('track-text').text('Track this hotel'))
+                .append($('<span>').addClass('tracking-text').text('Tracking'));
+
+            cardFooter.append(checkboxInput, trackButton);
             card.append(cardFooter);
         
             fragment.append(card);

@@ -453,64 +453,76 @@ button:disabled::before {
 /* Card Footer */
 .card-footer {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
     width: 100%;
-    padding-top: 12px;
-    border-top: 1px solid var(--border-light);
+    padding-top: 16px;
+    margin-top: 4px;
 }
 
-/* Checkbox Container */
-.checkbox-container {
+/* Hidden checkbox */
+.select-checkbox {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+/* Track Button */
+.track-button {
     display: flex;
     align-items: center;
-    margin-left: auto;
-    gap: 10px;
-}
-
-.checkbox-description {
-    color: var(--text-secondary);
-    font-weight: 500;
-    font-size: var(--font-size-xs);
-}
-
-/* Modern Checkbox */
-.select-checkbox {
-    appearance: none;
-    width: 24px;
-    height: 24px;
+    justify-content: center;
+    width: 100%;
+    padding: 12px 20px;
     border: 2px solid var(--border-color);
-    border-radius: 50%;
+    border-radius: var(--radius-md);
+    background: var(--surface-color);
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
     cursor: pointer;
-    transition: var(--transition-fast);
-    position: relative;
-    outline: none;
-    flex-shrink: 0;
+    transition: var(--transition-normal);
+    user-select: none;
 }
 
-.select-checkbox:hover {
+.track-button:hover {
     border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: var(--primary-light);
 }
 
-.select-checkbox:checked {
-    border-color: var(--primary-color);
+.track-button .tracking-text {
+    display: none;
+}
+
+.track-button .track-text {
+    display: inline;
+}
+
+/* Checked state */
+.select-checkbox:checked + .track-button {
     background: var(--primary-gradient);
+    border-color: transparent;
+    color: white;
 }
 
-.select-checkbox:checked::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 10px;
-    height: 10px;
-    background: white;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
+.select-checkbox:checked + .track-button:hover {
+    box-shadow: var(--shadow-md), 0 4px 12px -2px rgba(99, 102, 241, 0.4);
 }
 
-.select-checkbox:focus {
-    box-shadow: 0 0 0 4px var(--primary-light);
+.select-checkbox:checked + .track-button .track-text {
+    display: none;
+}
+
+.select-checkbox:checked + .track-button .tracking-text {
+    display: inline;
+}
+
+.select-checkbox:checked + .track-button .tracking-text::before {
+    content: '\2713';
+    margin-right: 8px;
+    font-weight: bold;
 }
 
 /* Submit Text */
