@@ -413,15 +413,7 @@ button:disabled::before {
     gap: 6px;
 }
 
-.price-per-night .amount {
-    font-size: var(--font-size-xl);
-    font-weight: 700;
-    background: var(--primary-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
+.price-per-night .amount,
 .total-price .amount {
     font-size: var(--font-size-sm);
     font-weight: 600;
