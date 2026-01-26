@@ -521,11 +521,11 @@ $(document).ready(function () {
             // Prices Section
             const pricesDiv = $('<div>').addClass('prices');
             $('<div>').addClass('price-per-night')
-                .append($('<span>').addClass('amount').text(`${pricePerNight}`))
+                .append($('<span>').addClass('amount').text(formatPrice(pricePerNight)))
                 .append($('<span>').addClass('label').text('per night'))
                 .appendTo(pricesDiv);
             $('<div>').addClass('total-price')
-                .append($('<span>').addClass('amount').text(`${totalPrice}`))
+                .append($('<span>').addClass('amount').text(formatPrice(totalPrice)))
                 .append($('<span>').addClass('label').text('in total'))
                 .appendTo(pricesDiv);
             cardContent.append(pricesDiv);
@@ -591,7 +591,16 @@ $(document).ready(function () {
             .join(' ');
     };
 
-  
+    /**
+     * Format price with space as thousand separator.
+     * @param {string|number} price
+     * @returns {string} Formatted price with spaces.
+     */
+    const formatPrice = (price) => {
+        if (price === null || price === undefined) return 'N/A';
+        return String(price).replace(/,/g, ' ').replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    };
+
     /**
      * Handle checkbox state changes and update selected hotels.
      */
