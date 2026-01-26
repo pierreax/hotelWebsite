@@ -386,7 +386,8 @@ button:disabled::before {
     color: var(--text-color);
     margin-bottom: 12px;
     padding: 0;
-    background: transparent;
+    background: none;
+    border: none;
     line-height: 1.4;
 }
 
@@ -396,8 +397,9 @@ button:disabled::before {
     justify-content: space-between;
     align-items: flex-start;
     font-size: var(--font-size-sm);
-    margin-bottom: 16px;
+    margin-bottom: 8px;
     gap: 12px;
+    border: none;
 }
 
 .prices {
