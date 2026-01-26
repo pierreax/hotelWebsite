@@ -535,7 +535,14 @@ $(document).ready(function () {
             $('<div>').addClass('badge distance')
                 .text(offer.distanceDisplay)
                 .appendTo(badgesDiv);
-            $('<div>').addClass('badge rating')
+
+            // Determine rating class based on score
+            const score = parseFloat(offer.review_score) || 0;
+            let ratingClass = 'rating-low';
+            if (score >= 8) ratingClass = 'rating-high';
+            else if (score >= 6) ratingClass = 'rating-medium';
+
+            $('<div>').addClass(`badge rating ${ratingClass}`)
                 .text(`Rating: ${offer.review_score}`)
                 .appendTo(badgesDiv);
             cardContent.append(badgesDiv);
