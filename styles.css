@@ -464,6 +464,8 @@ button:disabled::before {
     flex-direction: column;
     width: 100%;
     margin-top: 8px;
+    background: none;
+    border: none;
 }
 
 /* Hidden checkbox */
