@@ -423,10 +423,13 @@ body {
 }
 
 .card-header {
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
     font-weight: 600;
-    color: var(--color-text);
-    margin-bottom: var(--space-sm);
+    color: var(--color-primary);
+    background: var(--color-primary-light);
+    margin: calc(-1 * var(--space-md)) calc(-1 * var(--space-md)) var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     line-height: 1.4;
 }
 
@@ -720,7 +723,7 @@ body {
     }
 
     .card-header {
-        font-size: var(--font-size-sm);
+        font-size: var(--font-size-xs);
     }
 
     .badge {
