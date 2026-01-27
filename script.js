@@ -69,7 +69,7 @@ $(document).ready(function () {
         state.redirectCurrency = encodeURIComponent(SELECTORS.currencyInput.val());
         state.redirectDateFrom = formatDateToLocalISOString(state.datePicker.selectedDates[0]);
         state.redirectDateTo = formatDateToLocalISOString(state.datePicker.selectedDates[1]);
-        state.redirectUrl = `https://www.robotize.no/flights?email=${state.redirectEmail}&currency=${state.redirectCurrency}&city=${state.redirectCity}&dateFrom=${state.redirectDateFrom}&dateTo=${state.redirectDateTo}`;
+        state.redirectUrl = `https://robotize-flights.azurewebsites.net/?email=${state.redirectEmail}&currency=${state.redirectCurrency}&city=${state.redirectCity}&dateFrom=${state.redirectDateFrom}&dateTo=${state.redirectDateTo}`;
         console.log('Redirect URL:', state.redirectUrl);
     };
 
