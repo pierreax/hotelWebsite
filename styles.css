@@ -399,7 +399,7 @@ body {
 
 /* Results Box */
 .results-box {
-    margin-top: var(--space-lg);
+    margin-top: var(--space-xl);
 }
 
 /* Hotel Cards */
