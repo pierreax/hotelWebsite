@@ -659,8 +659,29 @@ $(document).ready(function () {
      * Submit selected hotels to Sheety and send email.
      */
     const handleSubmitToSheety = async () => {
-        if (SELECTORS.emailInput.val() === '') {
+        // Validate required fields before submission
+        if (!SELECTORS.locationInput.val().trim()) {
+            alert('Please enter a location.');
+            SELECTORS.locationInput.focus();
+            return;
+        }
+        if (!state.locationCoordinates || Object.keys(state.locationCoordinates).length === 0) {
+            alert('Please enter a valid location to fetch coordinates.');
+            SELECTORS.locationInput.focus();
+            return;
+        }
+        if (!state.datePicker.selectedDates || state.datePicker.selectedDates.length < 2) {
+            alert('Please select check-in and check-out dates.');
+            SELECTORS.datePickerInput.focus();
+            return;
+        }
+        if (!SELECTORS.emailInput.val().trim()) {
+            alert('Please enter your email address.');
             SELECTORS.emailInput.focus();
+            return;
+        }
+        if (state.selectedHotels.length === 0) {
+            alert('Please select at least one hotel to track.');
             return;
         }
 
