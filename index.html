@@ -3,95 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Title -->
     <title>Robotize Hotels</title>
     <!-- Google Fonts - Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Bootstrap CSS for core styling -->
+    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="styles.css">
     <!-- Flatpickr CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <!-- jQuery Library -->
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="styles.css">
+    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- Flatpickr JavaScript -->
+    <!-- Flatpickr -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <!-- Bootstrap JS (includes popper.js) for modal functionality and interactive components -->
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Your custom JavaScript -->
+    <!-- Custom Script -->
     <script src="script.js"></script>
 </head>
 <body>
     <div class="container">
-        <h1>Hotel Price Robot</h1>
-        <h2>Enter your travel preferences and our robot will check daily for updated prices.</h2>
-        <h2>We will keep you posted when there is an update.</h2>
-        <p><a href="https://www.robotize.no/flights" style="display: none;" target="_blank" class="flights-link">Click here to go to the flight robot</a></p>
-
-        <form id="searchForm">
-            <!-- Loader animation -->
-            <div class="loader"></div>
-
-            <div class="input-wrapper">
-                <input type="text" id="location" name="location" placeholder="City, address, hotel or place" required>
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <div class="hero-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M7 14c1.66 0 3-1.34 3-3S8.66 8 7 8s-3 1.34-3 3 1.34 3 3 3zm12-7h-8v8H3V5H1v15h2v-3h18v3h2v-9c0-2.21-1.79-4-4-4z"/>
+                </svg>
             </div>
+            <h1>Hotel Price Tracker</h1>
+            <p class="hero-subtitle">Track hotel prices and get notified when they change</p>
+        </div>
 
-            <div class="input-wrapper">
-                <input type="text" id="dateRange" name="dateRange" class="datepicker" placeholder="Select your dates" required>
-            </div>            
+        <!-- Search Form Card -->
+        <div class="form-card">
+            <form id="searchForm">
+                <!-- Loader -->
+                <div class="loader"></div>
 
-            <div class="input-group">
-                <div class="input-wrapper">
-                    <select id="adults" name="adults" required>
-                        <!-- Set default value to 2 -->
-                        <option value="1">1</option>
-                        <option value="2" selected>2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                        <option value="7">7</option>
-                        <option value="8">8</option>
-                        <option value="9">9</option>
-                    </select>
-                    <label for="adults">Adults:</label>
+                <!-- Location Input -->
+                <div class="form-section">
+                    <div class="form-group">
+                        <div class="input-icon-wrapper">
+                            <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                <circle cx="12" cy="10" r="3"/>
+                            </svg>
+                            <input type="text" id="location" name="location" placeholder="City, address, hotel or place" required>
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="input-wrapper">
-                    <select id="numberOfRooms" name="numberOfRooms" required>
-                        <!-- Set default value to 1 -->
-                        <option value="1" selected>1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                    </select>
-                    <label for="numberOfRooms">Rooms:</label>
+
+                <!-- Date Selection -->
+                <div class="form-section">
+                    <div class="form-group">
+                        <div class="input-icon-wrapper">
+                            <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                            <input type="text" id="dateRange" name="dateRange" class="datepicker" placeholder="Check-in - Check-out" required>
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="input-wrapper">
-                    <input type="text" id="currency" name="currency" required maxlength="3" placeholder="NOK">
-                    <label for="currency">Currency:</label>
+
+                <!-- Guest & Room Options -->
+                <div class="form-section options-row">
+                    <div class="form-group compact">
+                        <label for="adults">Adults</label>
+                        <select id="adults" name="adults" required>
+                            <option value="1">1</option>
+                            <option value="2" selected>2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group compact">
+                        <label for="numberOfRooms">Rooms</label>
+                        <select id="numberOfRooms" name="numberOfRooms" required>
+                            <option value="1" selected>1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group compact">
+                        <label for="currency">Currency</label>
+                        <input type="text" id="currency" name="currency" required maxlength="3" placeholder="NOK">
+                    </div>
                 </div>
-            </div>
 
+                <!-- Hidden limit results -->
+                <input type="hidden" id="limitResults" name="limitResults" value="20">
 
-            <div class="input-wrapper" style="display: none;">
-                <input type="number" id="limitResults" name="limitResults" min="1" value="20">
-                <label for="limitResults">Limit Results:</label>
-            </div>
+                <!-- Search Button -->
+                <button id="searchButton" type="submit" class="btn-primary-action">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    Search Hotels
+                </button>
 
-            <button id="searchButton" type="submit">1. Search</button>
-            <input type="email" id="email" name="email" placeholder="Your email address" style="display: none"; >            
-            <button id="submitToSheet" style="display: none" type="button">2. Submit</button>
-            <div id="submitText" style="display: none;">
-                Check the hotels you want to track, and click submit.
-            </div>
+                <!-- Email Input (shown after results) -->
+                <div class="email-section" style="display: none;">
+                    <div class="floating-label">
+                        <input type="email" id="email" name="email" placeholder=" " required>
+                        <label for="email">Email address</label>
+                    </div>
+                </div>
 
-        </form>
-        <div id="noResultsMessage" style="display: none;">
+                <!-- Submit Button -->
+                <button id="submitToSheet" type="button" class="btn-success-action" style="display: none;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    Start Tracking
+                </button>
+
+                <div id="submitText" style="display: none;">
+                    Select the hotels you want to track, then click "Start Tracking"
+                </div>
+            </form>
+        </div>
+
+        <!-- No Results Message -->
+        <div id="noResultsMessage" class="message-box error" style="display: none;">
             <p>No results found. Please try adjusting your search criteria.</p>
         </div>
 
@@ -100,45 +148,42 @@
             <div id="results" class="results-box"></div>
         </div>
 
-        <!-- Modal for Flight Tracker Confirmation -->
+        <!-- Flight Tracker Modal -->
         <div class="modal fade" id="flightTrackingModal" tabindex="-1" aria-labelledby="flightTrackingModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="flightTrackingModalLabel">Thank you for your submission!</h5>
+                        <h5 class="modal-title" id="flightTrackingModalLabel">Submission Complete</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        Would you also like to track flight prices?
+                        Would you also like to track flight prices for your trip?
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" id="confirmFlightTracker">Yes</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                        <button type="button" class="btn btn-primary" id="confirmFlightTracker">Yes, track flights</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No thanks</button>
                     </div>
                 </div>
             </div>
         </div>
 
-
-        <!-- Modal for Thank You Confirmation -->
+        <!-- Thank You Modal -->
         <div class="modal fade" id="thankYouModal" tabindex="-1" aria-labelledby="thankYouModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="thankYouModalLabel">Thank you for your submission!</h5>
+                        <h5 class="modal-title" id="thankYouModalLabel">You're all set!</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        Your submission has been received. We will notify you about hotel prices.
+                        We'll monitor these hotels and notify you when prices change.
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="closeThankYouModal">Ok</button>
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="closeThankYouModal">Done</button>
                     </div>
                 </div>
             </div>
         </div>
-
-
     </div>
 </body>
 </html>

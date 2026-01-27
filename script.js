@@ -400,10 +400,10 @@ $(document).ready(function () {
                 // Render Hotel Cards
                 console.log('Rendering hotel cards...');
                 renderHotelCards(offersWithDistance, formData);
-                SELECTORS.emailInput.show(); // Show email input after showing results
+                $('.email-section').show(); // Show email input after showing results
             } else {
                 SELECTORS.noResultsMessage.show().text('No hotels found for the selected location.');
-                SELECTORS.emailInput.hide(); // Hide email input if no results are found
+                $('.email-section').hide(); // Hide email input if no results are found
 
             }
         } catch (error) {
