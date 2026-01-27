@@ -434,10 +434,10 @@ body {
 }
 
 .card-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: var(--space-md);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--space-sm);
+    align-items: center;
     margin-bottom: var(--space-md);
 }
 
