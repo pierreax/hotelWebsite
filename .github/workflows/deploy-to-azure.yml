@@ -1,0 +1,46 @@
+# This workflow will build and deploy your Node.js application to an Azure Web App.
+#
+# 1. Create a new "Web App" in the Azure portal.
+# 2. In the Web App's "Deployment Center", find the "Publish profile" and download it.
+# 3. In your GitHub repository, go to Settings > Secrets and variables > Actions.
+# 4. Create a new repository secret named AZURE_WEBAPP_PUBLISH_PROFILE.
+# 5. Paste the entire content of the downloaded publish profile file into the secret's value.
+# 6. In this file, replace 'YOUR_APP_NAME' with the actual name of your Azure Web App.
+
+name: Deploy Node.js App to Azure Web App
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: 'Checkout GitHub Action'
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js version
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.x' # Matches the "engines" version in your package.json
+
+      - name: npm install
+        run: npm install
+
+      - name: 'Deploy to Azure Web App'
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'robotize-hotels' # <-- REPLACE THIS
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: .
+      - name: Setup Node.js version
+        uses: actions/setup-node@v3
+        with:
+          node-version: '24.x' # Matches the "engines" version in your package.json
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: .

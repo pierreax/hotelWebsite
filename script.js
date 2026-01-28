@@ -47,7 +47,7 @@ $(document).ready(function () {
     };
 
     /**
-     * Helper function to post messages to the parent window
+     * Helper function to post messages to the parent window DO WE NEED THIS?
      */
     const postMessageToParent = (action, targetOrigin = "https://www.robotize.no") => {
         window.parent.postMessage({ action }, targetOrigin);
@@ -55,7 +55,7 @@ $(document).ready(function () {
     };
 
     /**
-     * Scroll to top by sending a message to the parent
+     * Scroll to top by sending a message to the parent DO WE NEED THIS?
      */
     const scrollToTop = () => {
         postMessageToParent('scrollToTop');
