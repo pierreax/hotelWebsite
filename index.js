@@ -1,6 +1,10 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const { v4: uuidv4 } = require('uuid'); // Import UUID library
+
+// Read logo as base64 at startup for inline email attachments
+const logoBase64 = fs.readFileSync(path.join(__dirname, 'logo.png')).toString('base64');
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -400,7 +404,16 @@ async function sendEmail(subject, body, recipient_email, token) {
                     }
                 }
             ],
-            attachments: []
+            attachments: [
+                {
+                    "@odata.type": "#microsoft.graph.fileAttachment",
+                    "name": "logo.png",
+                    "contentType": "image/png",
+                    "contentBytes": logoBase64,
+                    "contentId": "logo",
+                    "isInline": true
+                }
+            ]
         },
         saveToSentItems: "true"
     };

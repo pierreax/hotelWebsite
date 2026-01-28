@@ -808,28 +808,100 @@ $(document).ready(function () {
      */
     const sendEmailNotification = async (formData, formattedData) => {
         try {
+            const hotelList = formattedData.selectedHotels.length > 0
+                ? formattedData.selectedHotels.map(hotel =>
+                    `<p style="margin:0 0 4px;font-size:13px;color:#5f6368;">• ${hotel.hotelName}</p>`
+                ).join('')
+                : '<p style="margin:0;font-size:13px;color:#5f6368;">No hotels selected</p>';
+
+            const emailBody = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background-color:#f4f7fa;font-family:'Segoe UI',Roboto,Arial,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f7fa;">
+    <tr>
+      <td align="center" style="padding:30px 10px;">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+          <tr>
+            <td style="background:linear-gradient(135deg,#2e7d32,#1b5e20);padding:30px 40px;text-align:center;">
+              <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:600;">Welcome to the Hotel Robot</h1>
+              <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">Your price tracker is now active</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:30px 40px;">
+              <p style="color:#202124;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi,</p>
+              <p style="color:#202124;font-size:15px;line-height:1.6;margin:0 0 20px;">
+                We'll check hotel prices for you daily and notify you whenever there's a change. Here's a summary of your tracked trip:
+              </p>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#e8f5e9;border-radius:10px;margin:0 0 20px;">
+                <tr>
+                  <td style="padding:20px;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td width="50%" style="padding:6px 0;">
+                          <p style="margin:0;font-size:12px;color:#5f6368;text-transform:uppercase;letter-spacing:0.5px;">Check-in</p>
+                          <p style="margin:2px 0 0;font-size:15px;color:#202124;font-weight:600;">${formData.checkInDate}</p>
+                        </td>
+                        <td width="50%" style="padding:6px 0;">
+                          <p style="margin:0;font-size:12px;color:#5f6368;text-transform:uppercase;letter-spacing:0.5px;">Check-out</p>
+                          <p style="margin:2px 0 0;font-size:15px;color:#202124;font-weight:600;">${formData.checkOutDate}</p>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td width="50%" style="padding:6px 0;">
+                          <p style="margin:0;font-size:12px;color:#5f6368;text-transform:uppercase;letter-spacing:0.5px;">Adults</p>
+                          <p style="margin:2px 0 0;font-size:15px;color:#202124;font-weight:600;">${formData.adults}</p>
+                        </td>
+                        <td width="50%" style="padding:6px 0;">
+                          <p style="margin:0;font-size:12px;color:#5f6368;text-transform:uppercase;letter-spacing:0.5px;">Rooms</p>
+                          <p style="margin:2px 0 0;font-size:15px;color:#202124;font-weight:600;">${formData.numberOfRooms}</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f5f5f5;border-radius:8px;margin:0 0 20px;">
+                <tr>
+                  <td style="padding:16px;">
+                    <p style="margin:0 0 8px;font-size:12px;color:#5f6368;text-transform:uppercase;letter-spacing:0.5px;">Selected Hotels</p>
+                    ${hotelList}
+                  </td>
+                </tr>
+              </table>
+              <p style="color:#5f6368;font-size:14px;line-height:1.6;margin:0 0 24px;">
+                You'll receive an email whenever the price changes. Reply to any of our emails if you have questions.
+              </p>
+              <table role="presentation" cellpadding="0" cellspacing="0" align="center">
+                <tr>
+                  <td align="center" style="border-radius:6px;background-color:#2e7d32;">
+                    <a href="https://hotels.robotize.no" style="display:inline-block;padding:12px 28px;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;">Visit Robotize Hotels</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:20px 40px 30px;text-align:center;">
+              <p style="color:#5f6368;font-size:14px;margin:0 0 16px;">Best regards,<br>Pierre</p>
+              <a href="https://hotels.robotize.no"><img src="cid:logo" height="80" alt="Robotize" style="display:block;margin:0 auto;"></a>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
             const emailResponse = await fetch(API_ENDPOINTS.sendEmail, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     subject: "Welcome to the Hotel Robot",
-                    body: `
-                        Welcome to the Hotel Robot!<br><br>
-                        We will check prices for you daily, and let you know if there is a change.<br><br>
-                        Here are your details:<br><br>
-                        Location: ${formData.location}<br>
-                        Check-In Date: ${formData.checkInDate}<br>
-                        Check-Out Date: ${formData.checkOutDate}<br>
-                        Adults: ${formData.adults}<br>
-                        Number of Rooms: ${formData.numberOfRooms}<br>
-                        Email: ${formData.email}<br>
-                        Currency: ${formData.currency}<br>
-                        Selected Hotels:<br>
-                        ${formattedData.selectedHotels.length > 0
-                            ? formattedData.selectedHotels.map(hotel => `- ${hotel.hotelName}<br>`).join('')
-                            : 'No hotels selected'}<br><br>
-                        Thank you!
-                    `,
+                    body: emailBody,
                     recipient_email: formData.email
                 })
             });
