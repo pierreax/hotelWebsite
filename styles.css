@@ -572,54 +572,84 @@ body {
 /* Modal Styles */
 .modal-backdrop {
     background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
 }
 
 .modal-dialog {
     max-width: 400px;
-    margin: 100px auto;
+    margin: var(--space-lg) auto;
     padding: var(--space-md);
 }
 
 .modal-content {
+    background: var(--color-surface);
+    border-radius: var(--radius-xl);
     border: none;
-    border-radius: var(--radius-lg);
-    overflow: hidden;
     box-shadow: var(--shadow-lg);
+    overflow: hidden;
 }
 
 .modal-header {
-    background: var(--color-primary);
-    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--space-xl) var(--space-lg) var(--space-md);
     border: none;
-    padding: var(--space-md) var(--space-lg);
-}
-
-.modal-title {
-    font-size: var(--font-size-lg);
-    font-weight: 600;
+    position: relative;
 }
 
 .modal-header .btn-close {
-    filter: brightness(0) invert(1);
-    opacity: 0.8;
+    position: absolute;
+    top: var(--space-md);
+    right: var(--space-md);
+    opacity: 0.5;
 }
 
 .modal-header .btn-close:hover {
     opacity: 1;
 }
 
-.modal-body {
-    padding: var(--space-lg);
-    text-align: center;
+.modal-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-md);
+}
+
+.modal-icon.success {
+    background: var(--color-success-light);
+    color: var(--color-success);
+}
+
+.modal-title {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
     color: var(--color-text);
-    font-size: var(--font-size-base);
+    margin: 0;
+}
+
+.modal-body {
+    padding: var(--space-md) var(--space-lg);
+    text-align: center;
+}
+
+.modal-body p {
+    color: var(--color-text-secondary);
+    margin: 0;
+    line-height: 1.6;
 }
 
 .modal-footer {
-    border-top: 1px solid var(--color-border-light);
-    padding: var(--space-md) var(--space-lg);
-    justify-content: center;
+    display: flex;
     gap: var(--space-sm);
+    padding: var(--space-md) var(--space-lg) var(--space-lg);
+    border: none;
+    justify-content: center;
 }
 
 .modal-footer .btn {
@@ -627,7 +657,11 @@ body {
     border-radius: var(--radius-md);
     font-weight: 600;
     font-size: var(--font-size-sm);
-    min-width: 120px;
+    font-family: inherit;
+    transition: var(--transition-fast);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
 }
 
 .modal-footer .btn-primary {
@@ -641,14 +675,15 @@ body {
 }
 
 .modal-footer .btn-secondary {
-    background: var(--color-bg);
-    border: 1px solid var(--color-border);
-    color: var(--color-text);
+    background: transparent;
+    border: 1.5px solid var(--color-border);
+    color: var(--color-text-secondary);
 }
 
 .modal-footer .btn-secondary:hover {
-    background: var(--color-surface);
+    background: var(--color-bg);
     border-color: var(--color-text-muted);
+    color: var(--color-text);
 }
 
 /* Flatpickr Customization */

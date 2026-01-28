@@ -153,15 +153,27 @@
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="flightTrackingModalLabel">Submission Complete</h5>
+                        <div class="modal-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                            </svg>
+                        </div>
+                        <h5 class="modal-title" id="flightTrackingModalLabel">Tracking activated!</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        Would you also like to track flight prices for your trip?
+                        <p>Your hotel price tracker is now active. Would you also like to track flight prices for your destination?</p>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" id="confirmFlightTracker">Yes, track flights</button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No thanks</button>
+                        <button type="button" class="btn btn-primary" id="confirmFlightTracker">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                                <line x1="12" y1="22.08" x2="12" y2="12"/>
+                            </svg>
+                            Track flights too
+                        </button>
                     </div>
                 </div>
             </div>
@@ -172,11 +184,17 @@
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
+                        <div class="modal-icon success">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                        </div>
                         <h5 class="modal-title" id="thankYouModalLabel">You're all set!</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        We'll monitor these hotels and notify you when prices change.
+                        <p>We'll monitor hotel prices and notify you when they match your criteria. Check your email for confirmation.</p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="closeThankYouModal">Done</button>

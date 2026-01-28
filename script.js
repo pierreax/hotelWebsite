@@ -46,20 +46,6 @@ $(document).ready(function () {
         hotelsData: [],
     };
 
-    /**
-     * Helper function to post messages to the parent window DO WE NEED THIS?
-     */
-    const postMessageToParent = (action, targetOrigin = "https://www.robotize.no") => {
-        window.parent.postMessage({ action }, targetOrigin);
-        console.log(`Sending ${action} to parent`);
-    };
-
-    /**
-     * Scroll to top by sending a message to the parent DO WE NEED THIS?
-     */
-    const scrollToTop = () => {
-        postMessageToParent('scrollToTop');
-    };
 
     /**
      * Capture redirect parameters after form submission.
@@ -717,9 +703,6 @@ $(document).ready(function () {
 
             // Send email notification
             await sendEmailNotification(formData, formattedData);
-
-            // Scroll to top before showing the modal at the top
-            scrollToTop();
 
             // Initialize the modal based on whether the user has been redirected
             if (state.redirected) {
