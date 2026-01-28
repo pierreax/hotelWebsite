@@ -69,7 +69,7 @@ $(document).ready(function () {
         state.redirectCurrency = encodeURIComponent(SELECTORS.currencyInput.val());
         state.redirectDateFrom = formatDateToLocalISOString(state.datePicker.selectedDates[0]);
         state.redirectDateTo = formatDateToLocalISOString(state.datePicker.selectedDates[1]);
-        state.redirectUrl = `https://robotize-flights.azurewebsites.net/?email=${state.redirectEmail}&currency=${state.redirectCurrency}&city=${state.redirectCity}&dateFrom=${state.redirectDateFrom}&dateTo=${state.redirectDateTo}`;
+        state.redirectUrl = `https://flights.robotize.no/?email=${state.redirectEmail}&currency=${state.redirectCurrency}&city=${state.redirectCity}&dateFrom=${state.redirectDateFrom}&dateTo=${state.redirectDateTo}`;
         console.log('Redirect URL:', state.redirectUrl);
     };
 
@@ -733,19 +733,19 @@ $(document).ready(function () {
             // Handle flight tracking confirmation
             SELECTORS.confirmFlightTrackerBtn.off('click').on('click', function () {
                 window.open(state.redirectUrl, '_blank');    // Navigate to redirect to the other site in a new tab
-                window.location.href = 'https://robotize-hotels.azurewebsites.net/';  // Refresh the form page
+                window.location.href = 'https://hotels.robotize.no/';  // Refresh the form page
             });
 
             // Handle flight tracking decline
             SELECTORS.btnSecondary.off('click').on('click', function () {
                 console.log("User declined flight tracking.");
-                window.location.href = 'https://robotize-hotels.azurewebsites.net/';  // Refresh the form page
+                window.location.href = 'https://hotels.robotize.no/';  // Refresh the form page
             });
 
             // Handle OK button in modal
             SELECTORS.thankYouOkBtn.off('click').on('click', function () {
                 console.log("User clicked OK on thank you modal.");
-                window.location.href = 'https://robotize-hotels.azurewebsites.net/';  // Refresh the form page
+                window.location.href = 'https://hotels.robotize.no/';  // Refresh the form page
             });
 
             // If the modal is closed, remove the modal-open class from body to restore scrolling
