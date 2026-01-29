@@ -274,6 +274,10 @@ $(document).ready(function () {
         let debounceTimeout;
         const debounceDelay = 500; // milliseconds
 
+        SELECTORS.locationInput.on('focus', function () {
+            this.select();
+        });
+
         SELECTORS.locationInput.on('blur', function (event) {
             clearTimeout(debounceTimeout);
             debounceTimeout = setTimeout(() => handleLocationInput(event), debounceDelay);
