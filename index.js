@@ -3,13 +3,24 @@ const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid'); // Import UUID library
 
-// Read logo as base64 at startup for inline email attachments
-const logoBase64 = fs.readFileSync(path.join(__dirname, 'logo.png')).toString('base64');
+console.log('[Init] Starting server...');
+
+// Read logo as base64 at startup
+let logoBase64;
+try {
+    logoBase64 = fs.readFileSync(path.join(__dirname, 'logo.png')).toString('base64');
+    console.log('[Init] Logo loaded successfully.');
+} catch (error) {
+    console.error('[Error] Failed to load logo.png:', error);
+    // Continue without the logo, email attachments will fail
+}
+
 
 const app = express();
 const port = process.env.PORT || 8080;
 
 // Validate required environment variables at startup
+console.log('[Init] Validating environment variables...');
 const requiredEnvVars = [
     'EMAIL_CLIENT_ID',
     'EMAIL_CLIENT_SECRET',
@@ -21,30 +32,33 @@ const requiredEnvVars = [
 
 const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
 if (missingVars.length > 0) {
-    console.error(`Missing required environment variables: ${missingVars.join(', ')}`);
+    console.error(`[CRITICAL] Missing required environment variables: ${missingVars.join(', ')}. Shutting down.`);
     process.exit(1);
 }
+console.log('[Init] All required environment variables are set.');
 
-// Optional environment variables
+// Check optional environment variables
 const optionalEnvVars = ['IPGEOLOCATION_API_KEY'];
 const missingOptional = optionalEnvVars.filter(varName => !process.env[varName]);
 if (missingOptional.length > 0) {
-    console.warn(`Optional environment variables not set (features will be disabled): ${missingOptional.join(', ')}`);
+    console.warn(`[Warn] Optional environment variables not set: ${missingOptional.join(', ')}. Dependent features will be disabled.`);
 }
 
-// Access environment variables directly from process.env
-const EMAIL_CLIENT_ID = process.env.EMAIL_CLIENT_ID;
-const EMAIL_CLIENT_SECRET = process.env.EMAIL_CLIENT_SECRET;
-const EMAIL_TENANT_ID = process.env.EMAIL_TENANT_ID;
-const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
-const SHEETY_API_URL = process.env.SHEETY_API_URL;
-const RAPID_API_KEY = process.env.RAPID_API_KEY;
+// Environment variables
+const {
+    EMAIL_CLIENT_ID,
+    EMAIL_CLIENT_SECRET,
+    EMAIL_TENANT_ID,
+    GOOGLE_API_KEY,
+    SHEETY_API_URL,
+    RAPID_API_KEY
+} = process.env;
 
-// Middleware to parse JSON requests
+// Middleware
 app.use(express.json());
 
-// Set CORS headers - MUST come before static files
 app.use((req, res, next) => {
+    console.log(`[Request] Incoming: ${req.method} ${req.url}`);
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -54,7 +68,6 @@ app.use((req, res, next) => {
     next();
 });
 
-// Set CSP headers - Allow CDN resources for Bootstrap, jQuery, Flatpickr
 app.use((req, res, next) => {
     res.header('Content-Security-Policy',
         "default-src 'self'; " +
@@ -66,24 +79,22 @@ app.use((req, res, next) => {
     next();
 });
 
-// Serve static files from the root directory (e.g., for your HTML, CSS, JS)
 app.use(express.static(path.join(__dirname)));
 
-// Send index.html file for the root path
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Helper function for fetch with timeout
+// Helper for fetch with timeout
 async function fetchWithTimeout(url, options = {}, timeout = 30000) {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    const timeoutId = setTimeout(() => {
+        console.error(`[API] Request to ${url} timed out after ${timeout}ms.`);
+        controller.abort();
+    }, timeout);
 
     try {
-        const response = await fetch(url, {
-            ...options,
-            signal: controller.signal
-        });
+        const response = await fetch(url, { ...options, signal: controller.signal });
         clearTimeout(timeoutId);
         return response;
     } catch (error) {
@@ -95,274 +106,188 @@ async function fetchWithTimeout(url, options = {}, timeout = 30000) {
     }
 }
 
-// ------------ Initialization ---------------
+// --- API Routes ---
 
-// Route to get user geolocation and currency based on IP
+// Geolocation by IP
 app.get('/api/geolocation', async (req, res) => {
+    const apiKey = process.env.IPGEOLOCATION_API_KEY;
+    if (!apiKey) {
+        console.warn('[API] /api/geolocation: IPGeolocation API key not set. Feature disabled.');
+        return res.status(503).json({ error: 'Geolocation service unavailable', message: 'API key not configured' });
+    }
+
+    const url = `https://api.ipgeolocation.io/ipgeo?apiKey=${apiKey.trim()}`;
+    console.log(`[API] /api/geolocation: Fetching from ${url}`);
+
     try {
-        const apiKey = process.env.IPGEOLOCATION_API_KEY;
-
-        if (!apiKey) {
-            console.warn('IPGeolocation API key is not set. Geolocation feature disabled.');
-            return res.status(503).json({
-                error: 'Geolocation service unavailable',
-                message: 'API key not configured'
-            });
-        }
-
-        const cleanedApiKey = apiKey.trim();
-        const url = `https://api.ipgeolocation.io/ipgeo?apiKey=${cleanedApiKey}`;
-
         const response = await fetchWithTimeout(url);
-
         if (!response.ok) {
-            const status = response.status;
-            const responseText = await response.text();
-
-            if (status === 401) {
-                console.error('IPGeolocation API: Invalid or expired API key (401)');
-                return res.status(503).json({
-                    error: 'Geolocation service unavailable',
-                    message: 'Invalid API credentials'
-                });
-            }
-
-            console.error(`IPGeolocation API error ${status}: ${responseText}`);
-            throw new Error(`IPGeolocation API error: ${status}`);
+            const errorText = await response.text();
+            console.error(`[API] /api/geolocation: IPGeolocation API error ${response.status}: ${errorText}`);
+            return res.status(response.status).json({ error: 'Failed to fetch geolocation data' });
         }
-
         const data = await response.json();
-
-        // Only send back what's needed to reduce exposure
+        console.log(`[API] /api/geolocation: Successfully fetched location for IP ${data.ip}. Country: ${data.country_name}, Currency: ${data.currency.code}.`);
         res.json({
             currency: data.currency,
             latitude: parseFloat(data.latitude),
             longitude: parseFloat(data.longitude)
         });
     } catch (error) {
-        console.error('Geolocation error:', error);
-        res.status(503).json({
-            error: 'Geolocation service unavailable',
-            message: error.message
-        });
+        console.error('[API] /api/geolocation: Geolocation request failed:', error);
+        res.status(503).json({ error: 'Geolocation service unavailable', message: error.message });
     }
 });
 
-// API to get Coordinates By Location from Google
+// Coordinates by Location Name
 app.get('/api/getCoordinatesByLocation', async (req, res) => {
     const { location } = req.query;
+    console.log(`[API] /api/getCoordinatesByLocation: Received request for location: "${location}"`);
 
-    // Validate input
     if (!location || typeof location !== 'string' || location.trim().length === 0) {
+        console.error('[API] /api/getCoordinatesByLocation: Validation failed - location is missing or invalid.');
         return res.status(400).json({ error: "Please provide a valid location." });
-    }
-
-    if (location.length > 200) {
-        return res.status(400).json({ error: "Location query too long. Maximum 200 characters." });
     }
 
     try {
         const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${GOOGLE_API_KEY}`;
+        console.log(`[API] /api/getCoordinatesByLocation: Calling Google Geocoding API.`);
         const response = await fetchWithTimeout(geocodingUrl);
 
         if (!response.ok) {
+            console.error(`[API] /api/getCoordinatesByLocation: Google Geocoding API error: ${response.status}`);
             throw new Error(`Google Geocoding API error: ${response.status}`);
         }
 
         const data = await response.json();
 
         if (data.status === 'OK' && data.results.length > 0) {
-            return res.json(data);  // Sends the full response from Google API
+            console.log(`[API] /api/getCoordinatesByLocation: Found ${data.results.length} results. Using first result.`);
+            return res.json(data);
         } else {
+            console.warn(`[API] /api/getCoordinatesByLocation: Location not found for query "${location}". Status: ${data.status}`);
             return res.status(404).json({ error: 'Location not found' });
         }
     } catch (error) {
-        console.error('Error fetching coordinates:', error.message);
+        console.error('[API] /api/getCoordinatesByLocation: Error fetching coordinates:', error.message);
         return res.status(500).json({ error: 'Failed to fetch coordinates' });
     }
 });
 
-
-
-// ------------ RAPID API ---------------
+// Hotel Offers by Coordinates
 app.get('/api/getHotelOffersByCoordinates', async (req, res) => {
     const { latitude, longitude, arrival_date, departure_date, adults, room_qty, currency_code } = req.query;
+    console.log('[API] /api/getHotelOffersByCoordinates: Received search request.');
 
-    // Validate required parameters
     if (!latitude || !longitude || !arrival_date || !departure_date || !adults || !room_qty || !currency_code) {
+        console.error('[API] /api/getHotelOffersByCoordinates: Validation failed - missing required parameters.');
         return res.status(400).json({ error: 'Missing required parameters' });
     }
 
-    // Validate coordinates
-    const lat = parseFloat(latitude);
-    const lon = parseFloat(longitude);
-    if (isNaN(lat) || lat < -90 || lat > 90) {
-        return res.status(400).json({ error: 'Invalid latitude. Must be between -90 and 90.' });
-    }
-    if (isNaN(lon) || lon < -180 || lon > 180) {
-        return res.status(400).json({ error: 'Invalid longitude. Must be between -180 and 180.' });
-    }
-
-    // Validate date format (YYYY-MM-DD)
-    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-    if (!dateRegex.test(arrival_date) || !dateRegex.test(departure_date)) {
-        return res.status(400).json({ error: 'Invalid date format. Use YYYY-MM-DD.' });
-    }
-
     const url = new URL('https://booking-com15.p.rapidapi.com/api/v1/hotels/searchHotelsByCoordinates');
-    url.search = new URLSearchParams({
-        latitude,
-        longitude,
-        arrival_date,
-        departure_date,
-        radius: '10', // Static radius
-        adults,
-        room_qty,
-        currency_code
-    }).toString();
+    url.search = new URLSearchParams({ latitude, longitude, arrival_date, departure_date, radius: '10', adults, room_qty, currency_code }).toString();
 
-    const options = {
-        method: 'GET',
-        headers: {
-            'x-rapidapi-ua': 'RapidAPI-Playground',
-            'x-rapidapi-key': RAPID_API_KEY,
-            'x-rapidapi-host': 'booking-com15.p.rapidapi.com'
-        }
-    };
-
+    console.log(`[API] /api/getHotelOffersByCoordinates: Calling RapidAPI for hotels.`);
     try {
-        const response = await fetchWithTimeout(url, options);
+        const response = await fetchWithTimeout(url, {
+            method: 'GET',
+            headers: {
+                'x-rapidapi-ua': 'RapidAPI-Playground',
+                'x-rapidapi-key': RAPID_API_KEY,
+                'x-rapidapi-host': 'booking-com15.p.rapidapi.com'
+            }
+        });
+
         if (!response.ok) {
+            console.error(`[API] /api/getHotelOffersByCoordinates: RapidAPI error: ${response.status}`);
             throw new Error(`RapidAPI error: ${response.status}`);
         }
+
         const data = await response.json();
+        console.log(`[API] /api/getHotelOffersByCoordinates: Successfully fetched ${data.data?.result?.length || 0} offers.`);
         res.json(data);
     } catch (error) {
-        console.error('Error fetching hotel offers:', error.message);
+        console.error('[API] /api/getHotelOffersByCoordinates: Error fetching hotel offers:', error.message);
         res.status(500).json({ error: 'Failed to fetch hotel offers' });
     }
 });
 
-
-// --------- SHEETY ----------------
-
+// Send Data to Sheety
 app.post('/api/sendDataToSheety', async (req, res) => {
-    // Get data from the request body
     const formData = req.body;
+    console.log('[API] /api/sendDataToSheety: Received request to save tracking data.');
 
-    // Check if the required fields are present
-    if (!formData.location || !formData.checkInDate || !formData.checkOutDate ||
-        !formData.adults || !formData.numberOfRooms || !formData.email ||
-        !formData.selectedHotels || formData.selectedHotels.length === 0) {
-        return res.status(400).json({
-            error: "Missing required fields in the request body."
-        });
+    if (!formData.location || !formData.checkInDate || !formData.checkOutDate || !formData.adults || !formData.numberOfRooms || !formData.email || !formData.selectedHotels || formData.selectedHotels.length === 0) {
+        console.error('[API] /api/sendDataToSheety: Validation failed - missing required fields.');
+        return res.status(400).json({ error: "Missing required fields." });
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-        return res.status(400).json({ error: 'Invalid email format' });
-    }
-
-    // Generate a unique token for this submission
-    const uniqueToken = uuidv4(); // Generate a UUID
-
-    // Extract and format data
-    const hotelNames = formData.selectedHotels.map(hotel => hotel.hotelName).join(', ');
-    const hotelIds = formData.selectedHotels.map(hotel => hotel.hotelId).join(', ');
-    const totalPrices = formData.selectedHotels.map(hotel => hotel.totalPrice).join(', ');
-
-    // Format data to match Sheety's schema
+    const uniqueToken = uuidv4();
     const sheetyData = {
         price: {
-            hotel: hotelIds, // Use hotel IDs from the form data
-            hotelName: hotelNames, // Use hotel names from the form data
+            hotel: formData.selectedHotels.map(h => h.hotelId).join(', '),
+            hotelName: formData.selectedHotels.map(h => h.hotelName).join(', '),
             adults: formData.adults,
             rooms: formData.numberOfRooms,
             checkin: formData.checkInDate,
             checkout: formData.checkOutDate,
-            latestPrice: totalPrices, // Prices from the form data, currency symbols removed
-            lowestPrice: totalPrices, // Send the same price as lowest price initially
-            currency: formData.currency, // Currency from the form data
+            latestPrice: formData.selectedHotels.map(h => h.totalPrice).join(', '),
+            lowestPrice: formData.selectedHotels.map(h => h.totalPrice).join(', '),
+            currency: formData.currency,
             email: formData.email,
-            token: uniqueToken // Add the unique token to the data
+            token: uniqueToken
         }
     };
+    console.log(`[API] /api/sendDataToSheety: Sending data to Sheety for email: ${formData.email}`);
 
     try {
-        // Send data to Sheety
         const response = await fetchWithTimeout(SHEETY_API_URL, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(sheetyData)
         });
 
-        // Check if the response is successful
         if (!response.ok) {
             const responseBody = await response.text();
-            console.error(`Error sending data to Sheety: ${response.status} - ${responseBody}`);
-            return res.status(response.status).json({
-                error: `Error sending data to Sheety`
-            });
+            console.error(`[API] /api/sendDataToSheety: Sheety API error ${response.status}: ${responseBody}`);
+            return res.status(response.status).json({ error: `Error sending data to Sheety` });
         }
 
         const result = await response.json();
+        console.log(`[API] /api/sendDataToSheety: Successfully saved data. Sheety row ID: ${result.price.id}`);
         res.status(200).json(result);
-
     } catch (error) {
-        console.error('Error sending data to Sheety:', error.message);
-        res.status(500).json({
-            error: `Error sending data to Sheety: ${error.message}`
-        });
+        console.error('[API] /api/sendDataToSheety: Error sending data to Sheety:', error.message);
+        res.status(500).json({ error: `Error sending data to Sheety: ${error.message}` });
     }
 });
 
-// ------------ EMAIL ---------------
-
+// Send Email
 app.post('/api/sendEmail', async (req, res) => {
+    const { subject, body, recipient_email } = req.body;
+    console.log(`[Email] /api/sendEmail: Received request to send email to ${recipient_email}.`);
+
+    if (!subject || !body || !recipient_email) {
+        console.error('[Email] /api/sendEmail: Validation failed - missing required parameters.');
+        return res.status(400).json({ message: "Missing required parameters." });
+    }
+
     try {
-        const { subject, body, recipient_email } = req.body;
-
-        // Validate required parameters
-        if (!subject || !body || !recipient_email) {
-            return res.status(400).json({ message: "Missing required parameters: subject, body, or recipient_email." });
-        }
-
-        // Validate email format
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(recipient_email)) {
-            return res.status(400).json({ message: 'Invalid email format' });
-        }
-
-        // Get access token for Microsoft Graph API
+        console.log('[Email] /api/sendEmail: Acquiring MS Graph access token...');
         const token = await getAccessToken();
-
-        // Send the email via Microsoft Graph API
+        console.log('[Email] /api/sendEmail: Access token acquired. Sending email...');
         const result = await sendEmail(subject, body, recipient_email, token);
 
-        // Return success or failure response
+        console.log('[Email] /api/sendEmail: Email send operation completed.');
         return res.status(result ? 200 : 500).json({ message: result ? "Email sent successfully." : "Failed to send email." });
-
     } catch (error) {
-        console.error('Error during email sending:', error.message);
-
-        // Send error message back to frontend
+        console.error('[Email] /api/sendEmail: Unhandled error during email sending:', error);
         return res.status(500).json({ message: `Error during email sending: ${error.message}` });
     }
 });
 
-
 async function getAccessToken() {
-    const tokenData = {
-        grant_type: 'client_credentials',
-        client_id: EMAIL_CLIENT_ID,
-        client_secret: EMAIL_CLIENT_SECRET,
-        scope: 'https://graph.microsoft.com/.default'
-    };
-
+    const tokenData = { grant_type: 'client_credentials', client_id: EMAIL_CLIENT_ID, client_secret: EMAIL_CLIENT_SECRET, scope: 'https://graph.microsoft.com/.default' };
     const response = await fetchWithTimeout(`https://login.microsoftonline.com/${EMAIL_TENANT_ID}/oauth2/v2.0/token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -370,50 +295,23 @@ async function getAccessToken() {
     });
 
     if (!response.ok) {
-        console.error('Error fetching token:', await response.text());
+        const errorText = await response.text();
+        console.error(`[Email] Error fetching MS Graph token: ${response.status} - ${errorText}`);
         throw new Error(`Failed to get access token: ${response.statusText}`);
     }
-
     const data = await response.json();
     return data.access_token;
 }
 
-
-
 async function sendEmail(subject, body, recipient_email, token) {
     const SENDMAIL_ENDPOINT = `https://graph.microsoft.com/v1.0/users/pierre@robotize.no/sendMail`;
-
     const message = {
         message: {
             subject: subject,
-            body: {
-                contentType: "HTML",
-                content: body
-            },
-            toRecipients: [
-                {
-                    emailAddress: {
-                        address: recipient_email
-                    }
-                }
-            ],
-            bccRecipients: [
-                {
-                    emailAddress: {
-                        address: 'pierre@robotize.no'
-                    }
-                }
-            ],
-            attachments: [
-                {
-                    "@odata.type": "#microsoft.graph.fileAttachment",
-                    "name": "logo.png",
-                    "contentType": "image/png",
-                    "contentBytes": logoBase64,
-                    "contentId": "logo",
-                    "isInline": true
-                }
-            ]
+            body: { contentType: "HTML", content: body },
+            toRecipients: [{ emailAddress: { address: recipient_email } }],
+            bccRecipients: [{ emailAddress: { address: 'pierre@robotize.no' } }],
+            attachments: logoBase64 ? [{ "@odata.type": "#microsoft.graph.fileAttachment", name: "logo.png", contentType: "image/png", contentBytes: logoBase64, contentId: "logo", isInline: true }] : []
         },
         saveToSentItems: "true"
     };
@@ -421,29 +319,26 @@ async function sendEmail(subject, body, recipient_email, token) {
     try {
         const response = await fetchWithTimeout(SENDMAIL_ENDPOINT, {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
             body: JSON.stringify(message)
         });
 
         if (!response.ok) {
             const errorData = await response.json();
-            console.error("Error response from Microsoft Graph:", errorData);
+            console.error("[Email] MS Graph sendMail API error:", errorData);
             throw new Error(`Failed to send email: ${JSON.stringify(errorData)}`);
         }
-
-        return response.ok;
+        console.log(`[Email] Email successfully sent via MS Graph to ${recipient_email}.`);
+        return true;
     } catch (error) {
-        console.error("Error in sendEmail function:", error);
-        throw error;
+        console.error("[Email] Unhandled error in sendEmail function:", error);
+        return false;
     }
 }
 
-// Start the server
+// Start Server
 app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`[Init] Server is running on port ${port}`);
+    console.log(`[Init] Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log('[Init] Application ready.');
 });
-  
