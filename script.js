@@ -1,4 +1,6 @@
 $(document).ready(function () {
+    console.log("[Init] Hotel Site Loaded");
+
     // Constants and Selectors
     const SELECTORS = {
         resultsContainer: $('#resultsBox'),
@@ -56,7 +58,7 @@ $(document).ready(function () {
         state.redirectDateFrom = formatDateToLocalISOString(state.datePicker.selectedDates[0]);
         state.redirectDateTo = formatDateToLocalISOString(state.datePicker.selectedDates[1]);
         state.redirectUrl = `https://flights.robotize.no/?email=${state.redirectEmail}&currency=${state.redirectCurrency}&city=${state.redirectCity}&dateFrom=${state.redirectDateFrom}&dateTo=${state.redirectDateTo}`;
-        console.log('Redirect URL:', state.redirectUrl);
+        console.log('[Submit] Redirect URL:', state.redirectUrl);
     };
 
     /**
@@ -73,6 +75,7 @@ $(document).ready(function () {
                 firstDayOfWeek: 1
             },
             onChange: function (selectedDates, dateStr, instance) {
+                console.log('[UI] Date changed:', dateStr);
                 instance.element.dispatchEvent(new Event('input'));
             }
         });
@@ -82,16 +85,16 @@ $(document).ready(function () {
      * Display the flight tracking modal.
      */
     const showFlightTrackingModal = () => {
-        console.log('Displaying flight tracking modal.');
+        console.log('[Modal] Displaying flight tracking modal.');
         SELECTORS.flightTrackingModal.modal('show');
-        $('body').addClass('modal-open'); // Use jQuery for consistency
+        $('body').addClass('modal-open');
     };
 
     /**
      * Show the thank you modal.
      */
     const showThankYouModal = () => {
-        console.log('Displaying thank you modal.');
+        console.log('[Modal] Displaying thank you modal.');
         $('#thankYouModal').modal('show');
     };
 
@@ -110,7 +113,7 @@ $(document).ready(function () {
         if (Object.keys(queryParams).length > 0) {
             if (queryParams.dateFrom || queryParams.dateTo || queryParams.email || queryParams.city) {
                 state.redirected = true;
-                console.log('User has been redirected with parameters:', queryParams);
+                console.log('[URL] User has been redirected with parameters:', queryParams);
             }
         }
 
@@ -141,7 +144,7 @@ $(document).ready(function () {
                 const text = await response.text();
                 if (!response.ok) {
                     if (response.status >= 500 && attempt < retries) {
-                        console.warn(`Server error ${response.status} on attempt ${attempt + 1}, retrying...`);
+                        console.warn(`[API] Server error ${response.status} on attempt ${attempt + 1}, retrying...`);
                         await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
                         continue;
                     }
@@ -150,11 +153,11 @@ $(document).ready(function () {
                 return JSON.parse(text);
             } catch (error) {
                 if (attempt < retries && error.message?.includes('Failed to fetch')) {
-                    console.warn(`Network error on attempt ${attempt + 1}, retrying...`);
+                    console.warn(`[API] Network error on attempt ${attempt + 1}, retrying...`);
                     await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
                     continue;
                 }
-                console.error(`Error fetching JSON from ${url}:`, error);
+                console.error(`[API] Error fetching JSON from ${url}:`, error);
                 throw error;
             }
         }
@@ -193,7 +196,7 @@ $(document).ready(function () {
                 throw new Error('No coordinates found for the provided location.');
             }
         } catch (error) {
-            console.error('Error in fetchCoordinates:', error);
+            console.error('[API] Error in fetchCoordinates:', error);
             throw error; // Rethrow to handle it in the calling function
         }
     };
@@ -235,8 +238,7 @@ $(document).ready(function () {
             clearTimeout(timeoutId);
 
             if (!response.ok) {
-                // Geolocation is optional - fail silently
-                console.log('Geolocation service unavailable. Using default currency.');
+                console.log('[Location] Geolocation service unavailable. Using default currency.');
                 const defaultCurrency = 'USD';
                 SELECTORS.currencyInput.val(defaultCurrency).trigger('change');
                 return;
@@ -246,7 +248,7 @@ $(document).ready(function () {
             const currency = data.currency?.code;
 
             if (currency) {
-                console.log('Setting currency to:', currency);
+                console.log('[Location] Setting currency to:', currency);
                 SELECTORS.currencyInput.val(currency).trigger('change');
             } else {
                 const defaultCurrency = 'USD';
@@ -254,11 +256,10 @@ $(document).ready(function () {
             }
 
         } catch (error) {
-            // Geolocation is optional - fail silently
             if (error.name === 'AbortError') {
-                console.log('Currency API call timed out. Using default currency.');
+                console.log('[Location] Currency API call timed out. Using default currency.');
             } else {
-                console.log('Geolocation not available:', error.message);
+                console.log('[Location] Geolocation not available:', error.message);
             }
             const defaultCurrency = 'USD';
             SELECTORS.currencyInput.val(defaultCurrency).trigger('change');
@@ -289,29 +290,27 @@ $(document).ready(function () {
         SELECTORS.noResultsMessage.hide(); // Optionally hide no results message when input changes
 
         if (!location) {
-            console.log('Location input is empty. Clearing hotels and disabling search button.');
-            // No action needed: search button remains disabled and results are cleared
+            console.log('[Location] Location input is empty. Clearing hotels and disabling search button.');
             return;
         }
 
         try {
-            console.log('Fetching coordinates for location:', location);
+            console.log('[Location] Fetching coordinates for location:', location);
             const coordinates = await fetchCoordinates(location);
             state.locationCoordinates = coordinates;
-            console.log('Coordinates:', state.locationCoordinates);
+            console.log('[Location] Coordinates:', state.locationCoordinates);
 
-            // Optionally, you can extract the city name from coordinates if needed
             const locationData = await fetchJSON(`${API_ENDPOINTS.getCoordinatesByLocation}?location=${encodeURIComponent(location)}`);
             const cityComponent = locationData.results[0].address_components.find(component => 
                 component.types.includes('locality') || component.types.includes('postal_town')
             );
 
             state.redirectCity = cityComponent ? cityComponent.long_name : '';
-            console.log('City:', state.redirectCity || 'Not found');
+            console.log('[Location] City:', state.redirectCity || 'Not found');
 
             SELECTORS.searchBtn.prop('disabled', false);
         } catch (error) {
-            console.error('Error handling location input:', error);
+            console.error('[Location] Error handling location input:', error);
             SELECTORS.noResultsMessage.show().text('Failed to fetch location data. Please try again.');
         }
     };
@@ -327,7 +326,6 @@ $(document).ready(function () {
         SELECTORS.submitText.hide();
         SELECTORS.loader.show();
 
-        // Retrieve form data
         const formData = {
             location: SELECTORS.locationInput.val(),
             dateRange: state.datePicker.selectedDates,
@@ -337,7 +335,6 @@ $(document).ready(function () {
             formCurrency: SELECTORS.currencyInput.val(),
         };
 
-        // Validate date range
         const [checkInDate, checkOutDate] = formData.dateRange.map(formatDateToLocalISOString);
         const numberOfNights = formData.dateRange[1] && formData.dateRange[0]
             ? Math.round((formData.dateRange[1] - formData.dateRange[0]) / (1000 * 60 * 60 * 24))
@@ -350,7 +347,6 @@ $(document).ready(function () {
             return;
         }
 
-        // Ensure that coordinates are available
         if (!state.locationCoordinates || Object.keys(state.locationCoordinates).length === 0) {
             alert('Please enter a valid location to fetch coordinates.');
             SELECTORS.locationInput.focus();
@@ -358,7 +354,7 @@ $(document).ready(function () {
             return;
         }
 
-        console.log('Form Data:', {
+        console.log('[Search] Form Data:', {
             location: formData.location,
             checkInDate,
             checkOutDate,
@@ -366,8 +362,7 @@ $(document).ready(function () {
         });
 
         try {
-            // CALL THE RAPID API FROM THE BACKEND HERE
-            console.log('Fetching hotel offers for:', formData.location,state.locationCoordinates.lat,state.locationCoordinates.lng, checkInDate, checkOutDate, formData.adults, formData.numberOfRooms, formData.formCurrency);
+            console.log('[Search] Fetching hotel offers for:', formData.location,state.locationCoordinates.lat,state.locationCoordinates.lng, checkInDate, checkOutDate, formData.adults, formData.numberOfRooms, formData.formCurrency);
             const params = new URLSearchParams({
                 latitude: state.locationCoordinates.lat,
                 longitude: state.locationCoordinates.lng,
@@ -379,42 +374,35 @@ $(document).ready(function () {
             }).toString();
             const url = `${API_ENDPOINTS.getHotelOffersByCoordinates}?${params}`;
             let offersData = await fetchJSON(url);
-            offersData = offersData.data.result; // Extract the result from the response
-            console.log('Hotel Offers Data:', offersData);
+            offersData = offersData.data.result;
+            console.log('[Search] Hotel Offers Data:', offersData);
 
             if (offersData.length > 0) {
-                // Calculate Distances
                 const offersWithDistance = calculateDistances(offersData, state.locationCoordinates);
-                console.log('Offers with Distance:', offersWithDistance);
+                console.log('[Search] Offers with Distance:', offersWithDistance);
 
-                // Sort Offers by Distance
                 offersWithDistance.sort((a, b) => {
                     const distanceA = convertToMeters(a.distanceDisplay);
                     const distanceB = convertToMeters(b.distanceDisplay);
                     return distanceA - distanceB;
                 });
-                console.log('Sorted Offers:', offersWithDistance);
+                console.log('[Search] Sorted Offers:', offersWithDistance);
 
-                // Render Hotel Cards
-                console.log('Rendering hotel cards...');
+                console.log('[UI] Rendering hotel cards...');
                 renderHotelCards(offersWithDistance, formData);
-                $('.email-section').show(); // Show email input after showing results
+                $('.email-section').show();
             } else {
                 SELECTORS.noResultsMessage.show().text('No hotels found for the selected location.');
-                $('.email-section').hide(); // Hide email input if no results are found
-
+                $('.email-section').hide();
             }
         } catch (error) {
-            console.error('Error during form submission:', error.message);
+            console.error('[Search] Error during form submission:', error.message);
             SELECTORS.noResultsMessage.show().text('An error occurred while fetching hotel data. Please try again.');
-            $('.email-section').hide(); // Hide email section if an error occurred
+            $('.email-section').hide();
         } finally {
             SELECTORS.loader.hide();
         }
     };
-
-
-    //  --------- HELPER FUNCTIONS HERE ---------- //
 
     /**
      * Convert distance display string to meters.
@@ -427,7 +415,7 @@ $(document).ready(function () {
         if (unit === 'km') {
             return numericValue * 1000;
         }
-        return numericValue; // Assume the unit is meters if not specified
+        return numericValue;
     };
 
     /**
@@ -488,7 +476,7 @@ $(document).ready(function () {
      */
     const renderHotelCards = (offers, formData) => {
         if (offers.length === 0) {
-            console.log('No offers found, showing message to the user.');
+            console.log('[UI] No offers found, showing message to the user.');
             SELECTORS.resultsContainer.html('<div class="no-results-message">No valid hotel offers found. Please try different search criteria.</div>');
             return;
         }
@@ -500,23 +488,10 @@ $(document).ready(function () {
             const pricePerNight = offer.composite_price_breakdown.gross_amount_per_night.amount_rounded;
         
             const card = $('<div>').addClass('card');
-        
-            // Hidden Hotel ID
-            $('<div>')
-                .addClass('hiddenHotelId')
-                .text(offer.hotel_id)
-                .appendTo(card);
-        
-            // Card Header
-            $('<div>')
-                .addClass('card-header')
-                .text(formatHotelName(offer.hotel_name))
-                .appendTo(card);
-        
-            // Card Content with Prices and Badges
+            $('<div>').addClass('hiddenHotelId').text(offer.hotel_id).appendTo(card);
+            $('<div>').addClass('card-header').text(formatHotelName(offer.hotel_name)).appendTo(card);
+            
             const cardContent = $('<div>').addClass('card-content');
-
-            // Prices Section
             const pricesDiv = $('<div>').addClass('prices');
             $('<div>').addClass('price-per-night')
                 .append($('<span>').addClass('amount').text(formatPrice(pricePerNight)))
@@ -528,43 +503,22 @@ $(document).ready(function () {
                 .appendTo(pricesDiv);
             cardContent.append(pricesDiv);
 
-            // Badges Section
             const badgesDiv = $('<div>').addClass('badges');
-            $('<div>').addClass('badge distance')
-                .text(offer.distanceDisplay)
-                .appendTo(badgesDiv);
+            $('<div>').addClass('badge distance').text(offer.distanceDisplay).appendTo(badgesDiv);
 
-            // Determine rating class based on score
             const score = parseFloat(offer.review_score) || 0;
             let ratingClass = 'rating-low';
             if (score >= 8) ratingClass = 'rating-high';
             else if (score >= 6) ratingClass = 'rating-medium';
 
-            $('<div>').addClass(`badge rating ${ratingClass}`)
-                .text(`Rating: ${offer.review_score}`)
-                .appendTo(badgesDiv);
+            $('<div>').addClass(`badge rating ${ratingClass}`).text(`Rating: ${offer.review_score}`).appendTo(badgesDiv);
             cardContent.append(badgesDiv);
-
             card.append(cardContent);
         
-            // Card Footer with Track Button
             const cardFooter = $('<div>').addClass('card-footer');
-
-            // Create a unique ID for the checkbox
             const checkboxId = `checkbox-${offer.hotel_id}`;
-
-            // Hidden checkbox for form functionality
-            const checkboxInput = $('<input>')
-                .attr({
-                    type: 'checkbox',
-                    id: checkboxId
-                })
-                .addClass('select-checkbox');
-
-            // Button-style label
-            const trackButton = $('<label>')
-                .attr('for', checkboxId)
-                .addClass('track-button')
+            const checkboxInput = $('<input>').attr({ type: 'checkbox', id: checkboxId }).addClass('select-checkbox');
+            const trackButton = $('<label>').attr('for', checkboxId).addClass('track-button')
                 .append($('<span>').addClass('track-text').text('Track this hotel'))
                 .append($('<span>').addClass('tracking-text').text('Tracking'));
 
@@ -609,32 +563,20 @@ $(document).ready(function () {
      * Handle checkbox state changes and update selected hotels.
      */
     const handleCheckboxChange = () => {
-        console.log('Checkbox changed');
-
+        console.log('[UI] Checkbox changed');
         const checkedCheckboxes = SELECTORS.resultsContainer.find('.select-checkbox:checked');
-        console.log('Checked checkboxes:', checkedCheckboxes.length);
+        console.log('[UI] Checked checkboxes:', checkedCheckboxes.length);
 
-        // Toggle the Submit button based on the number of selected checkboxes
         SELECTORS.submitToSheetBtn.toggle(checkedCheckboxes.length > 0);
 
-        // Update the selectedHotels array in the state
         state.selectedHotels = checkedCheckboxes.map(function () {
             const card = $(this).closest('.card');
             const hotelId = card.find('.hiddenHotelId').text();
-            const hotelName = card.find('.card-header').text(); // Updated to find 'card-header'
-            const totalPrice = card.find('.total-price .amount').text().replace(/[^\d.-]/g, ''); // Remove currency text
+            const hotelName = card.find('.card-header').text();
+            const totalPrice = card.find('.total-price .amount').text().replace(/[^\d.-]/g, '');
 
-            console.log('Selected Hotel Info:', {
-                hotelId,
-                hotelName,
-                totalPrice
-            });
-
-            return {
-                hotelId,
-                hotelName,
-                totalPrice
-            };
+            console.log('[UI] Selected Hotel Info:', { hotelId, hotelName, totalPrice });
+            return { hotelId, hotelName, totalPrice };
         }).get();
     };
 
@@ -648,7 +590,6 @@ $(document).ready(function () {
         const checkbox = target.hasClass('select-checkbox') ? target : target.find('.select-checkbox');
 
         if (checkbox.length) {
-            // Toggle the checked property and trigger change event
             checkbox.prop('checked', !checkbox.prop('checked')).trigger('change');
         }
     };
@@ -657,7 +598,6 @@ $(document).ready(function () {
      * Submit selected hotels to Sheety and send email.
      */
     const handleSubmitToSheety = async () => {
-        // Validate required fields before submission
         if (!SELECTORS.locationInput.val().trim()) {
             alert('Please enter a location.');
             SELECTORS.locationInput.focus();
@@ -700,56 +640,44 @@ $(document).ready(function () {
         };
 
         try {
-            // Submit to Sheety
             const sheetyResult = await submitToSheety(formData, formattedData);
 
-            // Confirm Sheety submission
             if (sheetyResult && sheetyResult.price && sheetyResult.price.id) {
-                console.log('Data successfully submitted to Sheety:', sheetyResult);
+                console.log('[API] Data successfully submitted to Sheety:', sheetyResult);
             } else {
-                console.warn('Data submitted to Sheety but did not receive a success confirmation:', sheetyResult);
+                console.warn('[API] Data submitted to Sheety but did not receive a success confirmation:', sheetyResult);
             }
 
-            // Capture redirect parameters
             captureRedirectParameters();
-
-            // Send email notification
             await sendEmailNotification(formData, formattedData);
 
-            // Initialize the modal based on whether the user has been redirected
             if (state.redirected) {
-                // If user was redirected, show the thank you modal
                 showThankYouModal();
             } else {
-                // Show flight tracking modal
                 showFlightTrackingModal();
             }
 
-            // Handle flight tracking confirmation
             SELECTORS.confirmFlightTrackerBtn.off('click').on('click', function () {
-                window.open(state.redirectUrl, '_blank');    // Navigate to redirect to the other site in a new tab
-                window.location.href = 'https://hotels.robotize.no/';  // Refresh the form page
+                window.open(state.redirectUrl, '_blank');
+                window.location.href = 'https://hotels.robotize.no/';
             });
 
-            // Handle flight tracking decline
             SELECTORS.btnSecondary.off('click').on('click', function () {
-                console.log("User declined flight tracking.");
-                window.location.href = 'https://hotels.robotize.no/';  // Refresh the form page
+                console.log("[Modal] User declined flight tracking.");
+                window.location.href = 'https://hotels.robotize.no/';
             });
 
-            // Handle OK button in modal
             SELECTORS.thankYouOkBtn.off('click').on('click', function () {
-                console.log("User clicked OK on thank you modal.");
-                window.location.href = 'https://hotels.robotize.no/';  // Refresh the form page
+                console.log("[Modal] User clicked OK on thank you modal.");
+                window.location.href = 'https://hotels.robotize.no/';
             });
 
-            // If the modal is closed, remove the modal-open class from body to restore scrolling
             SELECTORS.flightTrackingModal.on('hidden.bs.modal', function () {
                 $('body').removeClass('modal-open');
             });
 
         } catch (error) {
-            console.error('Error during form submission:', error.message);
+            console.error('[Submit] Error during form submission:', error.message);
             SELECTORS.noResultsMessage.show().text('An error occurred during submission. Please try again.');
         } finally {
             SELECTORS.loader.hide();
@@ -774,7 +702,7 @@ $(document).ready(function () {
             selectedHotels: formattedData.selectedHotels.length > 0 ? formattedData.selectedHotels : [{ message: "No hotels selected" }]
         };
 
-        console.log('Submitting to Sheety with data:', JSON.stringify(data, null, 2));
+        console.log('[API] Submitting to Sheety with data:', JSON.stringify(data, null, 2));
 
         try {
             const response = await fetch(API_ENDPOINTS.sheety, {
@@ -785,13 +713,13 @@ $(document).ready(function () {
 
             const text = await response.text();
             if (response.ok) {
-                console.log('Sheety response:', text);
+                console.log('[API] Sheety response:', text);
                 return JSON.parse(text);
             } else {
                 throw new Error(`HTTP error ${response.status}: ${text}`);
             }
         } catch (error) {
-            console.error('Error sending data to Sheety:', error.message);
+            console.error('[API] Error sending data to Sheety:', error.message);
             throw error;
         }
     };
@@ -903,12 +831,12 @@ $(document).ready(function () {
 
             if (!emailResponse.ok) {
                 const errorData = await emailResponse.json();
-                console.error('Failed to send email:', errorData.message);
+                console.error('[Email] Failed to send email:', errorData.message);
             } else {
-                console.log('Email sent successfully');
+                console.log('[Email] Email sent successfully');
             }
         } catch (error) {
-            console.error('Error during email sending:', error.message);
+            console.error('[Email] Error during email sending:', error.message);
         }
     };
 
@@ -916,13 +844,8 @@ $(document).ready(function () {
      * Attach event listeners using event delegation where appropriate.
      */
     const attachEventListeners = () => {
-        // Handle search form submission
         SELECTORS.searchForm.on('submit', handleSearchFormSubmit);
-        
-        // Handle checkbox state changes
         SELECTORS.resultsContainer.on('change', '.select-checkbox', handleCheckboxChange);
-
-        // Handle submit to Sheety button
         SELECTORS.submitToSheetBtn.on('click', handleSubmitToSheety);
     };
 
@@ -931,56 +854,45 @@ $(document).ready(function () {
      */
     const init = async () => {
         try {
-            // Initialize components
             state.datePicker = initializeDatePicker();
-            console.log('Date Picker initialized:', state.datePicker);
+            console.log('[Init] Date Picker initialized:', state.datePicker);
 
-            // Get query parameters
             const queryParams = getQueryParams();
 
-            // Only set currency from IP if 'currency' is not present in query params
             if (!queryParams.currency) {
-                setCurrencyFromIP(); // Do not await; let it run in the background
+                setCurrencyFromIP();
             }
 
-            console.log('Query Parameters:', queryParams);
+            console.log('[Init] Query Parameters:', queryParams);
 
-            // If redirected and city is present, fetch coordinates
             if (state.redirected && queryParams.city) {
                 try {
                     const coordinates = await fetchCoordinates(queryParams.city);
                     state.locationCoordinates = coordinates;
-                    console.log(`Fetched coordinates for ${queryParams.city}:`, coordinates);
+                    console.log(`[Init] Fetched coordinates for ${queryParams.city}:`, coordinates);
                 } catch (error) {
-                    console.error(`Failed to fetch coordinates for ${queryParams.city}:`, error);
+                    console.error(`[Init] Failed to fetch coordinates for ${queryParams.city}:`, error);
                     SELECTORS.noResultsMessage.show().text('Failed to fetch location data. Please try again.');
-                    return; // Exit initialization if coordinates cannot be fetched
+                    return;
                 }
             }
 
-            // Initialize form fields
             initializeFormFields(queryParams);
+            console.log('[Init] Form fields initialized');
 
-            console.log('Form fields initialized');
-
-            // Initialize location input listener
             initLocationInputListener();
+            console.log('[Init] Location input listener initialized');
 
-            console.log('Location input listener initialized');
-
-            // Attach event listeners
             attachEventListeners();
+            console.log('[Init] Event listeners attached');
 
-            console.log('Event listeners attached');
-
-            console.log('Initialization complete');
+            console.log('[Init] Initialization complete');
 
         } catch (error) {
-            console.error('Initialization error:', error);
+            console.error('[Init] Initialization error:', error);
             SELECTORS.noResultsMessage.show().text('Failed to initialize the page. Please try refreshing.');
         }
     };
 
-    // Initialize the script
     init();
 });
