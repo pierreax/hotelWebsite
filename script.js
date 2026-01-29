@@ -134,17 +134,29 @@ $(document).ready(function () {
      * @param {Object} options 
      * @returns {Object} Parsed JSON data.
      */
-    const fetchJSON = async (url, options = {}) => {
-        try {
-            const response = await fetch(url, options);
-            const text = await response.text();
-            if (!response.ok) {
-                throw new Error(`HTTP error ${response.status}: ${text}`);
+    const fetchJSON = async (url, options = {}, retries = 2) => {
+        for (let attempt = 0; attempt <= retries; attempt++) {
+            try {
+                const response = await fetch(url, options);
+                const text = await response.text();
+                if (!response.ok) {
+                    if (response.status >= 500 && attempt < retries) {
+                        console.warn(`Server error ${response.status} on attempt ${attempt + 1}, retrying...`);
+                        await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+                        continue;
+                    }
+                    throw new Error(`HTTP error ${response.status}: ${text}`);
+                }
+                return JSON.parse(text);
+            } catch (error) {
+                if (attempt < retries && error.message?.includes('Failed to fetch')) {
+                    console.warn(`Network error on attempt ${attempt + 1}, retrying...`);
+                    await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+                    continue;
+                }
+                console.error(`Error fetching JSON from ${url}:`, error);
+                throw error;
             }
-            return JSON.parse(text);
-        } catch (error) {
-            console.error(`Error fetching JSON from ${url}:`, error);
-            throw error;
         }
     };
 
@@ -395,7 +407,7 @@ $(document).ready(function () {
         } catch (error) {
             console.error('Error during form submission:', error.message);
             SELECTORS.noResultsMessage.show().text('An error occurred while fetching hotel data. Please try again.');
-            SELECTORS.emailInput.hide(); // Hide email input if no results are found
+            $('.email-section').hide(); // Hide email section if an error occurred
         } finally {
             SELECTORS.loader.hide();
         }
