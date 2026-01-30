@@ -469,6 +469,7 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
 }
 
 .badges {
@@ -476,6 +477,9 @@ body {
     flex-direction: row;
     gap: var(--space-xs);
     align-items: center;
+    position: absolute;
+    top: var(--space-sm);
+    right: var(--space-sm);
 }
 
 .badge {
@@ -516,6 +520,7 @@ body {
 .price-per-night {
     display: flex;
     align-items: baseline;
+    gap: var(--space-xs);
 }
 
 .price-per-night .amount {
@@ -532,6 +537,7 @@ body {
 .total-price {
     display: flex;
     align-items: baseline;
+    gap: var(--space-xs);
 }
 
 .total-price .amount {
