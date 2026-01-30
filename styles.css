@@ -460,7 +460,7 @@ body {
 
 /* Hotel name */
 .card-header {
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-xl);
     font-weight: 700;
     color: #fff;
     background: none;
