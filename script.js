@@ -494,13 +494,21 @@ $(document).ready(function () {
             const totalPrice = offer.composite_price_breakdown.gross_amount.amount_rounded;
             const pricePerNight = offer.composite_price_breakdown.gross_amount_per_night.amount_rounded;
 
+            console.log(`[Photo] ${offer.hotel_name}:`, {
+                max_photo_url: offer.max_photo_url,
+                photo_url: offer.photo_url,
+                main_photo_url: offer.main_photo_url,
+                max_1440_photo_url: offer.max_1440_photo_url,
+            });
+
             const card = $('<div>').addClass('card');
             $('<div>').addClass('hiddenHotelId').text(offer.hotel_id).appendTo(card);
 
             // Photo banner
-            if (offer.max_photo_url) {
+            const photoUrl = offer.max_photo_url || offer.max_1440_photo_url || offer.photo_url || offer.main_photo_url;
+            if (photoUrl) {
                 $('<img>').addClass('card-photo').attr({
-                    src: offer.max_photo_url,
+                    src: photoUrl,
                     alt: formatHotelName(offer.hotel_name),
                     loading: 'lazy'
                 }).on('error', function () {
