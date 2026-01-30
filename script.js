@@ -275,7 +275,10 @@ $(document).ready(function () {
         const debounceDelay = 500; // milliseconds
 
         SELECTORS.locationInput.on('focus', function () {
-            this.select();
+            const input = this;
+            requestAnimationFrame(() => {
+                input.setSelectionRange(0, input.value.length);
+            });
         });
 
         SELECTORS.locationInput.on('blur', function (event) {

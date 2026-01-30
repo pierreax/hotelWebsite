@@ -80,8 +80,15 @@ body {
 
 /* Container */
 .container {
-    max-width: 480px;
+    max-width: 720px;
     margin: 0 auto;
+}
+
+.form-card,
+.hero-section {
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 /* Hero Section */
@@ -398,8 +405,21 @@ body {
 }
 
 /* Results Box */
+#resultsBox {
+    margin-top: var(--space-xl);
+}
+
 .results-box {
     padding-top: var(--space-xl);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-md);
+}
+
+@media (max-width: 600px) {
+    .results-box {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Hotel Cards */
@@ -408,7 +428,6 @@ body {
     border: 1px solid var(--color-border-light);
     border-radius: var(--radius-lg);
     padding: var(--space-md);
-    margin-bottom: var(--space-md);
     box-shadow: var(--shadow-sm);
     transition: var(--transition-normal);
 }
@@ -434,10 +453,10 @@ body {
 }
 
 .card-content {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: var(--space-sm);
+    display: flex;
+    justify-content: space-between;
     align-items: center;
+    gap: var(--space-sm);
     margin-bottom: var(--space-md);
 }
 
