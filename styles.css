@@ -423,9 +423,12 @@ body {
     background: var(--color-surface);
     border: 1px solid var(--color-border-light);
     border-radius: var(--radius-lg);
-    padding: var(--space-md);
+    padding: 0;
     box-shadow: var(--shadow-sm);
     transition: var(--transition-normal);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .card:hover {
@@ -437,55 +440,50 @@ body {
     display: none;
 }
 
+/* Photo banner */
+.card-photo {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    display: block;
+}
+
+.card-photo-fallback {
+    width: 100%;
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--color-primary-light), #c5d8f8);
+    color: var(--color-primary);
+}
+
+/* Hotel name */
 .card-header {
     font-size: var(--font-size-sm);
-    font-weight: 600;
-    color: var(--color-primary);
-    background: var(--color-primary-light);
-    margin: calc(-1 * var(--space-md)) calc(-1 * var(--space-md)) var(--space-md);
-    padding: var(--space-sm) var(--space-md);
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    font-weight: 700;
+    color: var(--color-text);
+    background: none;
+    padding: var(--space-sm) var(--space-md) 0;
     line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.card-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--space-sm);
-    margin-bottom: var(--space-md);
-}
-
-.prices {
+.card-body {
+    padding: var(--space-sm) var(--space-md);
     display: flex;
     flex-direction: column;
-    gap: var(--space-xs);
-}
-
-.price-per-night,
-.total-price {
-    display: flex;
-    align-items: baseline;
-    gap: var(--space-xs);
-}
-
-.price-per-night .amount,
-.total-price .amount {
-    font-size: var(--font-size-base);
-    font-weight: 600;
-    color: var(--color-text);
-}
-
-.prices .label {
-    font-size: var(--font-size-xs);
-    color: var(--color-text-muted);
+    gap: var(--space-sm);
+    flex: 1;
 }
 
 .badges {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: var(--space-xs);
-    align-items: flex-end;
+    align-items: center;
 }
 
 .badge {
@@ -494,6 +492,44 @@ body {
     font-size: var(--font-size-xs);
     font-weight: 600;
     white-space: nowrap;
+}
+
+.prices {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.price-per-night {
+    display: flex;
+    align-items: baseline;
+}
+
+.price-per-night .amount {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.price-per-night .label {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+}
+
+.total-price {
+    display: flex;
+    align-items: baseline;
+}
+
+.total-price .amount {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--color-text-muted);
+}
+
+.total-price .label {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
 }
 
 .badge.distance {
@@ -519,7 +555,8 @@ body {
 
 /* Card Footer / Track Button */
 .card-footer {
-    margin-top: var(--space-sm);
+    padding: 0 var(--space-md) var(--space-md);
+    margin-top: auto;
 }
 
 .select-checkbox {
@@ -768,8 +805,9 @@ body {
         font-size: var(--font-size-xs);
     }
 
-    .card {
-        padding: var(--space-sm);
+    .card-photo,
+    .card-photo-fallback {
+        height: 120px;
     }
 
     .card-header {

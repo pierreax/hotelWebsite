@@ -493,35 +493,53 @@ $(document).ready(function () {
         offers.forEach((offer) => {
             const totalPrice = offer.composite_price_breakdown.gross_amount.amount_rounded;
             const pricePerNight = offer.composite_price_breakdown.gross_amount_per_night.amount_rounded;
-        
+
             const card = $('<div>').addClass('card');
             $('<div>').addClass('hiddenHotelId').text(offer.hotel_id).appendTo(card);
+
+            // Photo banner
+            if (offer.max_photo_url) {
+                $('<img>').addClass('card-photo').attr({
+                    src: offer.max_photo_url,
+                    alt: formatHotelName(offer.hotel_name),
+                    loading: 'lazy'
+                }).on('error', function () {
+                    $(this).replaceWith('<div class="card-photo-fallback"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 21h18M3 7v14M21 7v14M6 7V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v3M9 11h6M9 15h6"/></svg></div>');
+                }).appendTo(card);
+            } else {
+                $('<div>').addClass('card-photo-fallback').html('<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 21h18M3 7v14M21 7v14M6 7V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v3M9 11h6M9 15h6"/></svg>').appendTo(card);
+            }
+
+            // Hotel name
             $('<div>').addClass('card-header').text(formatHotelName(offer.hotel_name)).appendTo(card);
-            
-            const cardContent = $('<div>').addClass('card-content');
-            const pricesDiv = $('<div>').addClass('prices');
-            $('<div>').addClass('price-per-night')
-                .append($('<span>').addClass('amount').text(formatPrice(pricePerNight)))
-                .append($('<span>').addClass('label').text('per night'))
-                .appendTo(pricesDiv);
-            $('<div>').addClass('total-price')
-                .append($('<span>').addClass('amount').text(formatPrice(totalPrice)))
-                .append($('<span>').addClass('label').text('in total'))
-                .appendTo(pricesDiv);
-            cardContent.append(pricesDiv);
 
+            const cardBody = $('<div>').addClass('card-body');
+
+            // Badges row (rating + distance inline)
             const badgesDiv = $('<div>').addClass('badges');
-            $('<div>').addClass('badge distance').text(offer.distanceDisplay).appendTo(badgesDiv);
-
             const score = parseFloat(offer.review_score) || 0;
             let ratingClass = 'rating-low';
             if (score >= 8) ratingClass = 'rating-high';
             else if (score >= 6) ratingClass = 'rating-medium';
+            $('<div>').addClass(`badge rating ${ratingClass}`).text(offer.review_score).appendTo(badgesDiv);
+            $('<div>').addClass('badge distance').text(offer.distanceDisplay).appendTo(badgesDiv);
+            cardBody.append(badgesDiv);
 
-            $('<div>').addClass(`badge rating ${ratingClass}`).text(`Rating: ${offer.review_score}`).appendTo(badgesDiv);
-            cardContent.append(badgesDiv);
-            card.append(cardContent);
-        
+            // Prices stacked
+            const pricesDiv = $('<div>').addClass('prices');
+            $('<div>').addClass('price-per-night')
+                .append($('<span>').addClass('amount').text(formatPrice(pricePerNight)))
+                .append($('<span>').addClass('label').text(' / night'))
+                .appendTo(pricesDiv);
+            $('<div>').addClass('total-price')
+                .append($('<span>').addClass('amount').text(formatPrice(totalPrice)))
+                .append($('<span>').addClass('label').text(' total'))
+                .appendTo(pricesDiv);
+            cardBody.append(pricesDiv);
+
+            card.append(cardBody);
+
+            // Track button
             const cardFooter = $('<div>').addClass('card-footer');
             const checkboxId = `checkbox-${offer.hotel_id}`;
             const checkboxInput = $('<input>').attr({ type: 'checkbox', id: checkboxId }).addClass('select-checkbox');
@@ -531,7 +549,7 @@ $(document).ready(function () {
 
             cardFooter.append(checkboxInput, trackButton);
             card.append(cardFooter);
-        
+
             fragment.append(card);
         });
         
