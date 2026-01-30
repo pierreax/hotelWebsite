@@ -74,6 +74,7 @@ app.use((req, res, next) => {
         "script-src 'self' 'unsafe-inline' https://code.jquery.com https://cdn.jsdelivr.net; " +
         "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " +
         "font-src 'self' https://cdn.jsdelivr.net; " +
+        "img-src 'self' https://cf.bstatic.com; " +
         "frame-ancestors 'self' https://www.robotize.no;"
     );
     next();

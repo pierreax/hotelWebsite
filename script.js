@@ -504,24 +504,28 @@ $(document).ready(function () {
             const card = $('<div>').addClass('card');
             $('<div>').addClass('hiddenHotelId').text(offer.hotel_id).appendTo(card);
 
-            // Photo banner
-            const photoUrl = offer.max_photo_url || offer.max_1440_photo_url || offer.photo_url || offer.main_photo_url;
+            // Background photo
+            const rawPhotoUrl = offer.max_photo_url || offer.max_1440_photo_url || offer.photo_url || offer.main_photo_url;
+            const photoUrl = rawPhotoUrl ? rawPhotoUrl.replace('/square60/', '/square600/') : null;
             if (photoUrl) {
-                $('<img>').addClass('card-photo').attr({
-                    src: photoUrl,
-                    alt: formatHotelName(offer.hotel_name),
-                    loading: 'lazy'
-                }).on('error', function () {
-                    $(this).replaceWith('<div class="card-photo-fallback"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 21h18M3 7v14M21 7v14M6 7V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v3M9 11h6M9 15h6"/></svg></div>');
-                }).appendTo(card);
+                card.addClass('card-has-photo');
+                card.css('background-image', `url(${photoUrl})`);
+                // Fallback if image fails to load
+                const testImg = new Image();
+                testImg.onerror = () => {
+                    card.removeClass('card-has-photo').addClass('card-no-photo');
+                    card.css('background-image', '');
+                };
+                testImg.src = photoUrl;
             } else {
-                $('<div>').addClass('card-photo-fallback').html('<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 21h18M3 7v14M21 7v14M6 7V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v3M9 11h6M9 15h6"/></svg>').appendTo(card);
+                card.addClass('card-no-photo');
             }
 
-            // Hotel name
-            $('<div>').addClass('card-header').text(formatHotelName(offer.hotel_name)).appendTo(card);
+            // Overlay with all content
+            const overlay = $('<div>').addClass('card-overlay');
 
-            const cardBody = $('<div>').addClass('card-body');
+            // Hotel name
+            $('<div>').addClass('card-header').text(formatHotelName(offer.hotel_name)).appendTo(overlay);
 
             // Badges row (rating + distance inline)
             const badgesDiv = $('<div>').addClass('badges');
@@ -531,7 +535,7 @@ $(document).ready(function () {
             else if (score >= 6) ratingClass = 'rating-medium';
             $('<div>').addClass(`badge rating ${ratingClass}`).text(offer.review_score).appendTo(badgesDiv);
             $('<div>').addClass('badge distance').text(offer.distanceDisplay).appendTo(badgesDiv);
-            cardBody.append(badgesDiv);
+            overlay.append(badgesDiv);
 
             // Prices stacked
             const pricesDiv = $('<div>').addClass('prices');
@@ -543,20 +547,17 @@ $(document).ready(function () {
                 .append($('<span>').addClass('amount').text(formatPrice(totalPrice)))
                 .append($('<span>').addClass('label').text(' total'))
                 .appendTo(pricesDiv);
-            cardBody.append(pricesDiv);
-
-            card.append(cardBody);
+            overlay.append(pricesDiv);
 
             // Track button
-            const cardFooter = $('<div>').addClass('card-footer');
             const checkboxId = `checkbox-${offer.hotel_id}`;
             const checkboxInput = $('<input>').attr({ type: 'checkbox', id: checkboxId }).addClass('select-checkbox');
             const trackButton = $('<label>').attr('for', checkboxId).addClass('track-button')
                 .append($('<span>').addClass('track-text').text('Track this hotel'))
                 .append($('<span>').addClass('tracking-text').text('Tracking'));
+            overlay.append(checkboxInput, trackButton);
 
-            cardFooter.append(checkboxInput, trackButton);
-            card.append(cardFooter);
+            card.append(overlay);
 
             fragment.append(card);
         });

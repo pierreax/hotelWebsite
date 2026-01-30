@@ -420,8 +420,6 @@ body {
 
 /* Hotel Cards */
 .card {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border-light);
     border-radius: var(--radius-lg);
     padding: 0;
     box-shadow: var(--shadow-sm);
@@ -429,54 +427,48 @@ body {
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    min-height: 280px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+.card.card-no-photo {
+    background: linear-gradient(135deg, #1a2a4a, #2d4a7a);
 }
 
 .card:hover {
-    box-shadow: var(--shadow-md);
-    border-color: var(--color-border);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
 }
 
 .hiddenHotelId {
     display: none;
 }
 
-/* Photo banner */
-.card-photo {
-    width: 100%;
-    height: 140px;
-    object-fit: cover;
-    display: block;
-}
-
-.card-photo-fallback {
-    width: 100%;
-    height: 140px;
+/* Full-bleed overlay */
+.card-overlay {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, var(--color-primary-light), #c5d8f8);
-    color: var(--color-primary);
+    flex-direction: column;
+    justify-content: flex-end;
+    flex: 1;
+    padding: var(--space-md);
+    background: linear-gradient(to bottom, transparent 25%, rgba(0, 0, 0, 0.75) 100%);
+    position: relative;
+    gap: var(--space-xs);
 }
 
 /* Hotel name */
 .card-header {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     font-weight: 700;
-    color: var(--color-text);
+    color: #fff;
     background: none;
-    padding: var(--space-sm) var(--space-md) 0;
+    padding: 0;
     line-height: 1.4;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.card-body {
-    padding: var(--space-sm) var(--space-md);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-sm);
-    flex: 1;
 }
 
 .badges {
@@ -494,47 +486,9 @@ body {
     white-space: nowrap;
 }
 
-.prices {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.price-per-night {
-    display: flex;
-    align-items: baseline;
-}
-
-.price-per-night .amount {
-    font-size: var(--font-size-lg);
-    font-weight: 700;
-    color: var(--color-text);
-}
-
-.price-per-night .label {
-    font-size: var(--font-size-xs);
-    color: var(--color-text-muted);
-}
-
-.total-price {
-    display: flex;
-    align-items: baseline;
-}
-
-.total-price .amount {
-    font-size: var(--font-size-sm);
-    font-weight: 500;
-    color: var(--color-text-muted);
-}
-
-.total-price .label {
-    font-size: var(--font-size-xs);
-    color: var(--color-text-muted);
-}
-
 .badge.distance {
-    background: var(--color-primary-light);
-    color: var(--color-primary);
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
 }
 
 .badge.rating {
@@ -553,12 +507,45 @@ body {
     background: var(--color-rating-low);
 }
 
-/* Card Footer / Track Button */
-.card-footer {
-    padding: 0 var(--space-md) var(--space-md);
-    margin-top: auto;
+.prices {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
+.price-per-night {
+    display: flex;
+    align-items: baseline;
+}
+
+.price-per-night .amount {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: #fff;
+}
+
+.price-per-night .label {
+    font-size: var(--font-size-xs);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.total-price {
+    display: flex;
+    align-items: baseline;
+}
+
+.total-price .amount {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.total-price .label {
+    font-size: var(--font-size-xs);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Track Button */
 .select-checkbox {
     position: absolute;
     opacity: 0;
@@ -572,21 +559,22 @@ body {
     align-items: center;
     justify-content: center;
     width: 100%;
-    height: 44px;
-    border: 2px solid var(--color-border);
+    height: 40px;
+    border: 2px solid rgba(255, 255, 255, 0.6);
     border-radius: var(--radius-md);
-    background: var(--color-surface);
-    color: var(--color-text-secondary);
+    background: transparent;
+    color: #fff;
     font-size: var(--font-size-sm);
     font-weight: 600;
     cursor: pointer;
     transition: var(--transition-fast);
+    margin-top: var(--space-xs);
 }
 
 .track-button:hover {
-    border-color: var(--color-primary);
-    color: var(--color-primary);
-    background: var(--color-primary-light);
+    border-color: #fff;
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
 }
 
 .track-button .tracking-text {
@@ -805,13 +793,12 @@ body {
         font-size: var(--font-size-xs);
     }
 
-    .card-photo,
-    .card-photo-fallback {
-        height: 120px;
+    .card {
+        min-height: 220px;
     }
 
     .card-header {
-        font-size: var(--font-size-xs);
+        font-size: var(--font-size-sm);
     }
 
     .badge {
