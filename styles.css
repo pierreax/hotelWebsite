@@ -407,17 +407,13 @@ body {
 /* Results Box */
 #resultsBox {
     margin-top: var(--space-xl);
-}
-
-.results-box {
-    padding-top: var(--space-xl);
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: var(--space-md);
 }
 
 @media (max-width: 600px) {
-    .results-box {
+    #resultsBox {
         grid-template-columns: 1fr;
     }
 }
