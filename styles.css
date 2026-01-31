@@ -460,7 +460,7 @@ body {
 
 /* Hotel name */
 .card-header {
-    font-size: var(--font-size-xl);
+    font-size: var(--font-size-2xl);
     font-weight: 700;
     color: #fff;
     background: none;
@@ -485,14 +485,15 @@ body {
 .badge {
     padding: var(--space-xs) var(--space-sm);
     border-radius: var(--radius-sm);
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-sm);
     font-weight: 600;
     white-space: nowrap;
 }
 
 .badge.distance {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.55);
     color: #fff;
+    backdrop-filter: blur(4px);
 }
 
 .badge.rating {
@@ -524,13 +525,13 @@ body {
 }
 
 .price-per-night .amount {
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-xl);
     font-weight: 700;
     color: #fff;
 }
 
 .price-per-night .label {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-sm);
     color: rgba(255, 255, 255, 0.7);
 }
 
@@ -541,13 +542,13 @@ body {
 }
 
 .total-price .amount {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     font-weight: 500;
     color: rgba(255, 255, 255, 0.7);
 }
 
 .total-price .label {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-sm);
     color: rgba(255, 255, 255, 0.7);
 }
 
@@ -804,12 +805,12 @@ body {
     }
 
     .card-header {
-        font-size: var(--font-size-sm);
+        font-size: var(--font-size-xl);
     }
 
     .badge {
         padding: 3px 6px;
-        font-size: 0.7rem;
+        font-size: var(--font-size-xs);
     }
 }
 
