@@ -140,6 +140,28 @@ app.get('/api/geolocation', async (req, res) => {
     }
 });
 
+// Location Autocomplete
+app.get('/api/locationAutocomplete', async (req, res) => {
+    const { input } = req.query;
+    if (!input || typeof input !== 'string' || input.trim().length < 2) {
+        return res.json({ predictions: [] });
+    }
+
+    try {
+        const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&types=geocode|establishment&key=${GOOGLE_API_KEY}`;
+        const response = await fetchWithTimeout(url);
+        if (!response.ok) {
+            console.error(`[API] /api/locationAutocomplete: Google Places API error: ${response.status}`);
+            return res.status(response.status).json({ predictions: [] });
+        }
+        const data = await response.json();
+        res.json({ predictions: data.predictions || [] });
+    } catch (error) {
+        console.error('[API] /api/locationAutocomplete: Error:', error.message);
+        res.status(500).json({ predictions: [] });
+    }
+});
+
 // Coordinates by Location Name
 app.get('/api/getCoordinatesByLocation', async (req, res) => {
     const { location } = req.query;

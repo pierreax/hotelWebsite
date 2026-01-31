@@ -192,6 +192,40 @@ body {
     color: var(--color-text-muted);
 }
 
+/* Autocomplete */
+.autocomplete-wrapper {
+    position: relative;
+}
+
+.autocomplete-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    max-height: 240px;
+    overflow-y: auto;
+    z-index: 100;
+    margin-top: var(--space-xs);
+}
+
+.autocomplete-item {
+    padding: var(--space-sm) var(--space-md);
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+    transition: var(--transition-fast);
+}
+
+.autocomplete-item:hover,
+.autocomplete-item.active {
+    background: var(--color-primary-light);
+}
+
 /* Options Row (Adults, Rooms, Currency) */
 .options-row {
     display: grid;

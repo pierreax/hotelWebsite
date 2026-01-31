@@ -30,6 +30,7 @@ $(document).ready(function () {
         sheety: '/api/sendDataToSheety',
         sendEmail: '/api/sendEmail',
         getCoordinatesByLocation: '/api/getCoordinatesByLocation',
+        locationAutocomplete: '/api/locationAutocomplete',
     };
 
     // State Management
@@ -282,9 +283,6 @@ $(document).ready(function () {
     };
 
     const initLocationInputListener = () => {
-        let debounceTimeout;
-        const debounceDelay = 500; // milliseconds
-
         SELECTORS.locationInput.on('focus', function () {
             const input = this;
             requestAnimationFrame(() => {
@@ -292,9 +290,59 @@ $(document).ready(function () {
             });
         });
 
-        SELECTORS.locationInput.on('blur', function (event) {
+        initLocationAutocomplete();
+    };
+
+    const initLocationAutocomplete = () => {
+        let debounceTimeout;
+        const dropdown = $('#locationDropdown');
+
+        SELECTORS.locationInput.on('input', function () {
             clearTimeout(debounceTimeout);
-            debounceTimeout = setTimeout(() => handleLocationInput(event), debounceDelay);
+            const query = $(this).val().trim();
+
+            if (query.length < 2) {
+                dropdown.hide().empty();
+                return;
+            }
+
+            debounceTimeout = setTimeout(async () => {
+                try {
+                    const data = await fetchJSON(`${API_ENDPOINTS.locationAutocomplete}?input=${encodeURIComponent(query)}`);
+                    if (!data.predictions || data.predictions.length === 0) {
+                        dropdown.hide().empty();
+                        return;
+                    }
+
+                    dropdown.empty();
+                    data.predictions.forEach(prediction => {
+                        $('<div>')
+                            .addClass('autocomplete-item')
+                            .text(prediction.description)
+                            .on('mousedown', function (e) {
+                                e.preventDefault();
+                                SELECTORS.locationInput.val(prediction.description);
+                                dropdown.hide().empty();
+                                handleLocationInput({ target: SELECTORS.locationInput[0] });
+                            })
+                            .appendTo(dropdown);
+                    });
+                    dropdown.show();
+                } catch (error) {
+                    console.error('[Autocomplete] Error:', error);
+                    dropdown.hide().empty();
+                }
+            }, 300);
+        });
+
+        SELECTORS.locationInput.on('blur', function () {
+            setTimeout(() => dropdown.hide(), 150);
+        });
+
+        SELECTORS.locationInput.on('keydown', function (e) {
+            if (e.key === 'Escape') {
+                dropdown.hide().empty();
+            }
         });
     };
 

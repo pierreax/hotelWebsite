@@ -45,12 +45,15 @@
                 <!-- Location Input -->
                 <div class="form-section">
                     <div class="form-group">
-                        <div class="input-icon-wrapper">
-                            <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                                <circle cx="12" cy="10" r="3"/>
-                            </svg>
-                            <input type="text" id="location" name="location" placeholder="City, address, hotel or place" required>
+                        <div class="autocomplete-wrapper">
+                            <div class="input-icon-wrapper">
+                                <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                    <circle cx="12" cy="10" r="3"/>
+                                </svg>
+                                <input type="text" id="location" name="location" placeholder="City, address, hotel or place" required autocomplete="off">
+                            </div>
+                            <div class="autocomplete-dropdown" id="locationDropdown"></div>
                         </div>
                     </div>
                 </div>
