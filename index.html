@@ -116,22 +116,6 @@
                     Search Hotels
                 </button>
 
-                <!-- Email Input (shown after results) -->
-                <div class="email-section" style="display: none;">
-                    <div class="floating-label">
-                        <input type="email" id="email" name="email" placeholder=" ">
-                        <label for="email">Email address</label>
-                    </div>
-                </div>
-
-                <!-- Submit Button -->
-                <button id="submitToSheet" type="button" class="btn-success-action" style="display: none;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="20 6 9 17 4 12"/>
-                    </svg>
-                    Start Tracking
-                </button>
-
                 <div id="submitText" style="display: none;">
                     Select the hotels you want to track, then click "Start Tracking"
                 </div>
@@ -201,6 +185,20 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Sticky Bottom Bar -->
+    <div id="stickyBar" class="sticky-bar">
+        <div class="sticky-bar-count">0 hotel(s) selected</div>
+        <div class="sticky-bar-row">
+            <input type="email" id="email" name="email" placeholder="Email address" required>
+            <button id="submitToSheet" type="button" class="btn-success-action">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Start Tracking
+            </button>
         </div>
     </div>
 </body>

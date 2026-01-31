@@ -18,6 +18,8 @@ $(document).ready(function () {
         confirmFlightTrackerBtn: $('#confirmFlightTracker'),
         btnSecondary: $('.btn-secondary'),
         thankYouOkBtn: $('#closeThankYouModal'),
+        stickyBar: $('#stickyBar'),
+        stickyBarCount: $('#stickyBar .sticky-bar-count'),
     };
 
     // API Endpoints
@@ -270,6 +272,15 @@ $(document).ready(function () {
     /**
      * Initialize location input listener with debouncing to prevent excessive API calls.
      */
+    const initCurrencyInputListener = () => {
+        SELECTORS.currencyInput.on('focus', function () {
+            const input = this;
+            requestAnimationFrame(() => {
+                input.setSelectionRange(0, input.value.length);
+            });
+        });
+    };
+
     const initLocationInputListener = () => {
         let debounceTimeout;
         const debounceDelay = 500; // milliseconds
@@ -397,15 +408,14 @@ $(document).ready(function () {
 
                 console.log('[UI] Rendering hotel cards...');
                 renderHotelCards(offersWithDistance, formData);
-                $('.email-section').show();
             } else {
                 SELECTORS.noResultsMessage.show().text('No hotels found for the selected location.');
-                $('.email-section').hide();
+                SELECTORS.stickyBar.removeClass('visible');
             }
         } catch (error) {
             console.error('[Search] Error during form submission:', error.message);
             SELECTORS.noResultsMessage.show().text('An error occurred while fetching hotel data. Please try again.');
-            $('.email-section').hide();
+            SELECTORS.stickyBar.removeClass('visible');
         } finally {
             SELECTORS.loader.hide();
         }
@@ -599,9 +609,11 @@ $(document).ready(function () {
     const handleCheckboxChange = () => {
         console.log('[UI] Checkbox changed');
         const checkedCheckboxes = SELECTORS.resultsContainer.find('.select-checkbox:checked');
-        console.log('[UI] Checked checkboxes:', checkedCheckboxes.length);
+        const count = checkedCheckboxes.length;
+        console.log('[UI] Checked checkboxes:', count);
 
-        SELECTORS.submitToSheetBtn.toggle(checkedCheckboxes.length > 0);
+        SELECTORS.stickyBar.toggleClass('visible', count > 0);
+        SELECTORS.stickyBarCount.text(`${count} hotel(s) selected`);
 
         state.selectedHotels = checkedCheckboxes.map(function () {
             const card = $(this).closest('.card');
@@ -914,8 +926,9 @@ $(document).ready(function () {
             initializeFormFields(queryParams);
             console.log('[Init] Form fields initialized');
 
+            initCurrencyInputListener();
             initLocationInputListener();
-            console.log('[Init] Location input listener initialized');
+            console.log('[Init] Input listeners initialized');
 
             attachEventListeners();
             console.log('[Init] Event listeners attached');
