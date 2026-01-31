@@ -318,6 +318,13 @@ body {
     flex-shrink: 0;
 }
 
+.sticky-bar-hint {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    text-align: center;
+    margin-top: var(--space-sm);
+}
+
 @media (max-width: 480px) {
     .sticky-bar-row {
         flex-direction: column;
